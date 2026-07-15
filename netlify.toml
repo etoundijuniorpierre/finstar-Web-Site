@@ -2,6 +2,14 @@
   command = "npm run build"
   publish = "dist/finstar-cm/browser"
 
+# Proxy vers le serveur Directus : doit être déclaré AVANT la règle SPA,
+# sinon /directus/* renvoie index.html au lieu du JSON de l'API.
+[[redirects]]
+  from = "/directus/*"
+  to = "http://84.247.169.140:8056/:splat"
+  status = 200
+  force = true
+
 [[redirects]]
   from = "/*"
   to = "/index.html"
