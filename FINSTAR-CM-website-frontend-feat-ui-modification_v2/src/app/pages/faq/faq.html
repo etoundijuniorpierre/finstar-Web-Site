@@ -1,0 +1,37 @@
+<div class="faq-page" aria-labelledby="faq-page-title">
+  <header class="faq-hero">
+    <span class="eyebrow">FAQ</span>
+    <h1 id="faq-page-title" class="font-display">{{ 'FAQ.TITLE' | translate }}</h1>
+    <p>{{ 'FAQ.PAGE_SUBTITLE' | translate }}</p>
+  </header>
+
+  <div class="faq-groups">
+    @for (group of faqGroups; track group.titleKey) {
+      <section class="faq-group" [attr.aria-labelledby]="group.titleKey">
+        <h2 [id]="group.titleKey">{{ group.titleKey | translate }}</h2>
+        <div class="faq-list">
+          @for (question of group.questions; track question; let first = $first) {
+            <details class="faq-item" [attr.open]="first ? '' : null">
+              <summary class="faq-question">
+                <span>{{ ('FAQ.Q' + question) | translate }}</span>
+                <svg class="faq-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </summary>
+              <p class="faq-answer">{{ ('FAQ.A' + question) | translate }}</p>
+            </details>
+          }
+        </div>
+      </section>
+    }
+  </div>
+
+  <section class="faq-cta" aria-labelledby="faq-cta-title">
+    <div>
+      <span class="eyebrow">{{ 'TRUST.KICKER_CONTACT' | translate }}</span>
+      <h2 id="faq-cta-title">{{ 'TRUST.CONTACT_TITLE' | translate }}</h2>
+      <p>{{ 'TRUST.CONTACT_TEXT' | translate }}</p>
+    </div>
+    <a class="faq-cta-link" [href]="contactsLink()">{{ 'CONTACT.SEND_MESSAGE_TITLE' | translate }}</a>
+  </section>
+</div>

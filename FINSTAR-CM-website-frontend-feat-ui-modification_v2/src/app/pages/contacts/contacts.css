@@ -1,0 +1,500 @@
+@charset "UTF-8";
+:host {
+  display: block;
+  width: 100%;
+  background-color: #fff;
+  /* Fond sombre pour tout le composant */
+}
+
+/* Animations et transitions */
+.fade-in-on-load {
+  opacity: 0;
+  animation: fadeInUp 0.8s ease-out forwards;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive utilities personnalisées */
+@layer utilities {
+  .blur-sm {
+    filter: blur(2px);
+  }
+  .blur {
+    filter: blur(4px);
+  }
+  /* Breakpoint xs personnalisé pour les très petits écrans */
+  @media (min-width: 375px) {
+    .xs\:text-left {
+      text-align: left;
+    }
+    .xs\:text-3xl {
+      font-size: 1.875rem;
+      line-height: 2.25rem;
+    }
+    .xs\:items-start {
+      align-items: flex-start;
+    }
+    .xs\:grid-cols-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+}
+
+/* Styles spécifiques au composant */
+.contacts-contents-all {
+  position: relative;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: left;
+  /* #111827  */
+  /* Optimisations pour les très petits écrans */
+  /* Améliorations pour les écrans moyens */
+}
+
+@media (max-width: 320px) {
+  .contacts-contents-all {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+  .contacts-contents-all .contacts-header-title h1 {
+    font-size: 1.5rem !important;
+    line-height: 1.2 !important;
+  }
+}
+
+@media (min-width: 768px) {
+  .contacts-contents-all {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+.contacts-header-title {
+  /* Animation décalée pour les éléments du header */
+}
+
+.contacts-header-title h3 {
+  animation-delay: 0.2s;
+  color: #333;
+  /* Texte gris clair #d1d5db */
+}
+
+.contacts-header-title h1 {
+  animation-delay: 0.4s;
+  color: #333;
+  /* Texte blanc */
+  /* Assure une lisibilité optimale sur mobile */
+}
+
+@media (max-width: 640px) {
+  .contacts-header-title h1 {
+    line-height: 1.1;
+    word-break: break-word;
+    hyphens: auto;
+    -webkit-hyphens: auto;
+  }
+}
+
+.contacts-content-details > div > div {
+  opacity: 0;
+  transform: translateY(30px);
+  animation: slideInUp 0.6s ease-out forwards;
+  background-color: #f5f6f5;
+  /* Fond gris foncé pour les cartes */
+  border: 1px solid #f5f6f5;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+.contacts-content-details > div > div:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.contacts-content-details > div > div:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.contacts-content-details > div > div:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.contacts-content-details > div > div:nth-child(4) {
+  animation-delay: 0.4s;
+}
+
+.contacts-content-details > div > div:hover {
+  /* Hover plus foncé */
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+.contacts-content-details span {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  color: #000;
+  /* Texte blanc */
+}
+
+.contacts-content-details p {
+  color: #000;
+  /* Labels gris */
+}
+
+@keyframes slideInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Optimisations du formulaire pour thème sombre */
+.form-group {
+  position: relative;
+}
+
+.form-group input,
+.form-group textarea {
+  /* Amélioration de l'expérience tactile */
+  touch-action: manipulation;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+@media screen and (max-width: 767px) {
+  .form-group input,
+  .form-group textarea {
+    font-size: 16px !important;
+  }
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+  border-color: #bfa93c;
+  background-color: #374151;
+}
+
+.form-group input:hover,
+.form-group textarea:hover {
+  border-color: #bfa93c;
+  background-color: #374151;
+}
+
+.form-group input.border-red-500,
+.form-group textarea.border-red-500 {
+  box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.3);
+  background-color: rgba(127, 29, 29, 0.2);
+  border-color: #dc2626;
+}
+
+.form-group label {
+  /* Amélioration de l'accessibilité pour le thème sombre */
+  cursor: pointer;
+  transition: color 0.2s ease;
+  color: #000;
+  /* Labels gris clair */
+}
+
+.form-group label:has( + input:focus), .form-group label:has( + textarea:focus) {
+  color: #bfa93c;
+  /* Bleu clair au focus */
+}
+
+/* Messages d'erreur améliorés pour le thème sombre */
+.text-red-400 {
+  color: #f87171 !important;
+}
+
+.text-red-400 svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.text-red-400 span {
+  line-height: 1.3;
+}
+
+/* Bouton de soumission responsive pour thème sombre */
+button[type="submit"] {
+  background-color: #000;
+  border: 4px solid transparent;
+  /* background: linear-gradient(135deg, #FFE542, #E74C9E) border-box; */
+  background: linear-gradient(#000, #000) padding-box, linear-gradient(135deg, #FFE542, #E74C9E) border-box;
+  border-radius: 50em;
+  border: 4px solid transparent;
+  /* Hauteur tactile minimum sur mobile */
+  /* Animation de chargement fluide */
+  /* Effet hover désactivé sur tactile */
+}
+
+button[type="submit"]:hover:not(:disabled) {
+  background-color: #f5f6f5;
+  color: #000;
+}
+
+button[type="submit"]:focus {
+  ring-color: #000;
+  ring-offset-color: #1f2937;
+  /* Offset adapté au fond sombre */
+}
+
+@media (max-width: 640px) {
+  button[type="submit"] {
+    min-height: 48px;
+  }
+}
+
+button[type="submit"] .animate-spin {
+  animation-timing-function: linear;
+}
+
+@media (hover: none) {
+  button[type="submit"]:hover {
+    transform: none !important;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3) !important;
+  }
+}
+
+/* Section agences optimisée pour thème sombre */
+.contacts-content-agencies .grid > div {
+  /* Animation décalée pour les agences */
+  opacity: 0;
+  transform: translateY(20px);
+  animation: slideInUp 0.5s ease-out forwards;
+  background-color: #f5f6f5;
+  border: 1px solid #f5f6f5;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3) !important;
+}
+
+.contacts-content-agencies .grid > div span {
+  color: #000;
+}
+
+.contacts-content-agencies .grid > div:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.contacts-content-agencies .grid > div:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.contacts-content-agencies .grid > div:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.contacts-content-agencies .grid > div:nth-child(4) {
+  animation-delay: 0.4s;
+}
+
+.contacts-content-agencies .grid > div:nth-child(5) {
+  animation-delay: 0.5s;
+}
+
+.contacts-content-agencies .grid > div:nth-child(6) {
+  animation-delay: 0.6s;
+}
+
+.contacts-content-agencies p {
+  color: #000;
+  /* Label gris */
+}
+
+/* États de chargement et d'erreur pour thème sombre */
+.loading-indicator,
+.error-message {
+  min-height: 50vh;
+  background-color: gray;
+}
+
+@media (max-width: 640px) {
+  .loading-indicator,
+  .error-message {
+    min-height: 40vh;
+  }
+  .loading-indicator .animate-spin,
+  .error-message .animate-spin {
+    width: 2rem;
+    height: 2rem;
+    border-color: #60a5fa;
+    /* Spinner bleu clair */
+  }
+}
+
+.loading-indicator p,
+.error-message p {
+  color: #ffffff;
+  /* Texte gris clair */
+}
+
+.loading-indicator h2,
+.error-message h2 {
+  color: #ffffff;
+  /* Titre blanc */
+}
+
+/* Background et composant join-us pour thème sombre */
+.join-us {
+  background: radial-gradient(ellipse at center, #1f2937 60%, #111827 100%);
+}
+
+@media (max-width: 640px) {
+  .join-us {
+    background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+  }
+}
+
+/* Optimisations pour l'accessibilité avec thème sombre */
+@media (prefers-reduced-motion: reduce) {
+  .fade-in-on-load,
+  .contacts-content-details > div > div,
+  .contacts-content-agencies .grid > div {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  button[type="submit"] {
+    transition: none !important;
+  }
+  button[type="submit"]:hover {
+    transform: none !important;
+  }
+}
+
+/* Mode sombre par défaut, mode clair en option */
+@media (prefers-color-scheme: light) {
+  :host {
+    background-color: #ffffff;
+  }
+  .contacts-contents-all {
+    background-color: #ffffff;
+  }
+  .contacts-header-title h3 {
+    color: #6b7280 !important;
+  }
+  .contacts-header-title h1 {
+    color: #111827 !important;
+  }
+  .contacts-content-details > div > div {
+    background-color: #f9fafb !important;
+    border-color: #e5e7eb !important;
+  }
+  .contacts-content-details > div > div:hover {
+    background-color: #f3f4f6 !important;
+  }
+  .contacts-content-details > div > div span {
+    color: #111827 !important;
+  }
+  .contacts-content-details > div > div p {
+    color: #6b7280 !important;
+  }
+  .form-group input,
+  .form-group textarea {
+    background-color: #ffffff !important;
+    color: #111827 !important;
+    border-color: #d1d5db !important;
+  }
+  .form-group input::placeholder,
+  .form-group textarea::placeholder {
+    color: #6b7280 !important;
+  }
+  .form-group input:hover,
+  .form-group textarea:hover {
+    border-color: #9ca3af !important;
+  }
+  .form-group input:focus,
+  .form-group textarea:focus {
+    border-color: #bfa93c !important;
+    background-color: #ffffff !important;
+  }
+  .form-group label {
+    color: #374151 !important;
+  }
+  .form-group label:has( + input:focus), .form-group label:has( + textarea:focus) {
+    color: #bfa93c !important;
+  }
+  .contacts-content-agencies .grid > div {
+    background-color: #f9fafb !important;
+    border-color: #e5e7eb !important;
+  }
+  .contacts-content-agencies .grid > div:hover {
+    background-color: #f3f4f6 !important;
+  }
+  .contacts-content-agencies .grid > div span {
+    color: #111827 !important;
+  }
+  .contacts-content-agencies p {
+    color: #6b7280 !important;
+  }
+  .loading-indicator,
+  .error-message {
+    background-color: #ffffff !important;
+  }
+  .loading-indicator p,
+  .error-message p {
+    color: #6b7280 !important;
+  }
+  .loading-indicator h2,
+  .error-message h2 {
+    color: #111827 !important;
+  }
+}
+
+/* Optimisations pour Safari iOS avec thème sombre */
+@supports (-webkit-touch-callout: none) {
+  input,
+  textarea {
+    /* Correction des bordures arrondies sur iOS */
+    border-radius: 0.5rem !important;
+    /* Prévention du zoom automatique */
+    transform: translateZ(0);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    /* Correction du rendu des couleurs sur iOS */
+    -webkit-appearance: none;
+    appearance: none;
+    -webkit-text-fill-color: #ffffff;
+    /* Pour thème sombre */
+  }
+  @media (prefers-color-scheme: light) {
+    input,
+    textarea {
+      -webkit-text-fill-color: #111827;
+      /* Pour thème clair */
+    }
+  }
+}
+
+/* Support pour les écrans haute densité avec thème sombre */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .shadow-lg {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.15);
+  }
+  .shadow-xl {
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+  }
+  .shadow-2xl {
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+  }
+  /* Amélioration des ombres pour le mode clair */
+}
+
+@media (-webkit-min-device-pixel-ratio: 2) and (prefers-color-scheme: light), (min-resolution: 192dpi) and (prefers-color-scheme: light) {
+  .shadow-lg {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+  .shadow-xl {
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  }
+  .shadow-2xl {
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+  }
+}

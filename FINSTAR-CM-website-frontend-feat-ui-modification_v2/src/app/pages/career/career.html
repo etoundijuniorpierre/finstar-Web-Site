@@ -1,0 +1,159 @@
+<!-- career.html -->
+@if (careerData(); as data) {
+<div
+  class="career-main w-full min-h-screen bg-white flex flex-col items-center pt-4 sm:pt-6 md:pt-8 px-2 sm:px-4 md:px-8 fade-in-on-load">
+  <div class="w-full max-w-6xl flex flex-col items-center fade-in-on-load">
+    @if (introData(); as intro) {
+    <h1
+      class="career-title font-display text-2xl sm:text-4xl md:text-5xl lg:text-7xl xl:text-[5rem] font-bold leading-tight text-center mb-1 sm:mb-2 md:mb-2 mt-2 sm:mt-4">
+      {{ intro.headline }}
+    </h1>
+    <p
+      class="career-subtitle text-xs sm:text-base md:text-lg lg:text-xl text-center text-black/80 max-w-xs sm:max-w-lg md:max-w-2xl mb-4 sm:mb-6 md:mb-8">
+      {{ intro.subheadline }}
+    </p>
+    }
+
+    <!-- Team Growth Section with Hover Effect -->
+    @if (introData(); as intro) {
+      @if (intro.image && intro.headlines2) {
+        <section class="team-growth-container w-full max-w-6xl mb-8 sm:mb-12 md:mb-16"
+             aria-labelledby="team-growth-title">
+          <div class="team-growth-image-wrapper">
+            <img
+              [ngSrc]="intro.image"
+              alt="Notre équipe grandit"
+              class="team-growth-image"
+              width="1200"
+              height="800"
+              priority>
+            <div class="team-growth-overlay">
+              <div class="team-growth-content">
+                <h2 id="team-growth-title" class="team-growth-headline">{{ intro.headlines2 }}</h2>
+                <div class="team-growth-body-wrapper">
+                  @if (intro.body_content) {
+                    <div class="team-growth-body" [innerHTML]="intro.body_content"></div>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      }
+    }
+    
+    <h2
+      class="career-section-title font-display text-base sm:text-xl md:text-2xl lg:text-3xl font-bold text-center mb-4 sm:mb-6 md:mb-8">
+      {{ 'CAREER.JOBS_HEADLINE' | translate }}
+    </h2>
+  </div>
+  @if (jobsData().length) {
+  <div
+    class="career-grid w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-0 rounded-xl sm:rounded-2xl overflow-hidden shadow-none mt-2 fade-in-on-load">
+    <!-- Colonne gauche : Liste des postes -->
+    <div role="tablist" [attr.aria-label]="'CAREER.JOBS_HEADLINE' | translate"
+      class="career-list bg-white rounded-t-xl md:rounded-l-2xl md:rounded-tr-none flex flex-col">
+      @for (job of jobsData(); track $index; let i = $index) {
+      <button type="button" role="tab" (click)="selectJob(i)" (keydown)="onJobKeydown($event, i)"
+        [id]="'job-tab-' + i" [attr.data-job-index]="i"
+        [attr.aria-selected]="selectedJobIndex === i"
+        [attr.aria-controls]="'job-panel-' + i"
+        [attr.tabindex]="selectedJobIndex === i ? 0 : -1"
+        [class.bg-yellow-50]="selectedJobIndex === i"
+        class="career-list-option p-4 sm:p-6 cursor-pointer transition-colors duration-150"
+        [class.font-bold]="selectedJobIndex === i">
+        <div class="flex justify-between items-center">
+          <div class="flex-grow">
+            <div class="career-list-title text-base sm:text-xl md:text-2xl text-yellow-600 mb-1">
+              {{ job.title }}
+              @if (job.quantity) { ({{job.quantity}}) }
+              @if (job.gender) { ({{job.gender}}) }
+            </div>
+            <div class="career-list-desc text-xs sm:text-sm text-black/80">{{ job.location }}</div>
+          </div>
+          <div class="career-list-arrow opacity-0 transform translate-x-4 transition-all duration-300">
+            <div class="arrow-icon"></div>
+          </div>
+        </div>
+      </button>
+      }
+    </div>
+    <!-- Colonne droite : Description du poste -->
+    <div role="tabpanel" [id]="'job-panel-' + selectedJobIndex"
+      [attr.aria-labelledby]="'job-tab-' + selectedJobIndex" tabindex="0"
+      class="career-details bg-white border-2 border-pink-400 rounded-b-xl md:rounded-r-2xl md:rounded-bl-none flex flex-col justify-between items-center p-4 sm:p-6 md:p-8 ring-2 sm:ring-4 ring-pink-200">
+      <div>
+        <h3 class="career-details-title text-lg sm:text-xl md:text-2xl font-bold mb-2 sm:mb-4">
+          {{ jobsData()[selectedJobIndex].title }}
+        </h3>
+        @if (isSupervisionJob(jobsData()[selectedJobIndex])) {
+        <div class="recruitment-mode" role="note">
+          <span>{{ 'CAREER.RECRUITMENT_MODE' | translate }}</span>
+          <strong>{{ 'CAREER.COMPETITION_ONLY' | translate }}</strong>
+        </div>
+        }
+        <div class="career-details-section mb-2 sm:mb-3">
+          <span class="font-semibold">{{ 'CAREER.JOB_DESCRIPTION' | translate }}</span>
+          <div class="text-xs sm:text-sm text-black/80" [innerHTML]="jobsData()[selectedJobIndex].description_poste"></div>
+        </div>
+        <div class="career-details-section mb-2 sm:mb-3">
+          <span class="font-semibold">{{ 'CAREER.JOB_MISSION' | translate }}</span>
+          @if (toList(jobsData()[selectedJobIndex].missions_poste); as missions) {
+            @if (missions.length > 1) {
+              <ul class="career-mission-list text-xs sm:text-sm text-black/80">
+                @for (mission of missions; track $index) {
+                  <li>{{ mission }}</li>
+                }
+              </ul>
+            } @else {
+              <div class="text-xs sm:text-sm text-black/80" [innerHTML]="jobsData()[selectedJobIndex].missions_poste"></div>
+            }
+          }
+        </div>
+        <div class="career-details-section mb-2 sm:mb-3">
+          <span class="font-semibold">{{ 'CAREER.REQUIRED_DIPLOMAS' | translate }}</span>
+          <p class="text-xs sm:text-sm text-black/80">{{ jobsData()[selectedJobIndex].description.diplomes_requis }}</p>
+        </div>
+        <div class="career-details-section mb-2 sm:mb-3">
+          <span class="font-semibold">{{ 'CAREER.SKILLS' | translate }}</span>
+          <p class="text-xs sm:text-sm text-black/80">{{ jobsData()[selectedJobIndex].description.aptitudes_personnelles
+            }}</p>
+        </div>
+        <div class="career-details-section mb-2 sm:mb-3">
+          <span class="font-semibold">{{ 'CAREER.APPLICATION_DOSSIER' | translate }}</span>
+          @if (toList(jobsData()[selectedJobIndex].description.constitution_du_dossier); as dossier) {
+            @if (dossier.length > 1) {
+            <ul class="career-mission-list text-xs sm:text-sm text-black/80">
+              @for (piece of dossier; track $index) { <li>{{ piece }}</li> }
+            </ul>
+            } @else {
+            <p class="text-xs sm:text-sm text-black/80">{{ dossier[0] }}</p>
+            }
+          }
+        </div>
+      </div>
+      <app-cta-button [label]="'CAREER.APPLY_NOW' | translate" [size]="'lg'" [disableRouting]="true"
+        (buttonClick)="onApply(jobsData()[selectedJobIndex].title)">
+      </app-cta-button>
+    </div>
+  </div>
+  }
+</div>
+<app-join-us></app-join-us>
+} @else if (isLoading()) {
+<div class="brand-state">
+  <div class="flex flex-col items-center max-w-xs">
+    <div class="brand-spinner mb-4"></div>
+    <p class="text-sm sm:text-base">{{ 'COMMON.LOADING' | translate }}</p>
+  </div>
+</div>
+} @else {
+<div class="brand-state">
+  <div class="max-w-md">
+    <div class="text-4xl sm:text-6xl mb-4" aria-hidden="true">⚠️</div>
+    <h2 class="text-lg sm:text-xl font-semibold mb-2 font-display" style="color: var(--ink-950)">{{ 'CAREER.LOADING_ERROR_TITLE' | translate }}</h2>
+    <p class="text-sm sm:text-base mb-4">{{ 'CAREER.LOADING_ERROR_MESSAGE' | translate }}</p>
+    <button type="button" (click)="reloadPage()" class="brand-retry">{{ 'CAREER.RETRY' | translate }}</button>
+  </div>
+</div>
+}

@@ -1,0 +1,342 @@
+@if (serviceData(); as data) {
+<!-- services.html -->
+<div class="services-container fade-in-on-load">
+  @if (introData(); as intro) {
+  <div class="intro-section">
+    <div class="intro-text">
+      <h1 class="intro-headline font-display">{{ intro.headline }}</h1>
+      <p class="intro-subheadline">{{ intro.subheadline }}</p>
+    </div>
+    <div class="intro-image-container">
+      <img [ngSrc]="intro.image!" width="1200" height="800" priority
+        alt="Conseiller FINSTAR-CM SA présentant une solution financière" class="intro-main-image">
+    </div>
+  </div>
+  }
+
+  <section class="services-trust-panel" aria-labelledby="services-trust-title">
+    <div>
+      <span class="trust-kicker">{{ 'TRUST.KICKER_SERVICES' | translate }}</span>
+      <h2 id="services-trust-title">{{ 'TRUST.SERVICES_TITLE' | translate }}</h2>
+      <p>{{ 'TRUST.SERVICES_TEXT' | translate }}</p>
+    </div>
+    <ul class="services-trust-list">
+      <li>{{ 'TRUST.SERVICE_PROOF_1' | translate }}</li>
+      <li>{{ 'TRUST.SERVICE_PROOF_2' | translate }}</li>
+      <li>{{ 'TRUST.SERVICE_PROOF_3' | translate }}</li>
+    </ul>
+  </section>
+
+  <!-- Section Produits avec Onglets -->
+  @if (productsData(); as products) {
+  @if (products.length > 0) {
+  <section class="product-explorer" aria-labelledby="product-explorer-title">
+    <header class="explorer-heading">
+      <span class="trust-kicker">{{ 'SERVICES.EXPLORER_KICKER' | translate }}</span>
+      <h2 id="product-explorer-title">{{ 'SERVICES.EXPLORER_TITLE' | translate }}</h2>
+      <p>{{ 'SERVICES.EXPLORER_HELP' | translate }}</p>
+    </header>
+
+    <div class="products-tabs-section">
+      @if (activeProduct(); as active) {
+      <div class="product-hero">
+        <div class="hero-image-col">
+          @if (active.product_image) {
+          <img src="{{ active.product_image }}" alt="{{ active.Name }}" class="hero-image" loading="lazy" decoding="async">
+          } @else {
+          <div class="hero-image placeholder" aria-hidden="true"></div>
+          }
+        </div>
+        <div class="hero-content-col">
+          <nav class="tabs-header" role="tablist" aria-orientation="horizontal">
+            @for (product of products; track product.id) {
+            <button type="button"
+              class="tab-link"
+              role="tab"
+              [class.active]="activeProductId() === product.id"
+              [attr.id]="'product-tab-' + product.id"
+              [attr.aria-selected]="activeProductId() === product.id"
+              [attr.aria-controls]="'product-panel-' + product.id"
+              [attr.tabindex]="activeProductId() === product.id ? 0 : -1"
+              (keydown)="onTabKeydown($event, product.id)"
+              (click)="onTabClick($event, product.id)">
+              {{ product.Name }}
+            </button>
+            }
+          </nav>
+          <div class="tab-panel"
+            [class.with-bg]="active.product_image"
+            [style.--panel-bg]="active.product_image ? 'url(' + active.product_image + ')' : 'none'"
+            role="tabpanel" [attr.id]="'product-panel-' + active.id"
+            [attr.aria-labelledby]="'product-tab-' + active.id">
+            <h2>{{ active.Name }}</h2>
+            <p>{{ active.headlines }}</p>
+            @if (isAccountProduct(active)) {
+            <app-cta-button [label]="'COMMON.OPEN_ACCOUNT'" [link]="'/services'" fragment="open-account"></app-cta-button>
+            } @else if (isCreditProduct(active)) {
+            <app-cta-button [label]="'SERVICES.REQUEST_CREDIT'" [disableRouting]="true" (buttonClick)="scrollToCreditApplication()"></app-cta-button>
+            } @else {
+            <app-cta-button [label]="'NAV.CONTACT_US'" [link]="'/contacts'"></app-cta-button>
+            }
+          </div>
+        </div>
+      </div>
+      }
+    </div>
+
+    @if (activeProduct(); as active) {
+    <div class="explorer-connector" aria-live="polite">
+      <span aria-hidden="true">↓</span>
+      {{ 'SERVICES.VIEWING' | translate }} <strong>{{ active.Name }}</strong>
+    </div>
+    }
+
+    <div class="product-items-section" id="product-items-section">
+      <div class="items-grid">
+        @for (item of activeItems(); track productItemKey(item, $index)) {
+        <article class="item-card">
+          <div class="item-image-wrapper">
+            <img src="{{ item.image }}" alt="{{ item.name }}" class="item-image" loading="lazy" decoding="async">
+          </div>
+          <div class="item-details">
+            <h3>{{ item.name }}</h3>
+            <p>{{ item.description }}</p>
+            @if (productFactSheet(item.id); as facts) {
+            <details class="item-facts">
+              <summary>{{ 'SERVICES.DETAILS' | translate }}</summary>
+              <div class="item-facts-content">
+                @if (facts.opening_minimum) {
+                <h4>{{ 'SERVICES.OPENING_MINIMUM' | translate }}</h4>
+                <p>{{ facts.opening_minimum }}</p>
+                }
+                @if (facts.eligibility?.length) {
+                <h4>{{ 'SERVICES.ELIGIBILITY' | translate }}</h4>
+                <ul>@for (line of facts.eligibility; track line) { <li>{{ line }}</li> }</ul>
+                }
+                @if (facts.documents?.length) {
+                <h4>{{ 'SERVICES.DOCUMENTS' | translate }}</h4>
+                <ul>@for (line of facts.documents; track line) { <li>{{ line }}</li> }</ul>
+                }
+                @if (facts.benefits?.length) {
+                <h4>{{ 'SERVICES.BENEFITS' | translate }}</h4>
+                <ul>@for (line of facts.benefits; track line) { <li>{{ line }}</li> }</ul>
+                }
+              </div>
+            </details>
+            }
+            @if (shouldShowAccountJourneyButton(item)) {
+            <button type="button" class="item-journey-link" (click)="goToSavingsJourney()">
+              {{ 'SERVICES.VIEW_JOURNEY' | translate }}
+            </button>
+            }
+            <span class="item-company">{{ companyName() }}</span>
+          </div>
+        </article>
+        }
+        @empty {
+        <p class="items-empty">{{ 'SERVICES.EXPLORER_HELP' | translate }}</p>
+        }
+      </div>
+    </div>
+  </section>
+  }
+  }
+
+  @if (openAccountData(); as opening) {
+  <section class="open-account-section" id="open-account" aria-labelledby="open-account-title">
+    <header class="open-account-header">
+      <div>
+        <span class="trust-kicker">{{ 'SERVICES.OPEN_ACCOUNT_KICKER' | translate }}</span>
+        <h2 id="open-account-title">{{ opening.headline || ('SERVICES.OPEN_ACCOUNT_TITLE' | translate) }}</h2>
+        <p>{{ opening.subheadline || ('SERVICES.OPEN_ACCOUNT_INTRO' | translate) }}</p>
+      </div>
+      @if (opening.image) {
+      <img [src]="opening.image" alt="Conseiller FINSTAR-CM accompagnant une ouverture de compte" loading="lazy" decoding="async">
+      }
+    </header>
+
+    <ol class="opening-steps" aria-label="Parcours d'ouverture de compte">
+      <li><span>1</span><div><h3>{{ 'SERVICES.OPEN_ACCOUNT_STEP_1' | translate }}</h3><p>{{ 'SERVICES.OPEN_ACCOUNT_STEP_1_TEXT' | translate }}</p></div></li>
+      <li><span>2</span><div><h3>{{ 'SERVICES.OPEN_ACCOUNT_STEP_2' | translate }}</h3><p>{{ 'SERVICES.OPEN_ACCOUNT_STEP_2_TEXT' | translate }}</p></div></li>
+      <li><span>3</span><div><h3>{{ 'SERVICES.OPEN_ACCOUNT_STEP_3' | translate }}</h3><p>{{ 'SERVICES.OPEN_ACCOUNT_STEP_3_TEXT' | translate }}</p></div></li>
+    </ol>
+
+    @if (accountsData(); as accounts) {
+    @if (accounts.length) {
+    <section class="accounts-overview" aria-labelledby="accounts-overview-title">
+      <header>
+        <h3 id="accounts-overview-title">{{ 'SERVICES.ALL_ACCOUNTS_TITLE' | translate }}</h3>
+        <p>{{ 'SERVICES.ALL_ACCOUNTS_TEXT' | translate }}</p>
+      </header>
+      <div class="accounts-overview-grid">
+        @for (account of accounts; track account.account_id) {
+        <article class="account-overview-card">
+          <div>
+            <h4>{{ account.account_name }}</h4>
+            <p>{{ account.Description }}</p>
+          </div>
+          <div class="account-overview-footer">
+            <span><small>{{ 'SERVICES.FROM' | translate }}</small><strong>{{ account.min_amount }} {{ 'COMMON.CURRENCY' | translate }}</strong></span>
+            @if (isTermAccount(account)) {
+            <button type="button" (click)="goToSavingsJourney()">{{ 'SERVICES.VIEW_JOURNEY' | translate }}</button>
+            } @else if (accountGuideFor(account.account_id)) {
+            <button type="button" (click)="openAccountGuide(account.account_id)">{{ 'SERVICES.SEE_OPENING_DETAILS' | translate }}</button>
+            } @else {
+            <app-cta-button [label]="'SERVICES.ASK_BRANCH'" [link]="'/contacts'" fragment="agencies" size="sm"></app-cta-button>
+            }
+          </div>
+        </article>
+        }
+      </div>
+    </section>
+    }
+    }
+
+    @if (accountOpeningGuides(); as guides) {
+    @if (guides.length) {
+    <div class="account-comparator" id="account-details">
+      <nav class="account-selector" [attr.aria-label]="'SERVICES.CHOOSE_BY_NEED' | translate">
+        <span class="account-selector-label">{{ 'SERVICES.CHOOSE_BY_NEED' | translate }}</span>
+        @for (guide of guides; track guide.key) {
+        <button type="button" [class.active]="selectedAccountGuide().key === guide.key"
+          [attr.aria-pressed]="selectedAccountGuide().key === guide.key"
+          (click)="selectAccount(guide.account_ids[0])">
+          <strong>{{ guide.label }}</strong>
+          <small>{{ guide.tagline }}</small>
+        </button>
+        }
+      </nav>
+      @if (selectedAccountGuide(); as guide) {
+      <article class="account-file" aria-live="polite">
+        <div class="account-file-title">
+          <div><span>{{ 'SERVICES.ACCOUNT_FILE_LABEL' | translate }}</span><h3>{{ guide.label }}</h3></div>
+          <div class="minimum-chip"><small>{{ 'SERVICES.OPENING_AT' | translate }}</small><strong>{{ guide.opening_minimum }}</strong></div>
+        </div>
+        <p class="account-description">{{ guide.tagline }}</p>
+
+        <div class="account-fit-card">
+          <span>{{ 'SERVICES.BEST_FOR' | translate }}</span>
+          <p>{{ guide.best_for }}</p>
+        </div>
+
+        <div class="account-information-grid">
+          <section>
+            <h4>{{ 'SERVICES.USE_CASES' | translate }}</h4>
+            <ul>@for (item of guide.use_cases; track item) { <li>{{ item }}</li> }</ul>
+          </section>
+          <section>
+            <h4>{{ 'SERVICES.DOCUMENT_CHECKLIST' | translate }}</h4>
+            <ul class="document-checklist">@for (document of guide.documents; track document) { <li>{{ document }}</li> }</ul>
+          </section>
+          <section>
+            <h4>{{ 'SERVICES.AFTER_OPENING' | translate }}</h4>
+            <ul>@for (benefit of guide.benefits; track benefit) { <li>{{ benefit }}</li> }</ul>
+          </section>
+        </div>
+
+        @if (guide.practical_note) {
+        <p class="practical-note"><strong>À noter :</strong> {{ guide.practical_note }}</p>
+        }
+        <p class="guide-notice">{{ 'SERVICES.GUIDE_NOTICE' | translate }}</p>
+        <div class="account-action">
+          <app-cta-button [label]="'SERVICES.FIND_AGENCY'" [link]="'/contacts'" fragment="agencies"></app-cta-button>
+        </div>
+      </article>
+      }
+    </div>
+    }
+    }
+  </section>
+  }
+
+  @if (creditRequirements(); as credits) {
+  <section class="credit-section" id="credit-application" aria-labelledby="credit-title">
+    <div class="credit-header">
+      <span class="trust-kicker">{{ 'SERVICES.CREDIT_ELIGIBILITY' | translate }}</span>
+      <h2 id="credit-title">{{creditRequirementsSection()?.headline}}</h2>
+
+      <!-- Affichage du processus structuré -->
+      <div class="process-container">
+        @if (creditRequirementsSection()?.loanProcess; as loanProcess) {
+        @if (isLoanProcess(loanProcess)) {
+        @for (process of loanProcess; track $index) {
+        <div class="loan-process">
+          <h3>{{ process.title }}</h3>
+          <ol class="process-steps">
+            @for (step of process.steps; track $index) {
+            <li class="process-step">
+              <div class="step-text ">{{ step.step }}</div>
+              @if (hasDetails(step)) {
+              <ul class="step-details">
+                @for (detail of step.details; track $index) {
+                <li>{{ detail }}</li>
+                }
+              </ul>
+              }
+            </li>
+            }
+          </ol>
+        </div>
+        }
+        } @else {
+        <!-- Fallback pour les anciens formats -->
+        <app-markdown-renderer [content]="loanProcess"></app-markdown-renderer>
+        }
+        }
+      </div>
+      <h2>{{creditRequirementsSection()?.headlines2}}</h2>
+    </div>
+    <div class="credit-table-wrapper">
+      <div class="credit-table">
+        <div class="credit-table-col credit-table-col-left">
+          <div class="credit-table-row credit-table-row-header">{{ creditCategories() }}</div>
+          @for (credit of credits; track $index) {
+          <button type="button" class="credit-table-row" [class.selected]="selectedType() === $index"
+            [attr.aria-pressed]="selectedType() === $index" (click)="selectType($index)">
+            {{ credit.category }}
+          </button>
+          }
+        </div>
+        <div class="credit-table-col credit-table-col-right">
+          <div class="credit-table-row credit-table-row-header">{{ loanConditions() }}</div>
+          <div class="credit-table-row credit-table-row-content">
+            @if (selectedCredit(); as credit) {
+            <div class="credit-file-summary">
+              <div>
+                <span>{{ 'SERVICES.COMPLETE_CHECKLIST' | translate }}</span>
+                <h3>{{ credit.category }}</h3>
+              </div>
+              <strong>{{ credit.requirements.length }} {{ 'SERVICES.DOSSIER_ITEMS' | translate }}</strong>
+              <p>{{ 'SERVICES.COMPLETE_CHECKLIST_HELP' | translate }}</p>
+            </div>
+            <ul class="requirements-list">
+              @for (requirement of credit.requirements; track requirement) {
+              <li><span class="document-index" aria-hidden="true"></span><span>{{ requirement }}</span></li>
+              }
+            </ul>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  }
+</div>
+<app-join-us></app-join-us>
+} @else if (isLoading()) {
+<div class="brand-state">
+  <div class="flex flex-col items-center max-w-xs">
+    <div class="brand-spinner mb-4"></div>
+    <p class="text-sm sm:text-base">{{ loadingText() }}</p>
+  </div>
+</div>
+} @else {
+<div class="brand-state">
+  <div class="max-w-md">
+    <div class="text-4xl sm:text-6xl mb-4" aria-hidden="true">⚠️</div>
+    <h2 class="text-lg sm:text-xl font-semibold mb-2 font-display" style="color: var(--ink-950)">{{ errorTitle() }}</h2>
+    <p class="text-sm sm:text-base mb-4">{{ errorMessage() }}</p>
+    <button type="button" (click)="reloadPage()" class="brand-retry">{{ retryButton() }}</button>
+  </div>
+</div>
+}

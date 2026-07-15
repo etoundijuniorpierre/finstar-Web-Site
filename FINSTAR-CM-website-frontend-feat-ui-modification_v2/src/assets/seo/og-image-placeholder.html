@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>FINSTAR-CM Social Preview</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            width: 1200px;
+            height: 630px;
+            background: linear-gradient(135deg, #1a365d 0%, #2d5a87 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .container {
+            text-align: center;
+            z-index: 2;
+            max-width: 800px;
+            padding: 40px;
+        }
+        
+        .logo {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #ffffff;
+        }
+        
+        .tagline {
+            font-size: 24px;
+            font-weight: 400;
+            margin-bottom: 30px;
+            opacity: 0.9;
+            line-height: 1.4;
+        }
+        
+        .description {
+            font-size: 18px;
+            opacity: 0.8;
+            line-height: 1.5;
+        }
+        
+        .background-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.1;
+            background-image: 
+                radial-gradient(circle at 25% 25%, rgba(255,255,255,0.2) 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, rgba(255,255,255,0.1) 0%, transparent 50%);
+        }
+        
+        .accent {
+            color: #ffd700;
+        }
+    </style>
+</head>
+<body>
+    <div class="background-pattern"></div>
+    <div class="container">
+        <div class="logo">FINSTAR-CM <span class="accent">SA</span></div>
+        <div class="tagline">Institution de Microfinance au Cameroun</div>
+        <div class="description">
+            Solutions d'épargne et de crédit sécurisées<br>
+            pour particuliers et entreprises
+        </div>
+    </div>
+</body>
+</html>
+
+<!-- 
+To generate the actual PNG image from this HTML:
+1. Use a tool like Puppeteer, Playwright, or an online HTML to image converter
+2. Set viewport to 1200x630 pixels
+3. Save as PNG with high quality
+4. Replace this file with the generated og-image.png
+-->

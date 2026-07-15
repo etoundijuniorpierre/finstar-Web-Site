@@ -1,0 +1,197 @@
+@if(homePage(); as data) {
+@if (heroBannerData(); as data) {
+<div
+  class="hero-section fade-in-on-load min-h-[calc(100vh-117px)] w-full flex flex-col justify-between items-center">
+  <img [ngSrc]="data.image!" fill priority sizes="100vw" alt="" aria-hidden="true" class="hero-background">
+  <!-- Contenu principal remonté -->
+  <div class="hero-content flex-grow flex flex-col justify-start items-center w-full max-w-6xl px-4 pt-10 md:pt-16 z-10">
+    <!-- Modifié justify-center en justify-start et ajusté le padding-top -->
+    <h1
+      class="text-4xl md:text-5xl lg:text-6xl font-medium font-display text-center leading-tight tracking-tighter">
+      {{ data.headline }}
+    </h1>
+    <p class="hero-slogan mt-4 md:mt-6 text-base md:text-lg font-normal font-instrument-sans text-center max-w-3xl w-4/5">
+      <!-- Marge-top réduite -->
+      {{ data.subheadline }}
+    </p>
+    <div class="hero-actions mt-6 md:mt-8 flex flex-col sm:flex-row gap-3 md:gap-4">
+      <app-cta-button></app-cta-button>
+      <app-cta-button [label]="'NAV.CONTACT_US'" [link]="'/contacts'"></app-cta-button>
+    </div>
+  </div>
+
+  <!-- Infinite scroll remonté et stylisé -->
+  <div class="hero-marquee w-full mt-auto py-4 z-10">
+    <p class="sr-only">{{ infiniteScrollItems().join(', ') }}</p>
+    <div class="infinite-scroll-container overflow-hidden w-full" aria-hidden="true">
+      <div class="scroll-track flex gap-[10px] w-max" appPauseOffscreen>
+        @for (item of tripleScrollItems(); track $index) {
+        <div class="bg-transparent border-2 border-white rounded-full px-4 py-1 text-center whitespace-nowrap">
+          <p class="text-xs md:text-sm text-white">{{ item }}</p>
+        </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>
+
+}
+
+<section class="institutional-trust" aria-labelledby="home-trust-title">
+  <div class="trust-container">
+    <div class="trust-copy">
+      <span class="trust-kicker">{{ 'TRUST.KICKER' | translate }}</span>
+      <h2 id="home-trust-title">{{ 'TRUST.HOME_TITLE' | translate }}</h2>
+      <p>{{ 'TRUST.HOME_TEXT' | translate }}</p>
+      <a [routerLink]="aboutLink()" class="trust-link">{{ 'TRUST.LEARN_MORE' | translate }}</a>
+    </div>
+    <dl class="trust-proof-grid" [attr.aria-label]="'TRUST.PROOFS_LABEL' | translate">
+      <div class="trust-proof-card">
+        <dt>{{ 'TRUST.LICENSE_LABEL' | translate }}</dt>
+        <dd>{{ 'TRUST.LICENSE_VALUE' | translate }}</dd>
+      </div>
+      <div class="trust-proof-card">
+        <dt>{{ 'TRUST.REGISTER_LABEL' | translate }}</dt>
+        <dd>{{ 'TRUST.REGISTER_VALUE' | translate }}</dd>
+      </div>
+      <div class="trust-proof-card">
+        <dt>{{ 'TRUST.HEAD_OFFICE_LABEL' | translate }}</dt>
+        <dd>{{ 'TRUST.HEAD_OFFICE_VALUE' | translate }}</dd>
+      </div>
+      <div class="trust-proof-card">
+        <dt>{{ 'TRUST.REGISTERED_OFFICE_LABEL' | translate }}</dt>
+        <dd>{{ 'TRUST.REGISTERED_OFFICE_VALUE' | translate }}</dd>
+      </div>
+    </dl>
+  </div>
+</section>
+
+@if (visionsData(); as visions) {
+<section class="visions-section">
+  <div class="visions-container">
+    @if (visions[0]; as mainVision) {
+    <div class="vision-card vision-main">
+      <div class="vision-overlay"></div>
+      <img [src]="mainVision.image" [alt]="mainVision.vision" class="vision-image" loading="lazy" decoding="async">
+      <div class="vision-content">
+        <p class="vision-text">{{ mainVision.vision }}</p>
+      </div>
+    </div>
+    }
+
+    @if (visions[1]; as secondVision) {
+    <div class="vision-card vision-secondary">
+      <div class="vision-split-left">
+        <p class="vision-text">{{ secondVision.vision }}</p>
+      </div>
+      <div class="vision-split-right">
+        <img [src]="secondVision.image" [alt]="secondVision.vision" class="vision-image" loading="lazy" decoding="async">
+      </div>
+    </div>
+    }
+
+    @if (visions[2]; as thirdVision) {
+    <div class="vision-card vision-tertiary">
+      <div class="vision-split-left">
+        <img [src]="thirdVision.image" [alt]="thirdVision.vision" class="vision-image" loading="lazy" decoding="async">
+      </div>
+      <div class="vision-split-right">
+        <p class="vision-text">{{ thirdVision.vision }}</p>
+      </div>
+    </div>
+    }
+  </div>
+</section>
+}
+
+@if (displayedStats(); as stats) {
+<section #performanceSection class="performance">
+  <div class="performance-headline">
+    <h2>{{ statsSection()?.headline }}</h2>
+  </div>
+  
+  <div class="performance-stats">
+    @for (stat of stats; track stat.statistics_id) {
+    <div class="stat-item" 
+         [class.client-stat]="(stat.label || '').toLowerCase().includes('client') || (stat.label || '').toLowerCase().includes('customer')" 
+         [class.agence-stat]="(stat.label || '').toLowerCase().includes('agenc') || (stat.label || '').toLowerCase().includes('agency')">
+      <h3>
+        {{ stat.displayValue }}{{ stat.suffix }}
+      </h3>
+      <p>{{ stat.label }}</p>
+    </div>
+    }
+  </div>
+</section>
+}
+
+@if (currentGroup(); as group) {
+<section class="testimonials" role="region" aria-roledescription="carrousel"
+  [attr.aria-label]="'HOME.TESTIMONIALS_CAROUSEL' | translate">
+  <div class="testimonials-gradient-bar"></div>
+  
+  <div class="testimonials-heading-row">
+    <h2 class="testimonials-title font-display">{{usTitle()}}</h2>
+  </div>
+  
+  <div class="testimonials-carousel">
+    <button type="button" class="carousel-arrow left" 
+      [attr.aria-label]="'HOME.PREV_TESTIMONIALS' | translate"
+      (click)="prevTestimonialGroup()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none">
+        <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    </button>
+    
+    <div class="testimonials-grid"
+      aria-live="off"
+      [attr.data-index]="currentTestimonialIndex()"
+      [attr.data-dir]="slideDirection()"
+      (touchstart)="onTouchStart($event)"
+      (touchend)="onTouchEnd($event)">
+      @for (testimonial of group; track testimonial.testimonials_id) {
+      <div class="testimonial-card"
+        (mouseenter)="onTestimonialsMouseEnter()"
+        (mouseleave)="onTestimonialsMouseLeave()">
+        <blockquote class="testimonial-quote font-instrument-sans">{{ testimonial.Quote }}</blockquote>
+        <div class="testimonial-author">
+          <div class="author-image-wrapper">
+            <img [src]="testimonial.author_image" [alt]="testimonial.author_name" class="author-image" loading="lazy" decoding="async">
+          </div>
+          <div class="author-info">
+            <p class="author-name font-instrument-sans">{{ testimonial.author_name }}</p>
+            <p class="author-title font-instrument-sans">{{ testimonial.author_title }}</p>
+          </div>
+        </div>
+      </div>
+      }
+    </div>
+    
+    <button type="button" class="carousel-arrow right" 
+      [attr.aria-label]="'HOME.NEXT_TESTIMONIALS' | translate"
+      (click)="nextTestimonialGroup()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none">
+        <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    </button>
+  </div>
+</section>
+}
+<app-join-us></app-join-us>
+} @else if (isLoading()) {
+<div class="brand-state">
+  <div class="flex flex-col items-center max-w-xs">
+    <div class="brand-spinner mb-4"></div>
+    <p class="text-sm sm:text-base">{{ loadingText() }}</p>
+  </div>
+</div>
+} @else {
+<div class="brand-state">
+  <div class="max-w-md">
+    <div class="text-4xl sm:text-6xl mb-4" aria-hidden="true">⚠️</div>
+    <h2 class="text-lg sm:text-xl font-semibold mb-2 font-display" style="color: var(--ink-950)">{{ errorTitle() }}</h2>
+    <p class="text-sm sm:text-base mb-4">{{ errorMessage() }}</p>
+    <button type="button" (click)="reloadPage()" class="brand-retry">{{ retryButton() }}</button>
+  </div>
+</div>
+}

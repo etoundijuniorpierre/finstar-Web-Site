@@ -1,0 +1,359 @@
+<div class="metrics-container" [class.is-locked]="!isAuthenticated()" [attr.aria-hidden]="isAuthenticated() ? null : true" [attr.inert]="isAuthenticated() ? null : ''" aria-labelledby="metrics-title">
+  <header class="metrics-header">
+    <div class="header-content">
+      <span class="eyebrow">{{ 'METRICS.BADGE' | translate }}</span>
+      <h1 id="metrics-title">{{ 'METRICS.TITLE' | translate }}</h1>
+      <p class="subtitle">{{ 'METRICS.SUBTITLE' | translate }}</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-secondary" type="button" (click)="exportReport()">
+        <span aria-hidden="true">↗</span>
+        <span>{{ 'METRICS.EXPORT' | translate }}</span>
+      </button>
+      <button class="btn btn-primary" type="button" (click)="refreshOperationalStats(); refreshTraffic()"
+        [disabled]="operationalDataState() === 'loading'">
+        <span aria-hidden="true" [class.spin]="operationalDataState() === 'loading'">↻</span>
+        <span>{{ 'METRICS.REFRESH' | translate }}</span>
+      </button>
+    </div>
+  </header>
+
+  <section class="source-card" aria-labelledby="source-title">
+    <div>
+      <span class="source-label">{{ 'METRICS.SOURCE.LABEL' | translate }}</span>
+      <h2 id="source-title">{{ analyticsProvider }}</h2>
+      <p>{{ 'METRICS.SOURCE.DESCRIPTION' | translate }}</p>
+    </div>
+    <div class="source-status" [class.ready]="analyticsConfigured()" role="status">
+      <span class="status-dot" aria-hidden="true"></span>
+      <span>{{ (analyticsConfigured() ? 'METRICS.SOURCE.CONFIGURED' : 'METRICS.SOURCE.NOT_CONFIGURED') | translate }}</span>
+    </div>
+  </section>
+
+  @if (analyticsConfigured()) {
+    <section class="report-card" aria-labelledby="report-title">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">{{ 'METRICS.REPORT.KICKER' | translate }}</span>
+          <h2 id="report-title">{{ 'METRICS.REPORT.TITLE' | translate }}</h2>
+          <p>{{ 'METRICS.REPORT.DESCRIPTION' | translate }}</p>
+        </div>
+        <span class="report-badge">GoatCounter</span>
+      </div>
+
+      @if (traffic()?.mock) {
+        <p class="mock-badge" role="note">{{ 'METRICS.TRAFFIC.MOCK_BADGE' | translate }}</p>
+      }
+
+      <div class="period-controls">
+        <div class="period-selector" role="group" [attr.aria-label]="'METRICS.TRAFFIC.PERIOD_LABEL' | translate">
+          @for (d of periodOptions; track d) {
+            <button type="button" class="period-btn" [class.active]="selectedDays() === d && !customRange()"
+              [attr.aria-pressed]="selectedDays() === d && !customRange()" [disabled]="trafficState() === 'loading'"
+              (click)="setPeriod(d)">
+              {{ ('METRICS.TRAFFIC.RANGE_' + d) | translate }}
+            </button>
+          }
+        </div>
+
+        <div class="custom-range" [attr.aria-label]="'METRICS.TRAFFIC.CUSTOM_LABEL' | translate">
+          <label>
+            <span>{{ 'METRICS.TRAFFIC.CUSTOM_START' | translate }}</span>
+            <input type="date" #rangeStart [value]="customRange()?.start ?? ''">
+          </label>
+          <label>
+            <span>{{ 'METRICS.TRAFFIC.CUSTOM_END' | translate }}</span>
+            <input type="date" #rangeEnd [value]="customRange()?.end ?? ''">
+          </label>
+          <button type="button" class="period-btn" [class.active]="!!customRange()"
+            [disabled]="trafficState() === 'loading'"
+            (click)="applyCustomRange(rangeStart.value, rangeEnd.value)">
+            {{ 'METRICS.TRAFFIC.CUSTOM_APPLY' | translate }}
+          </button>
+        </div>
+      </div>
+
+      @switch (trafficState()) {
+        @case ('ready') {
+          <div class="traffic-summary">
+            <div class="traffic-kpis">
+              <div class="traffic-kpi">
+                <span class="kpi-label">
+                  {{ 'METRICS.TRAFFIC.VISITS' | translate }}
+                  <span class="helper-icon" [title]="'METRICS.TRAFFIC.VISITS_HELP' | translate" aria-hidden="true">ℹ</span>
+                </span>
+                <strong>{{ traffic()?.visits ?? '—' }}</strong>
+                <span class="kpi-note">{{ traffic()?.start }} → {{ traffic()?.end }}</span>
+              </div>
+            </div>
+
+            @if (chart(); as c) {
+              <figure class="traffic-chart" role="img" style="position: relative;"
+                [attr.aria-label]="('METRICS.TRAFFIC.CHART_ALT' | translate) + ' : ' + c.totalVisits">
+                <svg [attr.viewBox]="'0 0 ' + c.width + ' ' + c.height" preserveAspectRatio="none" class="chart-svg">
+                  <defs>
+                    <linearGradient id="barFill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#b8941a" stop-opacity="0.9" />
+                      <stop offset="100%" stop-color="#d6b94c" stop-opacity="0.55" />
+                    </linearGradient>
+                  </defs>
+
+                  <!-- Gridlines -->
+                  @for (g of c.gridLines; track g.y) {
+                    <line [attr.x1]="g.x1" [attr.y1]="g.y" [attr.x2]="g.x2" [attr.y2]="g.y" class="grid-line" />
+                  }
+
+                  <!-- Y-axis labels -->
+                  @for (t of c.yTicks; track t.y) {
+                    <text [attr.x]="c.padLeft - 8" [attr.y]="t.y" text-anchor="end" dominant-baseline="middle" class="axis-label y-label">{{ t.label }}</text>
+                  }
+
+                  <!-- Visits area (primary) -->
+                  <path [attr.d]="c.areaVisits" fill="url(#barFill)" opacity="0.4" />
+                  <path [attr.d]="c.lineVisits" fill="none" stroke="#b8941a" stroke-width="3" stroke-linejoin="round" />
+
+                  <!-- Hover triggers -->
+                  @for (h of c.hoverBars; track h.cx; let i = $index) {
+                    <rect [attr.x]="h.x" y="0" [attr.width]="h.w" [attr.height]="c.height"
+                      fill="transparent"
+                      class="hover-trigger"
+                      (mouseenter)="onPointHover(h, i, $event)"
+                      (mouseleave)="onPointLeave()">
+                    </rect>
+                  }
+
+                  <!-- X-axis labels -->
+                  <g class="x-axis">
+                    @for (l of c.xLabels; track l.x) {
+                      <text [attr.x]="l.x" [attr.y]="c.height - 6" text-anchor="middle" class="axis-label">{{ l.text }}</text>
+                    }
+                  </g>
+
+                  <!-- Baseline -->
+                  <line [attr.x1]="c.padLeft" [attr.y1]="c.padTop + c.chartH" [attr.x2]="c.width - c.padRight" [attr.y2]="c.padTop + c.chartH" class="baseline" />
+                </svg>
+
+                @if (activeTooltip(); as tooltip) {
+                  <div class="chart-tooltip" [style.left.px]="tooltip.x" [style.top.px]="tooltip.y">
+                    <div class="tooltip-title">{{ tooltip.label }}</div>
+                    <div class="tooltip-data">
+                      <span class="tooltip-item"><i class="dot gold" aria-hidden="true"></i> {{ tooltip.visits }} {{ 'METRICS.TRAFFIC.VISITS' | translate | lowercase }}</span>
+                    </div>
+                  </div>
+                }
+                
+                <figcaption class="chart-caption">
+                  <span class="chart-legend">
+                    <i class="dot gold" aria-hidden="true"></i>{{ 'METRICS.TRAFFIC.VISITS' | translate }} ({{ c.totalVisits }})
+                  </span>
+                </figcaption>
+              </figure>
+            }
+
+            <div class="traffic-lists">
+              <div class="traffic-list">
+                <h3>
+                  {{ 'METRICS.TRAFFIC.TOP_PAGES' | translate }}
+                  <span class="helper-icon" [title]="'METRICS.TRAFFIC.TOP_PAGES_HELP' | translate" aria-hidden="true">ℹ</span>
+                </h3>
+                <ul>
+                  @for (p of traffic()?.topPages ?? []; track p.path) {
+                    <li><span class="t-name">{{ p.title || p.path }}</span><span class="t-count">{{ p.visits }}</span></li>
+                  } @empty {
+                    <li class="t-empty">{{ 'METRICS.TRAFFIC.EMPTY' | translate }}</li>
+                  }
+                </ul>
+              </div>
+              <div class="traffic-list">
+                <h3>
+                  {{ 'METRICS.TRAFFIC.TOP_REFS' | translate }}
+                  <span class="helper-icon" [title]="'METRICS.TRAFFIC.TOP_REFS_HELP' | translate" aria-hidden="true">ℹ</span>
+                </h3>
+                <ul>
+                  @for (r of traffic()?.topRefs ?? []; track r.name) {
+                    <li><span class="t-name">{{ r.name }}</span><span class="t-count">{{ r.visits }}</span></li>
+                  } @empty {
+                    <li class="t-empty">{{ 'METRICS.TRAFFIC.EMPTY' | translate }}</li>
+                  }
+                </ul>
+              </div>
+              <div class="traffic-list">
+                <h3>
+                  {{ 'METRICS.TRAFFIC.LOCATIONS' | translate }}
+                  <span class="helper-icon" [title]="'METRICS.TRAFFIC.LOCATIONS_HELP' | translate" aria-hidden="true">ℹ</span>
+                </h3>
+                <ul>
+                  @for (r of traffic()?.locations ?? []; track r.name) {
+                    <li><span class="t-name">{{ r.name }}</span><span class="t-count">{{ r.visits }}</span></li>
+                  } @empty {
+                    <li class="t-empty">{{ 'METRICS.TRAFFIC.EMPTY' | translate }}</li>
+                  }
+                </ul>
+              </div>
+              <div class="traffic-list">
+                <h3>
+                  {{ 'METRICS.TRAFFIC.BROWSERS' | translate }}
+                  <span class="helper-icon" [title]="'METRICS.TRAFFIC.BROWSERS_HELP' | translate" aria-hidden="true">ℹ</span>
+                </h3>
+                <ul>
+                  @for (r of traffic()?.browsers ?? []; track r.name) {
+                    <li><span class="t-name">{{ r.name }}</span><span class="t-count">{{ r.visits }}</span></li>
+                  } @empty {
+                    <li class="t-empty">{{ 'METRICS.TRAFFIC.EMPTY' | translate }}</li>
+                  }
+                </ul>
+              </div>
+              <div class="traffic-list">
+                <h3>
+                  {{ 'METRICS.TRAFFIC.SYSTEMS' | translate }}
+                  <span class="helper-icon" [title]="'METRICS.TRAFFIC.SYSTEMS_HELP' | translate" aria-hidden="true">ℹ</span>
+                </h3>
+                <ul>
+                  @for (r of traffic()?.systems ?? []; track r.name) {
+                    <li><span class="t-name">{{ r.name }}</span><span class="t-count">{{ r.visits }}</span></li>
+                  } @empty {
+                    <li class="t-empty">{{ 'METRICS.TRAFFIC.EMPTY' | translate }}</li>
+                  }
+                </ul>
+              </div>
+              <div class="traffic-list">
+                <h3>
+                  {{ 'METRICS.TRAFFIC.DEVICES' | translate }}
+                  <span class="helper-icon" [title]="'METRICS.TRAFFIC.DEVICES_HELP' | translate" aria-hidden="true">ℹ</span>
+                </h3>
+                <ul>
+                  @for (r of traffic()?.sizes ?? []; track r.name) {
+                    <li><span class="t-name">{{ r.name }}</span><span class="t-count">{{ r.visits }}</span></li>
+                  } @empty {
+                    <li class="t-empty">{{ 'METRICS.TRAFFIC.EMPTY' | translate }}</li>
+                  }
+                </ul>
+              </div>
+            </div>
+          </div>
+        }
+        @case ('loading') {
+          <p class="traffic-note">{{ 'METRICS.TRAFFIC.LOADING' | translate }}</p>
+        }
+        @case ('unavailable') {
+          <p class="traffic-note">{{ 'METRICS.TRAFFIC.UNAVAILABLE' | translate }}</p>
+        }
+      }
+
+      <div class="report-launcher">
+        <p>{{ 'METRICS.REPORT.LAUNCH_DESCRIPTION' | translate }}</p>
+        <a class="btn btn-primary" [href]="analyticsDashboardUrl" target="_blank" rel="noopener noreferrer">
+          {{ 'METRICS.REPORT.OPEN' | translate }}
+          <span aria-hidden="true">↗</span>
+        </a>
+      </div>
+    </section>
+  } @else {
+    <section class="setup-card" aria-labelledby="setup-title">
+      <div class="setup-icon" aria-hidden="true">◌</div>
+      <div>
+        <span class="eyebrow">{{ 'METRICS.SETUP.KICKER' | translate }}</span>
+        <h2 id="setup-title">{{ 'METRICS.SETUP.TITLE' | translate }}</h2>
+        <p>{{ 'METRICS.SETUP.DESCRIPTION' | translate }}</p>
+        <ol>
+          <li>{{ 'METRICS.SETUP.STEP_ONE' | translate }}</li>
+          <li>{{ 'METRICS.SETUP.STEP_TWO' | translate }}</li>
+          <li>{{ 'METRICS.SETUP.STEP_THREE' | translate }}</li>
+        </ol>
+      </div>
+    </section>
+  }
+
+  <section class="conversion-section" aria-labelledby="conversion-title">
+    <div class="section-heading compact">
+      <div>
+        <span class="eyebrow">{{ 'METRICS.CONVERSIONS.KICKER' | translate }}</span>
+        <h2 id="conversion-title">{{ 'METRICS.CONVERSIONS.TITLE' | translate }}</h2>
+        <p>{{ 'METRICS.CONVERSIONS.DESCRIPTION' | translate }}</p>
+      </div>
+      @if (operationalDataState() === 'unavailable') {
+        <span class="data-note">{{ 'METRICS.CONVERSIONS.UNAVAILABLE' | translate }}</span>
+      }
+    </div>
+
+    <div class="conversion-grid">
+      <article class="conversion-card">
+        <span class="conversion-icon" aria-hidden="true">↗</span>
+        <div>
+          <h3>{{ 'METRICS.KPI.CANDIDATURES' | translate }}</h3>
+          <strong>{{ candidaturesCount() ?? '—' }}</strong>
+          <p>{{ 'METRICS.CONVERSIONS.CANDIDATURES_HELP' | translate }}</p>
+        </div>
+      </article>
+      <article class="conversion-card">
+        <span class="conversion-icon" aria-hidden="true">✉</span>
+        <div>
+          <h3>{{ 'METRICS.KPI.CONTACTS' | translate }}</h3>
+          <strong>{{ contactsCount() ?? '—' }}</strong>
+          <p>{{ 'METRICS.CONVERSIONS.CONTACTS_HELP' | translate }}</p>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="guide-card" aria-labelledby="guide-title">
+    <div class="section-heading compact">
+      <div>
+        <span class="eyebrow">{{ 'METRICS.GUIDE.KICKER' | translate }}</span>
+        <h2 id="guide-title">{{ 'METRICS.GUIDE.TITLE' | translate }}</h2>
+        <p>{{ 'METRICS.GUIDE.DESCRIPTION' | translate }}</p>
+      </div>
+    </div>
+    <div class="guide-grid">
+      <article><strong>{{ 'METRICS.GUIDE.USERS_TITLE' | translate }}</strong><span>{{ 'METRICS.GUIDE.USERS_TEXT' | translate }}</span></article>
+      <article><strong>{{ 'METRICS.GUIDE.SOURCES_TITLE' | translate }}</strong><span>{{ 'METRICS.GUIDE.SOURCES_TEXT' | translate }}</span></article>
+      <article><strong>{{ 'METRICS.GUIDE.CONTENT_TITLE' | translate }}</strong><span>{{ 'METRICS.GUIDE.CONTENT_TEXT' | translate }}</span></article>
+      <article><strong>{{ 'METRICS.GUIDE.CONVERSION_TITLE' | translate }}</strong><span>{{ 'METRICS.GUIDE.CONVERSION_TEXT' | translate }}</span></article>
+    </div>
+  </section>
+</div>
+
+@if (!isAuthenticated()) {
+  <div class="auth-overlay" role="presentation">
+    <form class="auth-modal" [formGroup]="loginForm" (ngSubmit)="login()" role="dialog" aria-modal="true" aria-labelledby="metrics-login-title" novalidate>
+      <span class="eyebrow">{{ 'METRICS.AUTH.KICKER' | translate }}</span>
+      <h2 id="metrics-login-title">{{ 'METRICS.AUTH.TITLE' | translate }}</h2>
+      <p>{{ 'METRICS.AUTH.DESCRIPTION' | translate }}</p>
+
+      <label class="auth-field">
+        <span>{{ 'METRICS.AUTH.USERNAME' | translate }}</span>
+        <input type="text" formControlName="userName" autocomplete="username" [placeholder]="'METRICS.AUTH.USERNAME_PLACEHOLDER' | translate">
+      </label>
+
+      <label class="auth-field auth-field--password">
+        <span>{{ 'METRICS.AUTH.PASSWORD' | translate }}</span>
+        <div class="password-wrapper">
+          <input [type]="showPassword() ? 'text' : 'password'" formControlName="password" autocomplete="current-password" [placeholder]="'METRICS.AUTH.PASSWORD_PLACEHOLDER' | translate">
+          <button type="button" class="password-toggle" (click)="togglePassword()" tabindex="-1"
+            [attr.aria-label]="showPassword() ? 'Masquer' : 'Afficher'">
+            @if (showPassword()) {
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                <line x1="1" y1="1" x2="23" y2="23"></line>
+              </svg>
+            } @else {
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            }
+          </button>
+        </div>
+      </label>
+
+      @if (loginState() === 'error') {
+        <p class="auth-error" role="alert">{{ 'METRICS.AUTH.ERROR' | translate }}</p>
+      }
+
+      <button class="btn btn-primary auth-submit" type="submit" [disabled]="loginState() === 'loading'">
+        <span aria-hidden="true" [class.spin]="loginState() === 'loading'">-&gt;</span>
+        <span>{{ (loginState() === 'loading' ? 'METRICS.AUTH.LOADING' : 'METRICS.AUTH.SUBMIT') | translate }}</span>
+      </button>
+    </form>
+  </div>
+}

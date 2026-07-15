@@ -1,0 +1,456 @@
+<div class="page-form-root">
+  <div class="form-card">
+    <h1 class="form-title">
+      <i class="icon text-[#E74C9E]">👤</i>
+      {{ (isStageApplication() ? 'CANDIDATURE.STAGE_FORM_TITLE' : 'CANDIDATURE.FORM_TITLE') | translate }}
+    </h1>
+
+    <form [formGroup]="candidatureForm" (ngSubmit)="onSubmit()" class="form">
+      <!-- Section Informations Personnelles -->
+      <div class="section">
+        <h2 class="section-title">{{ (isCollectorApplication() ? 'CANDIDATURE.COLLECTOR_INFO_TITLE' : 'CANDIDATURE.PERSONAL_INFO.TITLE') | translate }}</h2>
+
+        <div class="form-group mb-4">
+          <label for="posteSouhaite">{{ 'CANDIDATURE.PERSONAL_INFO.DESIRED_POST' | translate }} <span class="required">*</span></label>
+          <input type="text" id="posteSouhaite" formControlName="posteSouhaite" readonly
+            [class.error]="candidatureForm.get('posteSouhaite')?.invalid && candidatureForm.get('posteSouhaite')?.touched"
+            class="readonly-input">
+          @if (candidatureForm.get('posteSouhaite')?.invalid && candidatureForm.get('posteSouhaite')?.touched) {
+          <div class="error-message">
+            {{ 'VALIDATION.REQUIRED' | translate:{field: 'CANDIDATURE.PERSONAL_INFO.DESIRED_POST' | translate} }}
+          </div>
+          }
+        </div>
+
+        @if (isStageApplication()) {
+        <div class="stage-application-panel">
+          <h3>{{ 'CANDIDATURE.STAGE_INFO_TITLE' | translate }}</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="typeStage">{{ 'CANDIDATURE.STAGE_TYPE' | translate }} <span class="required">*</span></label>
+              <select id="typeStage" formControlName="typeStage" (change)="onStageTypeChange()">
+                <option value="academique">{{ 'CANDIDATURE.STAGE_ACADEMIC' | translate }}</option>
+                <option value="professionnel">{{ 'CANDIDATURE.STAGE_PROFESSIONAL' | translate }}</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="dureeStage">{{ 'CANDIDATURE.STAGE_DURATION' | translate }} <span class="optional-text">({{ 'CANDIDATURE.OPTIONAL' | translate }})</span></label>
+              <input id="dureeStage" type="text" formControlName="dureeStage" [placeholder]="(candidatureForm.get('typeStage')?.value === 'academique' ? 'CANDIDATURE.STAGE_DURATION_ACADEMIC' : 'CANDIDATURE.STAGE_DURATION_PROFESSIONAL') | translate" />
+            </div>
+          </div>
+          @if (candidatureForm.get('typeStage')?.value === 'academique') {
+          <div class="form-row">
+            <div class="form-group"><label for="themeStage">{{ 'CANDIDATURE.STAGE_THEME' | translate }} <span class="optional-text">({{ 'CANDIDATURE.OPTIONAL' | translate }})</span></label><textarea id="themeStage" formControlName="themeStage" rows="3" [placeholder]="'CANDIDATURE.STAGE_THEME_HELP' | translate"></textarea></div>
+            <div class="form-group"><label for="etablissement">{{ 'CANDIDATURE.STAGE_SCHOOL' | translate }} <span class="optional-text">({{ 'CANDIDATURE.OPTIONAL' | translate }})</span></label><input id="etablissement" type="text" formControlName="etablissement" /></div>
+          </div>
+          } @else {
+          <div class="form-group"><label for="serviceStage">{{ 'CANDIDATURE.STAGE_SERVICE' | translate }} <span class="optional-text">({{ 'CANDIDATURE.OPTIONAL' | translate }})</span></label><input id="serviceStage" type="text" formControlName="serviceStage" placeholder="Informatique, commercial, conformité, comptabilité…" /></div>
+          }
+          <p class="application-note">{{ 'CANDIDATURE.STAGE_SUMMARY' | translate }}</p>
+        </div>
+        }
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="nom">{{ 'CANDIDATURE.PERSONAL_INFO.LAST_NAME' | translate }} <span class="required">*</span></label>
+            <input type="text" id="nom" formControlName="nom"
+              [class.error]="candidatureForm.get('nom')?.invalid && candidatureForm.get('nom')?.touched" />
+            @if (candidatureForm.get('nom')?.invalid && candidatureForm.get('nom')?.touched) {
+            <div class="error-message">
+              {{ 'VALIDATION.REQUIRED' | translate:{field: 'CANDIDATURE.PERSONAL_INFO.LAST_NAME' | translate} }}
+            </div>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="prenom">{{ 'CANDIDATURE.PERSONAL_INFO.FIRST_NAME' | translate }} <span class="required">*</span></label>
+            <input type="text" id="prenom" formControlName="prenom"
+              [class.error]="candidatureForm.get('prenom')?.invalid && candidatureForm.get('prenom')?.touched" />
+            @if (candidatureForm.get('prenom')?.invalid && candidatureForm.get('prenom')?.touched) {
+            <div class="error-message">
+              {{ 'VALIDATION.REQUIRED' | translate:{field: 'CANDIDATURE.PERSONAL_INFO.FIRST_NAME' | translate} }}
+            </div>
+            }
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="villeResidence">{{ 'CANDIDATURE.PERSONAL_INFO.CITY' | translate }} <span class="required">*</span></label>
+            <input type="text" id="villeResidence" formControlName="villeResidence"
+              [class.error]="candidatureForm.get('villeResidence')?.invalid && candidatureForm.get('villeResidence')?.touched" />
+            @if (candidatureForm.get('villeResidence')?.invalid && candidatureForm.get('villeResidence')?.touched) {
+            <div class="error-message">
+              {{ 'VALIDATION.REQUIRED' | translate:{field: 'CANDIDATURE.PERSONAL_INFO.CITY' | translate} }}
+            </div>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="age">{{ 'CANDIDATURE.PERSONAL_INFO.AGE' | translate }} <span class="required">*</span></label>
+            <input type="number" id="age" formControlName="age" [min]="minAge" [max]="maxAge"
+              onkeypress="return event.charCode >= 48 && event.charCode <= 57 || event.charCode === 0"
+              [class.error]="candidatureForm.get('age')?.invalid && candidatureForm.get('age')?.touched" />
+            @if (candidatureForm.get('age')?.invalid && candidatureForm.get('age')?.touched) {
+            <div class="error-message">
+              {{ 'CANDIDATURE.VALIDATION.AGE_RANGE' | translate:{min: minAge, max: maxAge} }}
+            </div>
+            }
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="telephone">{{ 'CANDIDATURE.PERSONAL_INFO.PHONE' | translate }} <span class="required">*</span></label>
+            <input type="tel" id="telephone" formControlName="telephone" inputmode="numeric" pattern="[0-9]*" maxlength="9" autocomplete="tel"
+              (input)="onPhoneInput($event, 'telephone')"
+              [attr.placeholder]="'CANDIDATURE.PERSONAL_INFO.PHONE_PLACEHOLDER' | translate"
+              [class.error]="candidatureForm.get('telephone')?.invalid && candidatureForm.get('telephone')?.touched" />
+            @if (candidatureForm.get('telephone')?.invalid && candidatureForm.get('telephone')?.touched) {
+            <div class="error-message">
+              {{ 'CANDIDATURE.VALIDATION.PHONE_INVALID' | translate }}
+            </div>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="email">{{ 'CANDIDATURE.PERSONAL_INFO.EMAIL' | translate }}</label>
+            <input type="email" id="email" formControlName="email"
+              [class.error]="candidatureForm.get('email')?.invalid && candidatureForm.get('email')?.touched" />
+            @if (candidatureForm.get('email')?.invalid && candidatureForm.get('email')?.touched) {
+            <div class="error-message">
+              {{ 'VALIDATION.INVALID_EMAIL' | translate }}
+            </div>
+            }
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="dernierDiplome">{{ 'CANDIDATURE.PERSONAL_INFO.DIPLOMA' | translate }} <span class="required">*</span></label>
+            <input type="text" id="dernierDiplome" formControlName="dernierDiplome"
+              [class.error]="candidatureForm.get('dernierDiplome')?.invalid && candidatureForm.get('dernierDiplome')?.touched" />
+            @if (candidatureForm.get('dernierDiplome')?.invalid && candidatureForm.get('dernierDiplome')?.touched) {
+            <div class="error-message">
+              {{ 'VALIDATION.REQUIRED' | translate:{field: 'CANDIDATURE.PERSONAL_INFO.DIPLOMA' | translate} }}
+            </div>
+            }
+          </div>
+
+          @if (!isStageApplication()) {
+          <div class="form-group">
+            <label for="situationMatrimmoniale">{{ 'CANDIDATURE.PERSONAL_INFO.MARITAL_STATUS' | translate }} <span class="required">*</span></label>
+            <select id="situationMatrimmoniale" formControlName="situationMatrimmoniale"
+              [class.error]="candidatureForm.get('situationMatrimmoniale')?.invalid && candidatureForm.get('situationMatrimmoniale')?.touched">
+              <option value="">{{ 'CANDIDATURE.SELECT_PLACEHOLDER' | translate }}</option>
+              <option value="celibataire">{{ 'CANDIDATURE.MARITAL_STATUS.SINGLE' | translate }}</option>
+              <option value="marie">{{ 'CANDIDATURE.MARITAL_STATUS.MARRIED' | translate }}</option>
+              <option value="divorce">{{ 'CANDIDATURE.MARITAL_STATUS.DIVORCED' | translate }}</option>
+              <option value="veuf">{{ 'CANDIDATURE.MARITAL_STATUS.WIDOWED' | translate }}</option>
+            </select>
+            @if (candidatureForm.get('situationMatrimmoniale')?.invalid &&
+            candidatureForm.get('situationMatrimmoniale')?.touched) {
+            <div class="error-message">
+              {{ 'VALIDATION.REQUIRED' | translate:{field: 'CANDIDATURE.PERSONAL_INFO.MARITAL_STATUS' | translate} }}
+            </div>
+            }
+          </div>
+          }
+        </div>
+
+        @if (!isStageApplication()) {
+        <div class="form-group">
+          <label for="nombreEnfants">{{ 'CANDIDATURE.PERSONAL_INFO.CHILDREN' | translate }}</label>
+          <input type="number" id="nombreEnfants" formControlName="nombreEnfants" [min]="0"
+            onkeypress="return event.charCode >= 48 && event.charCode <= 57 || event.charCode === 0" />
+        </div>
+        }
+      </div>
+
+      @if (isCollectorApplication()) {
+      <div class="section avalist-section">
+        <h2 class="section-title">{{ 'CANDIDATURE.AVALIST_INFO_TITLE' | translate }}</h2>
+        <p class="section-help">{{ 'CANDIDATURE.AVALIST_INFO_HELP' | translate }}</p>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="avalisteNom">{{ 'CANDIDATURE.AVALIST_LAST_NAME' | translate }} <span class="required">*</span></label>
+            <input id="avalisteNom" type="text" formControlName="avalisteNom" [class.error]="candidatureForm.get('avalisteNom')?.invalid && candidatureForm.get('avalisteNom')?.touched" />
+            @if (candidatureForm.get('avalisteNom')?.invalid && candidatureForm.get('avalisteNom')?.touched) { <div class="error-message">{{ 'VALIDATION.REQUIRED' | translate:{field: 'CANDIDATURE.AVALIST_LAST_NAME' | translate} }}</div> }
+          </div>
+          <div class="form-group">
+            <label for="avalistePrenom">{{ 'CANDIDATURE.AVALIST_FIRST_NAME' | translate }} <span class="required">*</span></label>
+            <input id="avalistePrenom" type="text" formControlName="avalistePrenom" [class.error]="candidatureForm.get('avalistePrenom')?.invalid && candidatureForm.get('avalistePrenom')?.touched" />
+            @if (candidatureForm.get('avalistePrenom')?.invalid && candidatureForm.get('avalistePrenom')?.touched) { <div class="error-message">{{ 'VALIDATION.REQUIRED' | translate:{field: 'CANDIDATURE.AVALIST_FIRST_NAME' | translate} }}</div> }
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="avalisteTelephone">{{ 'CANDIDATURE.AVALIST_PHONE' | translate }} <span class="required">*</span></label>
+            <input id="avalisteTelephone" type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="9" autocomplete="tel" formControlName="avalisteTelephone" (input)="onPhoneInput($event, 'avalisteTelephone')" [class.error]="candidatureForm.get('avalisteTelephone')?.invalid && candidatureForm.get('avalisteTelephone')?.touched" />
+            @if (candidatureForm.get('avalisteTelephone')?.invalid && candidatureForm.get('avalisteTelephone')?.touched) { <div class="error-message">{{ 'CANDIDATURE.VALIDATION.PHONE_INVALID' | translate }}</div> }
+          </div>
+          <div class="form-group">
+            <label for="avalisteAdresse">{{ 'CANDIDATURE.AVALIST_ADDRESS' | translate }} <span class="required">*</span></label>
+            <input id="avalisteAdresse" type="text" formControlName="avalisteAdresse" [class.error]="candidatureForm.get('avalisteAdresse')?.invalid && candidatureForm.get('avalisteAdresse')?.touched" />
+            @if (candidatureForm.get('avalisteAdresse')?.invalid && candidatureForm.get('avalisteAdresse')?.touched) { <div class="error-message">{{ 'VALIDATION.REQUIRED' | translate:{field: 'CANDIDATURE.AVALIST_ADDRESS' | translate} }}</div> }
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="avalisteRelation">{{ 'CANDIDATURE.AVALIST_RELATION' | translate }} <span class="required">*</span></label>
+          <input id="avalisteRelation" type="text" formControlName="avalisteRelation" [placeholder]="'CANDIDATURE.AVALIST_RELATION_HELP' | translate" [class.error]="candidatureForm.get('avalisteRelation')?.invalid && candidatureForm.get('avalisteRelation')?.touched" />
+          @if (candidatureForm.get('avalisteRelation')?.invalid && candidatureForm.get('avalisteRelation')?.touched) { <div class="error-message">{{ 'VALIDATION.REQUIRED' | translate:{field: 'CANDIDATURE.AVALIST_RELATION' | translate} }}</div> }
+        </div>
+        <div class="form-group">
+          <label class="checkbox-option">
+            <input type="checkbox" formControlName="cautionAcceptee" />
+            <span class="checkbox-custom"></span>
+            {{ 'CANDIDATURE.DEPOSIT_ACK' | translate }} <span class="required">*</span>
+          </label>
+        </div>
+      </div>
+      }
+
+      <!-- Section CV & Documents -->
+      <div class="section">
+        <h2 class="section-title">{{ 'CANDIDATURE.CV_SECTION.TITLE' | translate }}</h2>
+        @if (isStageApplication()) {
+          @for (document of [
+            { key: 'demande', label: 'CANDIDATURE.DOC_STAGE_REQUEST', optional: false },
+            { key: 'cni', label: 'CANDIDATURE.DOC_IDENTITY', optional: false },
+            { key: 'recommandation', label: 'CANDIDATURE.DOC_RECOMMENDATION', optional: true },
+            { key: 'cv', label: 'CANDIDATURE.DOC_CV', optional: false },
+            { key: 'ecole', label: 'CANDIDATURE.DOC_SCHOOL', optional: true }
+          ]; track document.key) {
+          <div class="file-field">
+            <label [for]="'attachment-' + document.key">{{ document.label | translate }} @if (document.optional) { <span class="optional-text">({{ 'CANDIDATURE.IF_AVAILABLE' | translate }})</span> } @else { <span class="required">*</span> }</label>
+            <input class="file-input" type="file" [id]="'attachment-' + document.key" (change)="onFileChange($event, $any(document.key))" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" [disabled]="isUploading() || isSubmitting()" />
+            @if (fileName($any(document.key))) { <small class="file-selected">{{ fileName($any(document.key)) }}</small> }
+            @if (fileError($any(document.key))) { <small class="error-message">{{ fileError($any(document.key)) }}</small> }
+          </div>
+          }
+        } @else if (isCollectorApplication()) {
+          @for (document of [
+            { key: 'cv', label: 'CANDIDATURE.DOC_CV' }, { key: 'demande', label: 'CANDIDATURE.DOC_APPLICATION' },
+            { key: 'cni', label: 'CANDIDATURE.DOC_IDENTITY' }, { key: 'planLocalisation', label: 'CANDIDATURE.DOC_LOCATION_MAP' }
+          ]; track document.key) {
+          <div class="file-field">
+            <label [for]="'attachment-' + document.key">{{ document.label | translate }} <span class="required">*</span></label>
+            <input class="file-input" type="file" [id]="'attachment-' + document.key" (change)="onFileChange($event, $any(document.key))" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" [disabled]="isUploading() || isSubmitting()" />
+            @if (fileName($any(document.key))) { <small class="file-selected">{{ fileName($any(document.key)) }}</small> }
+            @if (fileError($any(document.key))) { <small class="error-message">{{ fileError($any(document.key)) }}</small> }
+          </div>
+          }
+        } @else if (isSupervisionApplication()) {
+          <p class="section-help">{{ 'CANDIDATURE.SUPERVISION_DOCUMENTS_HELP' | translate }}</p>
+          @for (document of [
+            { key: 'cv', label: 'CANDIDATURE.DOC_CV', optional: false },
+            { key: 'lettreMotivation', label: 'CANDIDATURE.DOC_MOTIVATION_LETTER', optional: false },
+            { key: 'diplome1', label: 'CANDIDATURE.DOC_DIPLOMA_1', optional: false },
+            { key: 'diplome2', label: 'CANDIDATURE.DOC_DIPLOMA_2', optional: true }
+          ]; track document.key) {
+          <div class="file-field">
+            <label [for]="'attachment-' + document.key">{{ document.label | translate }} @if (document.optional) { <span class="optional-text">({{ 'CANDIDATURE.OPTIONAL' | translate }})</span> } @else { <span class="required">*</span> }</label>
+            <input class="file-input" type="file" [id]="'attachment-' + document.key" (change)="onFileChange($event, $any(document.key))" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" [disabled]="isUploading() || isSubmitting()" />
+            @if (fileName($any(document.key))) { <small class="file-selected">{{ fileName($any(document.key)) }}</small> }
+            @if (fileError($any(document.key))) { <small class="error-message">{{ fileError($any(document.key)) }}</small> }
+          </div>
+          }
+        } @else {
+        <div class="form-group">
+          <label for="attachment">
+            {{ 'CANDIDATURE.CV_SECTION.LABEL' | translate }} 
+            <span class="optional-text">{{ 'CANDIDATURE.CV_SECTION.HELP' | translate }}</span>
+          </label>
+          <div class="file-upload-container">
+            <input type="file" #fileInput id="attachment" (change)="onFileChange($event)"
+              class="file-input"
+              accept=".pdf,.docx,.jpg,.jpeg,.png" 
+              [disabled]="isUploading() || isSubmitting()">
+            
+            @if (isUploading()) {
+              <div class="upload-overlay">
+                <div class="loading-spinner"></div>
+                <span>{{ 'COMMON.LOADING' | translate }}</span>
+              </div>
+            }
+          </div>
+        </div>
+        }
+      </div>
+
+      <!-- Section Expérience Professionnelle -->
+      @if (!isStageApplication()) {
+      <div class="section">
+        <h2 class="section-title">{{ 'CANDIDATURE.PROFESSIONAL_EXPERIENCE.TITLE' | translate }}</h2>
+        <div class="form-group">
+          <label>{{ 'CANDIDATURE.PROFESSIONAL_EXPERIENCE.HAS_WORKED' | translate }} <span class="required">*</span></label>
+          <div class="radio-group">
+            <label class="radio-option">
+              <input type="radio" formControlName="dejaTravaille" value="oui" (change)="onTravailleChange($event)" />
+              <span class="radio-custom"></span>
+              {{ 'COMMON.YES' | translate }}
+            </label>
+            <label class="radio-option">
+              <input type="radio" formControlName="dejaTravaille" value="non" (change)="onTravailleChange($event)" />
+              <span class="radio-custom"></span>
+              {{ 'COMMON.NO' | translate }}
+            </label>
+          </div>
+        </div>
+
+        @if (showExperienceField()) {
+        <div class="form-group">
+          <label for="ouTravaille">{{ 'CANDIDATURE.PROFESSIONAL_EXPERIENCE.WORK_PLACES' | translate }}</label>
+          <textarea id="ouTravaille" formControlName="ouTravaille" rows="3"
+            [attr.placeholder]="'CANDIDATURE.PROFESSIONAL_EXPERIENCE.WORK_PLACES_PLACEHOLDER' | translate"></textarea>
+        </div>
+        }
+      </div>
+
+      <!-- Section Conditions de Travail -->
+      <div class="section">
+        <h2 class="section-title">{{ 'CANDIDATURE.WORK_CONDITIONS.TITLE' | translate }}</h2>
+
+        <div class="form-group">
+          <label>{{ 'CANDIDATURE.WORK_CONDITIONS.WORK_DAYS' | translate }} <span class="required">*</span></label>
+          <div class="checkbox-group">
+            <label class="checkbox-option">
+              <input type="checkbox" formControlName="lundiSamedi" />
+              <span class="checkbox-custom"></span>
+              {{ 'CANDIDATURE.WORK_CONDITIONS.MONDAY_SATURDAY' | translate }}
+            </label>
+            <label class="checkbox-option">
+              <input type="checkbox" formControlName="parfoisDimanche" />
+              <span class="checkbox-custom"></span>
+              {{ 'CANDIDATURE.WORK_CONDITIONS.SOMETIMES_SUNDAY' | translate }}
+            </label>
+            <label class="checkbox-option">
+              <input type="checkbox" formControlName="joursFeries" />
+              <span class="checkbox-custom"></span>
+              {{ 'CANDIDATURE.WORK_CONDITIONS.HOLIDAYS' | translate }}
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>{{ 'CANDIDATURE.WORK_CONDITIONS.WORK_HOURS' | translate }} <span class="required">*</span></label>
+          <div class="radio-group">
+            <label class="radio-option">
+              <input type="radio" formControlName="horaires" value="de 7h00 à 18h30" />
+              <span class="radio-custom"></span>
+              {{ 'CANDIDATURE.WORK_CONDITIONS.SCHEDULE' | translate }}
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>{{ 'CANDIDATURE.WORK_CONDITIONS.WORK_OUTSIDE_CITY' | translate }} <span class="required">*</span></label>
+          <div class="radio-group">
+            <label class="radio-option">
+              <input type="radio" formControlName="travailHorsVille" value="oui" (change)="onHorsVilleChange($event)" />
+              <span class="radio-custom"></span>
+              {{ 'COMMON.YES' | translate }}
+            </label>
+            <label class="radio-option">
+              <input type="radio" formControlName="travailHorsVille" value="non" (change)="onHorsVilleChange($event)" />
+              <span class="radio-custom"></span>
+              {{ 'COMMON.NO' | translate }}
+            </label>
+          </div>
+        </div>
+
+        @if (showConditionsField()) {
+        <div class="form-group">
+          <label for="conditions">{{ 'CANDIDATURE.WORK_CONDITIONS.CONDITIONS' | translate }}</label>
+          <textarea id="conditions" formControlName="conditions" rows="3"
+            [attr.placeholder]="'CANDIDATURE.WORK_CONDITIONS.CONDITIONS_PLACEHOLDER' | translate"></textarea>
+        </div>
+        }
+      </div>
+
+      <!-- Section Rémunération -->
+      <div class="section">
+        <h2 class="section-title">{{ 'CANDIDATURE.SALARY.TITLE' | translate }}</h2>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="salaireSouhaite">
+              {{ 'CANDIDATURE.SALARY.DESIRED_SALARY' | translate }} ({{ 'COMMON.CURRENCY' | translate }}) <span class="required">*</span>
+            </label>
+            <input type="text" id="salaireSouhaite" formControlName="salaireSouhaite"
+              (input)="onSalaireInput($event, 'salaireSouhaite')"
+              [class.error]="candidatureForm.get('salaireSouhaite')?.invalid && candidatureForm.get('salaireSouhaite')?.touched" />
+            @if (candidatureForm.get('salaireSouhaite')?.invalid && candidatureForm.get('salaireSouhaite')?.touched) {
+            <div class="error-message">
+              {{ 'CANDIDATURE.VALIDATION.SALARY_REQUIRED' | translate }}
+            </div>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="methodeRemuneration">
+              {{ 'CANDIDATURE.SALARY.PAYMENT_METHOD' | translate }} <span class="required">*</span>
+            </label>
+            <select id="methodeRemuneration" formControlName="methodeRemuneration"
+              [class.error]="candidatureForm.get('methodeRemuneration')?.invalid && candidatureForm.get('methodeRemuneration')?.touched">
+              <option value="">{{ 'CANDIDATURE.SELECT_PLACEHOLDER' | translate }}</option>
+              <option value="salaire-fixe">{{ 'CANDIDATURE.SALARY.FIXED_SALARY' | translate }}</option>
+              <option value="salaire-commissions">
+                {{ 'CANDIDATURE.SALARY.FIXED_PLUS_COMMISSION' | translate }}
+              </option>
+              <option value="commissions-seulement">{{ 'CANDIDATURE.SALARY.COMMISSION_ONLY' | translate }}</option>
+            </select>
+            @if (candidatureForm.get('methodeRemuneration')?.invalid &&
+            candidatureForm.get('methodeRemuneration')?.touched) {
+            <div class="error-message">
+              {{ 'VALIDATION.REQUIRED' | translate:{field: 'CANDIDATURE.SALARY.PAYMENT_METHOD' | translate} }}
+            </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Section Villes de Travail -->
+      <div class="section">
+        <h2 class="section-title">{{ 'CANDIDATURE.WORK_CITIES.TITLE' | translate }}</h2>
+
+        <div class="form-group">
+          <label>{{ 'CANDIDATURE.WORK_CITIES.SELECT_CITIES' | translate }} <span class="required">*</span></label>
+          <div class="checkbox-group">
+            @for (ville of villes; track ville) {
+            <label class="checkbox-option">
+              <input type="checkbox" [formControlName]="'ville_' + normalizeVilleName(ville)" />
+              <span class="checkbox-custom"></span>
+              {{ ville }}
+            </label>
+            }
+          </div>
+        </div>
+      </div>
+      }
+
+      <!-- Bouton de soumission -->
+      <div class="submit-section">
+        <button type="submit"
+          class="submit-btn w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-[#000] text-white font-medium text-sm sm:text-base rounded-lg hover:bg-gray-100 hover:text-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#000] disabled:hover:text-white flex items-center justify-center min-w-[200px] shadow-lg hover:shadow-xl transform hover:scale-105 disabled:transform-none"
+          [disabled]="isSubmitting()">
+          @if (isSubmitting()) {
+            <span class="loading-spinner h-5 w-5 mr-3" style="border-top-color: white;"></span>
+            {{ 'CONTACT.SENDING' | translate }}
+          } @else {
+            <i class="icon">📤</i>
+            {{ 'CANDIDATURE.SUBMIT_BUTTON' | translate }}
+          }
+        </button>
+      </div>
+    </form>
+
+    <!-- Message de confirmation -->
+    @if (submitted()) {
+    <div class="success-message">
+      <h3>{{ 'CANDIDATURE.SUCCESS.TITLE' | translate }}</h3>
+      <p>{{ 'CANDIDATURE.SUCCESS.MESSAGE' | translate }}</p>
+    </div>
+    }
+  </div>
+</div>

@@ -1,0 +1,1034 @@
+:host {
+  display: block;
+  width: 100%;
+  background-color: #fff;
+  /* Fond sombre pour tout le composant */
+}
+
+/* Animations et transitions */
+.fade-in-on-load {
+  opacity: 0;
+  animation: fadeInUp 0.55s ease-out forwards;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive utilities personnalisées */
+@layer utilities {
+  .blur-sm {
+    filter: blur(2px);
+  }
+
+  .blur {
+    filter: blur(4px);
+  }
+
+  /* Breakpoint xs personnalisé pour les très petits écrans */
+  @media (min-width: 375px) {
+    .xs\:text-left {
+      text-align: left;
+    }
+
+    .xs\:text-3xl {
+      font-size: 1.875rem;
+      line-height: 2.25rem;
+    }
+
+    .xs\:items-start {
+      align-items: flex-start;
+    }
+
+    .xs\:grid-cols-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+}
+
+/* Styles spécifiques au composant */
+.contacts-contents-all {
+  position: relative;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: left;
+  /* #111827  */
+
+  /* Optimisations pour les très petits écrans */
+  @media (max-width: 320px) {
+    padding-left: 8px;
+    padding-right: 8px;
+
+    .contacts-header-title h1 {
+      font-size: 1.5rem !important;
+      line-height: 1.2 !important;
+    }
+  }
+
+  /* Améliorations pour les écrans moyens */
+  @media (min-width: 768px) {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+/* Dynamic background wrapper - controlled by TypeScript */
+.contacts-background-wrapper {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  // Transition ultra-fluide pour changement continu d'images
+  transition: background-image 0.36s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.contacts-bg-gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255, 214, 0, 0.15), rgba(255, 108, 171, 0.15));
+  pointer-events: none;
+  z-index: 100; // Above all background slides
+}
+
+.contacts-header-title {
+  position: relative;
+  z-index: 2;
+
+  /* Animation décalée pour les éléments du header */
+  > p {
+    animation-delay: 0.2s;
+    color: #333;
+    /* Texte gris clair #d1d5db */
+  }
+
+  h1 {
+    animation-delay: 0.4s;
+    color: #333;
+
+    /* Texte blanc */
+    /* Assure une lisibilité optimale sur mobile */
+    @media (max-width: 640px) {
+      line-height: 1.1;
+      word-break: break-word;
+      hyphens: auto;
+      -webkit-hyphens: auto;
+    }
+  }
+}
+
+.section-header-modern {
+  margin-bottom: 2rem;
+  
+  .section-label {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--brand-pink-strong);
+    margin-bottom: 0.75rem;
+  }
+  
+  h2, h3 {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #111;
+    position: relative;
+    padding-bottom: 15px;
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 60px;
+      height: 4px;
+      background: linear-gradient(90deg, #FFD600, #FF6CAB);
+      border-radius: 10px;
+    }
+  }
+
+  @media (max-width: 1024px) {
+    text-align: center;
+    h2, h3 { 
+      &::after { left: 50%; transform: translateX(-50%); } 
+    }
+  }
+}
+
+/* Cartes de contact modernes avec icônes */
+.contact-trust-panel {
+  position: relative;
+  z-index: 10;
+  width: min(100%, 64rem);
+  margin: 0 0 clamp(2rem, 4vw, 3rem);
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(183, 155, 46, 0.22);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  text-align: left;
+
+  h2 {
+    margin: 0.75rem 0 0.75rem;
+    color: var(--ink-950);
+    font: 700 clamp(1.6rem, 3vw, 2.35rem) / 1.12 var(--font-display);
+    letter-spacing: -0.03em;
+  }
+
+  p {
+    max-width: 50rem;
+    margin: 0;
+    color: var(--ink-700);
+    line-height: 1.7;
+  }
+}
+
+.trust-kicker {
+  color: var(--brand-gold-strong);
+  font: 800 0.76rem / 1 var(--font-sans);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.contact-trust-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  margin-top: 1.4rem;
+
+  span {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.25rem;
+    padding: 0.55rem 0.9rem;
+    color: var(--ink-950);
+    background: var(--surface-warm);
+    border: 1px solid rgba(183, 155, 46, 0.2);
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 800;
+  }
+}
+
+.contact-card-modern {
+  background: #ffffff !important;
+  border-radius: 20px !important;
+  border: 1px solid rgba(0, 0, 0, 0.05) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04) !important;
+  padding: 1.4rem !important;
+  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  text-align: center !important;
+
+  &:hover {
+    transform: translateY(-8px) !important;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1) !important;
+    border-color: #ffd60088 !important;
+  }
+
+  .icon-wrapper {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.25rem;
+    transition: transform 0.3s ease;
+    
+    &.blue { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+    &.green { background: rgba(34, 197, 94, 0.1); color: #22c55e; }
+    &.emerald { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+    &.pink { background: rgba(236, 72, 153, 0.1); color: #ec4899; }
+  }
+
+  &:hover .icon-wrapper {
+    transform: scale(1.1);
+  }
+
+  .card-label {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+  }
+
+  .card-value {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #111;
+    word-break: break-all;
+  }
+
+  .card-value-link {
+    text-decoration: none;
+    text-underline-offset: 0.2em;
+
+    &:hover,
+    &:focus-visible {
+      color: var(--brand-gold-strong);
+      text-decoration: underline;
+    }
+  }
+}
+
+/* Cartes des réseaux sociaux */
+.social-buttons {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+
+  a {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f3f4f6;
+    color: #4b5563;
+    transition: all 0.3s ease;
+    text-decoration: none;
+
+    &:hover {
+      background: #111;
+      color: #fff;
+      transform: translateY(-3px);
+    }
+
+    &.fb:hover { background: #1877F2; }
+    &.linkedin:hover { background: #0A66C2; }
+  }
+}
+
+/* Nouvelles cartes d'agences Premium */
+.agency-card-modern {
+  background: #ffffff !important;
+  border-radius: 16px !important;
+  padding: 1.25rem !important;
+  border: 1px solid rgba(0, 0, 0, 0.05) !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03) !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 1.25rem !important;
+  transition: all 0.3s ease !important;
+  opacity: 1 !important;
+  transform: none !important;
+  animation: none !important;
+
+  .pin-icon {
+    width: 48px;
+    height: 48px;
+    background: #f8f8f8;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #FF6CAB;
+    flex-shrink: 0;
+    transition: all 0.3s ease;
+  }
+
+  .agency-info {
+    text-align: left !important;
+    
+    .agency-name {
+      display: block;
+      font-weight: 800;
+      color: #111;
+      font-size: 1rem;
+      margin-bottom: 2px;
+    }
+    
+    .agency-sub {
+      display: block;
+      font-size: 0.75rem;
+      color: #6b7280;
+      font-weight: 500;
+    }
+  }
+
+  &:hover {
+    background: #fff !important;
+    border-color: #FFD600 !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08) !important;
+    transform: translateX(5px) !important;
+
+    .pin-icon {
+      background: #FF6CAB;
+      color: #fff;
+      transform: rotate(-10deg);
+    }
+  }
+}
+
+@media (max-width: 640px) {
+  .contact-trust-panel {
+    border-radius: var(--radius-md);
+    text-align: center;
+  }
+
+  .contact-trust-badges {
+    justify-content: center;
+  }
+
+  .agency-card-modern {
+    flex-direction: column;
+    text-align: center !important;
+    padding: 1.5rem !important;
+    
+    .agency-info { text-align: center !important; }
+  }
+}
+
+
+@keyframes slideInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Ensure all contact content sections are above background and fully opaque */
+.contacts-header-title,
+.contacts-content-details,
+.contacts-content-agencies {
+  position: relative;
+  z-index: 10;
+  opacity: 1 !important;
+}
+
+/* Section formulaire - garantir opacité complète */
+.w-full.max-w-5xl.mb-12 {
+  position: relative;
+  z-index: 10;
+}
+
+/* Formulaire de contact - opacité complète garantie */
+.bg-\[\#f5f6f5\] {
+  opacity: 1 !important;
+  background-color: #f5f6f5 !important;
+}
+
+/* Ensure all form elements maintain full opacity */
+.form-group,
+.form-group input,
+.form-group textarea,
+.form-group label,
+button[type="submit"] {
+  opacity: 1 !important;
+}
+
+/* Optimisations du formulaire pour thème sombre */
+.form-group {
+  position: relative;
+
+  input,
+  textarea {
+    /* Amélioration de l'expérience tactile */
+    touch-action: manipulation;
+    -webkit-appearance: none;
+    appearance: none;
+    //border: 1px solid #4b5563;
+
+    /* &::placeholder {
+      color: #9ca3af;
+      /* Placeholder gris 
+    } */
+
+    /* Prévention du zoom sur iOS */
+    @media screen and (max-width: 767px) {
+      font-size: 16px !important;
+    }
+
+    /* Styles de focus améliorés pour le thème sombre */
+    &:focus {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+      border-color: #bfa93c;
+      background-color: #374151;
+    }
+
+    &:hover {
+      border-color: #bfa93c;
+      background-color: #374151;
+    }
+
+    /* États d'erreur pour le thème sombre */
+    &.border-red-500 {
+      box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.3);
+      background-color: rgba(127, 29, 29, 0.2);
+      border-color: #dc2626;
+    }
+  }
+
+  label {
+    /* Amélioration de l'accessibilité pour le thème sombre */
+    cursor: pointer;
+    transition: color 0.2s ease;
+    color: #000;
+    /* Labels gris clair */
+
+    &:has(+ input:focus),
+    &:has(+ textarea:focus) {
+      color: #bfa93c;
+      /* Bleu clair au focus */
+    }
+  }
+}
+
+/* Messages d'erreur améliorés pour le thème sombre */
+.text-red-400 {
+  /* Dark enough to remain readable on the white form surface. */
+  color: #b42318 !important;
+
+  svg {
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  span {
+    line-height: 1.3;
+  }
+}
+
+/* Bouton de soumission responsive pour thème sombre */
+button[type="submit"] {
+  background: linear-gradient(#000, #000) padding-box,
+              linear-gradient(135deg, #FFE542, #E74C9E) border-box;
+  border: 4px solid transparent;
+  border-radius: 50em;
+
+  &:hover:not(:disabled) {
+    background: linear-gradient(#f6f5f6, #f6f5f6) padding-box,
+              linear-gradient(135deg, #FFE542, #E74C9E) border-box;
+    color: #000 !important;
+  }
+
+  &:active:not(:disabled) {
+    background: linear-gradient(#e5e5e5, #e5e5e5) padding-box,
+              linear-gradient(135deg, #FFE542, #E74C9E) border-box;
+    color: #000 !important;
+    transform: scale(0.96);
+  }
+
+  /* Hauteur tactile minimum sur mobile */
+  @media (max-width: 640px) {
+    min-height: 48px;
+  }
+
+  /* Animation de chargement fluide */
+  .animate-spin {
+    animation-timing-function: linear;
+  }
+
+  /* Effet hover désactivé sur tactile */
+  @media (hover: none) {
+    &:hover {
+      transform: none !important;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3) !important;
+    }
+  }
+}
+
+/* Section agences optimisée pour thème moderne */
+.contacts-content-agencies {
+  width: 100%;
+  margin-top: 3rem;
+}
+
+
+/* États de chargement et d'erreur pour thème sombre */
+.loading-indicator,
+.error-message {
+  min-height: 50vh;
+  background-color: gray;
+
+  @media (max-width: 640px) {
+    min-height: 40vh;
+
+    .animate-spin {
+      width: 2rem;
+      height: 2rem;
+      border-color: #60a5fa;
+      /* Spinner bleu clair */
+    }
+  }
+
+  p {
+    color: #ffffff;
+    /* Texte gris clair */
+  }
+
+  h2 {
+    color: #ffffff;
+    /* Titre blanc */
+  }
+}
+
+/* Background et composant join-us pour thème sombre */
+.join-us {
+  background: radial-gradient(ellipse at center, #1f2937 60%, #111827 100%);
+
+  @media (max-width: 640px) {
+    background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+  }
+}
+
+/* Optimisations pour l'accessibilité avec thème sombre */
+@media (prefers-reduced-motion: reduce) {
+
+  .fade-in-on-load,
+  .contacts-content-details>div>div,
+  .contacts-content-agencies .grid>div {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  button[type="submit"] {
+    transition: none !important;
+
+    &:hover {
+      transform: none !important;
+    }
+  }
+}
+
+/* Mode sombre par défaut, mode clair en option */
+@media (prefers-color-scheme: light) {
+  :host {
+    background-color: #ffffff;
+  }
+
+  .contacts-contents-all {
+    background-color: #ffffff;
+  }
+
+  .contacts-header-title {
+    > p {
+      color: #6b7280 !important;
+    }
+
+    h1 {
+      color: #111827 !important;
+    }
+  }
+
+  .contacts-content-details>div>div {
+    background-color: #f9fafb !important;
+    border-color: #e5e7eb !important;
+
+    &:hover {
+      background-color: #f3f4f6 !important;
+    }
+
+    span {
+      color: #111827 !important;
+    }
+
+    p {
+      color: #6b7280 !important;
+    }
+  }
+
+  .form-group {
+
+    input,
+    textarea {
+      background-color: #ffffff !important;
+      color: #111827 !important;
+      border-color: #d1d5db !important;
+
+      &::placeholder {
+        color: #6b7280 !important;
+      }
+
+      &:hover {
+        border-color: #9ca3af !important;
+      }
+
+      &:focus {
+        border-color: #bfa93c !important;
+        background-color: #ffffff !important;
+      }
+    }
+
+    label {
+      color: #374151 !important;
+
+      &:has(+ input:focus),
+      &:has(+ textarea:focus) {
+        color: #bfa93c !important;
+      }
+    }
+  }
+
+  .contacts-content-agencies {
+    .grid>div {
+      background-color: #f9fafb !important;
+      border-color: #e5e7eb !important;
+
+      &:hover {
+        background-color: #f3f4f6 !important;
+      }
+
+      span {
+        color: #111827 !important;
+      }
+    }
+
+    p {
+      color: #6b7280 !important;
+    }
+  }
+
+  .loading-indicator,
+  .error-message {
+    background-color: #ffffff !important;
+
+    p {
+      color: #6b7280 !important;
+    }
+
+    h2 {
+      color: #111827 !important;
+    }
+  }
+}
+
+/* Optimisations pour Safari iOS avec thème sombre */
+@supports (-webkit-touch-callout: none) {
+
+  input,
+  textarea {
+    /* Correction des bordures arrondies sur iOS */
+    border-radius: 0.5rem !important;
+
+    /* Prévention du zoom automatique */
+    transform: translateZ(0);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+
+    /* Correction du rendu des couleurs sur iOS */
+    -webkit-appearance: none;
+    appearance: none;
+    -webkit-text-fill-color: #ffffff;
+    /* Pour thème sombre */
+  }
+
+  @media (prefers-color-scheme: light) {
+
+    input,
+    textarea {
+      -webkit-text-fill-color: #111827;
+      /* Pour thème clair */
+    }
+  }
+}
+
+/* Support pour les écrans haute densité avec thème sombre */
+@media (-webkit-min-device-pixel-ratio: 2),
+(min-resolution: 192dpi) {
+  .shadow-lg {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.15);
+  }
+
+  .shadow-xl {
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+  }
+
+  .shadow-2xl {
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+  }
+
+  /* Amélioration des ombres pour le mode clair */
+  @media (prefers-color-scheme: light) {
+    .shadow-lg {
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+
+    .shadow-xl {
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+
+    .shadow-2xl {
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+    }
+  }
+}
+
+/* Professional visual system ------------------------------------------------ */
+.contacts-contents-all {
+  position: relative;
+  background: var(--surface-soft);
+}
+
+.contacts-bg-gradient {
+  z-index: 2;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.76) 0%, rgba(255, 255, 255, 0.55) 34%, rgba(247, 247, 245, 0.68) 100%),
+    linear-gradient(135deg, rgba(255, 214, 0, 0.08), rgba(231, 76, 158, 0.06));
+}
+
+.contacts-header-title {
+  max-width: 64rem;
+
+  > p {
+    color: var(--brand-gold-strong);
+    font-weight: 650;
+  }
+
+  h1 {
+    max-width: 56rem;
+    color: var(--ink-950);
+    text-wrap: balance;
+  }
+}
+
+.contact-card-modern {
+  min-height: 13rem;
+  justify-content: center;
+  border: 1px solid var(--line) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-sm) !important;
+  transition: transform var(--motion-standard) ease, box-shadow var(--motion-standard) ease, border-color var(--motion-standard) ease !important;
+
+  &:hover {
+    transform: translateY(-4px) !important;
+    box-shadow: var(--shadow-md) !important;
+    border-color: rgba(183, 155, 46, 0.45) !important;
+  }
+
+  .icon-wrapper,
+  .icon-wrapper.blue,
+  .icon-wrapper.green,
+  .icon-wrapper.emerald,
+  .icon-wrapper.pink {
+    background: var(--surface-warm);
+    color: var(--brand-gold-strong);
+  }
+
+  .card-label {
+    color: var(--ink-500);
+  }
+
+  .card-value {
+    color: var(--ink-950);
+  }
+}
+
+#contact-form > div {
+  background: var(--surface) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-md) !important;
+}
+
+#contact-form input,
+#contact-form textarea,
+#contact-form select {
+  color: var(--ink-950) !important;
+  -webkit-text-fill-color: var(--ink-950);
+  background: var(--surface) !important;
+  border: 1px solid #d8d6cf !important;
+  box-shadow: none !important;
+
+  &::placeholder {
+    color: #858585 !important;
+    opacity: 1;
+  }
+
+  &:hover {
+    background: var(--surface) !important;
+    border-color: #aaa69b !important;
+  }
+
+  &:focus {
+    transform: none;
+    background: var(--surface) !important;
+    border-color: var(--brand-gold) !important;
+    box-shadow: 0 0 0 3px rgba(183, 155, 46, 0.18) !important;
+  }
+}
+
+#contact-form select option {
+  color: var(--ink-950);
+  background: var(--surface);
+}
+
+.agency-card-modern {
+  border-color: var(--line) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-sm) !important;
+
+  .pin-icon {
+    background: var(--surface-warm);
+    color: var(--brand-gold-strong);
+  }
+
+  &:hover {
+    transform: translateY(-3px) !important;
+    border-color: rgba(183, 155, 46, 0.45) !important;
+
+    .pin-icon {
+      background: var(--brand-gradient);
+      color: #111;
+      transform: none;
+    }
+  }
+}
+
+@media (max-width: 640px) {
+  .contacts-content-details > .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+
+  .contact-card-modern {
+    min-height: 0;
+    padding: 1rem 0.75rem !important;
+
+    .icon-wrapper {
+      width: 44px;
+      height: 44px;
+      margin-bottom: 0.75rem;
+    }
+
+    .card-value {
+      font-size: 0.8rem;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+    }
+  }
+
+  #contact-form > div {
+    border-radius: var(--radius-md) !important;
+  }
+}
+
+/* FAQ — accordéon natif <details> (accessible clavier, SSR-safe). */
+.faq-section {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 64rem;
+  margin: 0 auto clamp(3rem, 6vw, 4rem);
+}
+
+.faq-subtitle {
+  margin: 0 0 1.5rem;
+  color: var(--ink-500);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.faq-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.faq-item {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  transition: border-color var(--motion-fast) ease, box-shadow var(--motion-fast) ease;
+
+  &[open] {
+    border-color: rgba(138, 111, 16, 0.35);
+    box-shadow: var(--shadow-sm);
+  }
+}
+
+.faq-question {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  cursor: pointer;
+  list-style: none;
+  font-weight: 600;
+  color: var(--ink-950);
+  line-height: 1.4;
+
+  &::-webkit-details-marker {
+    display: none;
+  }
+
+  &:hover {
+    color: var(--brand-gold-strong);
+  }
+}
+
+.faq-chevron {
+  flex-shrink: 0;
+  color: var(--brand-gold-strong);
+  transition: transform var(--motion-standard) ease;
+}
+
+.faq-item[open] .faq-chevron {
+  transform: rotate(180deg);
+}
+
+.faq-answer {
+  margin: 0;
+  padding: 0 1.25rem 1.25rem;
+  color: var(--ink-700);
+  line-height: 1.65;
+}
+
+/* Keep secondary form hints and focus labels legible on light surfaces. */
+.form-group label .text-gray-400,
+.form-group label .text-gray-500,
+#contact-form > div > p {
+  color: var(--ink-500) !important;
+}
+
+.form-group input:focus + label,
+.form-group textarea:focus + label,
+.form-group select:focus + label {
+  color: var(--brand-gold-strong) !important;
+}
+
+.faq-see-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  color: var(--brand-gold-strong);
+  font-weight: 800;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  &:focus-visible {
+    outline: 3px solid color-mix(in srgb, var(--brand-gold) 50%, transparent);
+    outline-offset: 3px;
+  }
+}
+
+/* Final contrast guard for validation messages and required indicators. */
+#contact-form .text-red-400 {
+  color: #b42318 !important;
+}

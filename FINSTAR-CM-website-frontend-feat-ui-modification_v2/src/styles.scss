@@ -1,0 +1,249 @@
+@font-face {
+  font-family: 'Instrument Sans';
+  font-style: normal;
+  font-weight: 400 700;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url('/assets/fonts/instrument-sans/instrument-sans-latin-ext-normal.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'Instrument Sans';
+  font-style: normal;
+  font-weight: 400 700;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url('/assets/fonts/instrument-sans/instrument-sans-latin-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Instrument Sans';
+  font-style: italic;
+  font-weight: 400 700;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url('/assets/fonts/instrument-sans/instrument-sans-latin-ext-italic.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'Instrument Sans';
+  font-style: italic;
+  font-weight: 400 700;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url('/assets/fonts/instrument-sans/instrument-sans-latin-italic.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Instrument Serif';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/assets/fonts/instrument-serif/instrument-serif-normal.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Instrument Serif';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/assets/fonts/instrument-serif/instrument-serif-italic.ttf') format('truetype');
+}
+
+:root {
+  --font-sans: 'Instrument Sans', Arial, sans-serif;
+  /* Display face — used with restraint on hero/section headlines. */
+  --font-display: 'Instrument Serif', Georgia, 'Times New Roman', serif;
+
+  /* Brand charter */
+  --brand-gold: #b79b2e;
+  /* Text-safe gold (>= 4.5:1 on white) — use this whenever gold must be READ. */
+  --brand-gold-strong: #8a6f10;
+  --brand-yellow: #ffe542;
+  --brand-pink: #e74c9e;
+  /* Text-safe pink (>= 4.5:1 on white) — for small pink text / eyebrows. */
+  --brand-pink-strong: #c2185b;
+  /* Brand gradient */
+  --brand-gradient: linear-gradient(135deg, var(--brand-yellow), var(--brand-pink));
+
+  --ink-950: #111111;
+  --ink-700: #3f3f46;
+  --ink-500: #6b7280;
+  --surface: #ffffff;
+  --surface-soft: #f7f7f5;
+  --surface-warm: #fffaf0;
+  --line: #e7e5df;
+  --radius-sm: 0.75rem;
+  --radius-md: 1.25rem;
+  --radius-lg: 1.75rem;
+  --shadow-sm: 0 8px 24px rgba(17, 17, 17, 0.06);
+  --shadow-md: 0 20px 55px rgba(17, 17, 17, 0.1);
+  --content-width: 75rem;
+  --motion-fast: 180ms;
+  --motion-standard: 320ms;
+}
+
+/* Display typeface utility — pairs the Instrument Serif display face with the
+   Instrument Sans body. Applied deliberately to hero/section headlines only. */
+.font-display {
+  /* !important so the display face reliably wins over component-scoped
+     `.selector h1 { font-family: ... }` rules wherever the class is applied. */
+  font-family: var(--font-display) !important;
+  font-weight: 400 !important;
+  font-synthesis: none;
+  letter-spacing: -0.01em;
+}
+
+/* Branded loading / error states — replaces the off-brand blue/gray theme so a
+   user who hits a loading or error screen still sees the FINSTAR identity. */
+.brand-state {
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  background: var(--surface-soft);
+  color: var(--ink-700);
+  text-align: center;
+}
+
+.brand-spinner {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  border: 3px solid rgba(138, 111, 16, 0.2);
+  border-top-color: var(--brand-gold-strong);
+  animation: brand-spin 0.8s linear infinite;
+}
+
+@keyframes brand-spin {
+  to { transform: rotate(360deg); }
+}
+
+.brand-retry {
+  display: inline-block;
+  padding: 0.65rem 1.5rem;
+  border-radius: 999px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--ink-950);
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform var(--motion-fast) ease, background-color var(--motion-fast) ease;
+}
+
+.brand-retry:hover,
+.brand-retry:focus-visible {
+  background: var(--brand-gold-strong);
+  transform: translateY(-1px);
+}
+
+/* Pause des animations hors écran (cf. PauseOffscreenDirective).
+   !important pour primer sur un binding inline [style.animation-play-state]. */
+.paused-offscreen {
+  animation-play-state: paused !important;
+}
+
+/* Smooth scrolling global */
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%; /* Prevent font size change after orientation change in iOS */
+}
+
+/* Base resets for cross-browser consistency */
+*, ::before, ::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-size: 16px;
+  color: var(--ink-950);
+  background: var(--surface);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 3px solid #8a6400;
+  outline-offset: 3px;
+}
+
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Utilitaires personnalisés pour les animations et gradients */
+@layer utilities {
+  .bg-gradient-radial {
+    background: radial-gradient(ellipse at center, #232323 60%, #111 100%);
+  }
+
+  /* Reset appearance for consistency */
+  .appearance-none {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+  }
+
+  /* Prevent text selection where not needed */
+  .select-none {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+  }
+
+
+  /* Scrollbar styling cross-browser */
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #bdbdbd transparent;
+
+    &::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: #bdbdbd;
+      border-radius: 10px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}

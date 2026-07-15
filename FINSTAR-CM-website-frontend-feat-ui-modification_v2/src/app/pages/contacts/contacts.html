@@ -1,0 +1,483 @@
+<!-- Section Agences responsive -->
+@if (contactData(); as data) {
+<div
+  class="w-full min-h-screen bg-gray-900 flex flex-col items-center px-4 sm:px-6 lg:px-12 pt-4 sm:pt-6 md:pt-10 lg:pt-12 contacts-contents-all fade-in-on-load">
+
+  <!-- Dynamic background controlled by TypeScript -->
+  <div class="contacts-background-wrapper" aria-hidden="true">
+    @for (imgUrl of backgroundImages(); track imgUrl; let i = $index) {
+      <img
+        [ngSrc]="imgUrl"
+        fill
+        priority
+        [style.opacity]="currentBackgroundIndex() % backgroundImages().length === i ? 1 : 0"
+        class="contact-bg-img transition-opacity duration-300 object-cover"
+        alt=""
+      >
+    }
+    <div class="contacts-bg-gradient"></div>
+  </div>
+
+  <!-- En-tête responsive -->
+  <div class="w-full max-w-5xl flex flex-col items-center lg:items-start contacts-header-title mb-8 sm:mb-12">
+    <p
+      class="text-sm sm:text-lg md:text-2xl lg:text-3xl font-normal mb-2 sm:mb-3 text-center lg:text-left text-gray-300">
+      {{ contactInfoSection()?.headlines2 }}
+    </p>
+    <h1
+      class="font-display text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl 2xl:text-[6rem] leading-tight lg:leading-[1.05] font-bold mb-4 sm:mb-6 lg:mb-8 text-center lg:text-left text-white">
+      {{ contactInfoSection()?.headline }}
+    </h1>
+  </div>
+
+  <!-- Détails de contact - Grid Ultra-moderne -->
+  <div class="w-full max-w-5xl mb-12 sm:mb-16 contacts-content-details">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
+
+      <!-- Emails -->
+      <div class="contact-card-modern group">
+        <div class="icon-wrapper blue">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-mail"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+        </div>
+        <p class="card-label">{{ emailsLabel() }}</p>
+        <div class="space-y-1">
+          @for (email of data.contact_info.emails; track email) {
+          <a class="card-value card-value-link block" [href]="emailHref(email)">{{ email }}</a>
+          }
+        </div>
+      </div>
+
+      <!-- Téléphone -->
+      <div class="contact-card-modern group">
+        <div class="icon-wrapper green">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-phone"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        </div>
+        <p class="card-label">{{ phoneLabel() }}</p>
+        <div class="space-y-1">
+          @for (phone of data.contact_info.phone_numbers; track phone) {
+          <a class="card-value card-value-link block" [href]="phoneHref(phone)">{{ phone }}</a>
+          }
+        </div>
+      </div>
+
+      <!-- Service client (WhatsApp) -->
+      <a [href]="whatsappHref(data.contact_info.customer_service.whatsapp)"
+         target="_blank" 
+         rel="noopener noreferrer"
+         class="contact-card-modern group no-underline">
+        <div class="icon-wrapper emerald">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-message-circle"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
+        </div>
+        <p class="card-label">{{ customerServiceLabel() }}</p>
+        <div class="space-y-1 text-center">
+          <span class="card-value block">{{ data.contact_info.customer_service.whatsapp }}</span>
+          <span class="text-[10px] text-emerald-500 font-bold uppercase">{{ whatsappLabel() }}</span>
+        </div>
+      </a>
+
+      <!-- Réseaux sociaux -->
+      <div class="contact-card-modern group">
+        <div class="icon-wrapper pink">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-share-2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        </div>
+        <p class="card-label">{{ followUsLabel() }}</p>
+        <div class="social-buttons">
+          <a href="https://facebook.com/finstarcm" target="_blank" rel="noopener noreferrer" class="fb" title="Facebook" aria-label="Facebook">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
+          </a>
+          <a href="https://linkedin.com/company/finstarcm" target="_blank" rel="noopener noreferrer" class="linkedin" title="LinkedIn" aria-label="LinkedIn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect width="4" height="12" x="2" y="9"></rect><circle cx="4" cy="4" r="2"></circle></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section class="contact-trust-panel" aria-labelledby="contact-trust-title">
+    <span class="trust-kicker">{{ 'TRUST.KICKER_CONTACT' | translate }}</span>
+    <h2 id="contact-trust-title">{{ 'TRUST.CONTACT_TITLE' | translate }}</h2>
+    <p>{{ 'TRUST.CONTACT_TEXT' | translate }}</p>
+    <div class="contact-trust-badges" [attr.aria-label]="'TRUST.PROOFS_LABEL' | translate">
+      <span>{{ 'TRUST.LICENSE_VALUE' | translate }}</span>
+      <span>{{ 'TRUST.REGISTER_VALUE' | translate }}</span>
+      <span>{{ 'TRUST.DATA_NOTICE' | translate }}</span>
+    </div>
+  </section>
+
+  <!-- Section Formulaire de Contact Responsive -->
+  <div id="contact-form" class="w-full max-w-5xl mb-12 sm:mb-16 lg:mb-20">
+    <div
+      class="bg-[#f5f6f5] rounded-xl sm:rounded-2xl shadow-2xl border border-gray-200 p-4 sm:p-6 lg:p-8 xl:p-10 hover:shadow-3xl transition-all duration-300">
+
+      <h2 class="text-xl sm:text-2xl lg:text-3xl font-bold mb-2 text-center lg:text-left text-[#000]">
+        {{ 'CONTACT.SEND_MESSAGE_TITLE' | translate }}
+      </h2>
+      <p class="text-xs sm:text-sm text-gray-500 italic mb-6 sm:mb-8 text-center lg:text-left" 
+        [innerHTML]="'CONTACT.REQUIRED_FIELDS_NOTICE' | translate">
+      </p>
+
+      <form [formGroup]="formData" (ngSubmit)="onSubmit()" class="w-full" novalidate>
+
+        <!-- Première ligne - Nom et Email -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-6">
+
+          <!-- Nom -->
+          <div class="form-group relative">
+            <input type="text" id="name" name="family-name" formControlName="name" required
+              placeholder=" " autocomplete="family-name"
+              [attr.aria-invalid]="formControls['name'].touched && formControls['name'].invalid"
+              [attr.aria-describedby]="formControls['name'].touched && formControls['name'].errors ? 'name-error' : null"
+              class="peer block px-4 pb-2.5 pt-5 w-full text-sm sm:text-base bg-white/70 backdrop-blur-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#8a6f10] focus:border-[#8a6f10] transition-all duration-200 hover:border-gray-400 text-gray-900 placeholder-transparent appearance-none"
+              [class.border-red-500]="formControls['name'].touched && formControls['name'].errors"
+              [class.focus:ring-red-500]="formControls['name'].touched && formControls['name'].errors"
+              [class.focus:border-red-500]="formControls['name'].touched && formControls['name'].errors">
+            <label for="name" class="absolute text-sm text-gray-500 transition-all duration-300 transform -translate-y-3 scale-75 top-4 z-10 origin-[0] start-4 peer-focus:text-[#8a6f10] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 cursor-text">
+              {{ 'CONTACT.NAME' | translate }} <span class="text-red-400">*</span>
+            </label>
+
+            @if (formControls['name'].touched && formControls['name'].errors) {
+            <div id="name-error" class="text-red-400 text-xs mt-1 flex items-center" role="alert">
+              <svg class="w-3 h-3 mr-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd"
+                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                  clip-rule="evenodd"></path>
+              </svg>
+              @if (formControls['name'].errors['required']) {
+              <span>{{ 'VALIDATION.REQUIRED' | translate:{field: 'CONTACT.FIELDS.NAME' | translate} }}</span>
+              }
+              @if (formControls['name'].errors['minlength']) {
+              <span>{{ 'VALIDATION.MIN_LENGTH' | translate:{field: 'CONTACT.FIELDS.NAME' | translate, min: '2'}
+                }}</span>
+              }
+            </div>
+            }
+          </div>
+
+          <!-- Prénom -->
+          <div class="form-group relative">
+            <input type="text" id="firstname" name="given-name" formControlName="firstname" required
+              placeholder=" " autocomplete="given-name"
+              [attr.aria-invalid]="formControls['firstname'].touched && formControls['firstname'].invalid"
+              [attr.aria-describedby]="formControls['firstname'].touched && formControls['firstname'].errors ? 'firstname-error' : null"
+              class="peer block px-4 pb-2.5 pt-5 w-full text-sm sm:text-base bg-white/70 backdrop-blur-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#8a6f10] focus:border-[#8a6f10] transition-all duration-200 hover:border-gray-400 text-gray-900 placeholder-transparent appearance-none"
+              [class.border-red-500]="formControls['firstname'].touched && formControls['firstname'].errors"
+              [class.focus:ring-red-500]="formControls['firstname'].touched && formControls['firstname'].errors"
+              [class.focus:border-red-500]="formControls['firstname'].touched && formControls['firstname'].errors">
+            <label for="firstname" class="absolute text-sm text-gray-500 transition-all duration-300 transform -translate-y-3 scale-75 top-4 z-10 origin-[0] start-4 peer-focus:text-[#8a6f10] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 cursor-text">
+              {{ 'CONTACT.FIRST_NAME' | translate }} <span class="text-red-400">*</span>
+            </label>
+
+            @if (formControls['firstname'].touched && formControls['firstname'].errors) {
+            <div id="firstname-error" class="text-red-400 text-xs mt-1 flex items-center" role="alert">
+              <svg class="w-3 h-3 mr-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd"
+                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                  clip-rule="evenodd"></path>
+              </svg>
+              @if (formControls['firstname'].errors['required']) {
+              <span>{{ 'VALIDATION.REQUIRED' | translate:{field: 'CONTACT.FIELDS.FIRST_NAME' | translate} }}</span>
+              }
+              @if (formControls['firstname'].errors['minlength']) {
+              <span>{{ 'VALIDATION.MIN_LENGTH' | translate:{field: 'CONTACT.FIELDS.FIRST_NAME' | translate, min: '2'}
+                }}</span>
+              }
+            </div>
+            }
+          </div>
+
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-6">
+            <!-- Email -->
+            <div class="form-group relative">
+              <input type="email" id="email" name="email" formControlName="email"
+                placeholder=" " autocomplete="email"
+                [attr.aria-invalid]="formControls['email'].touched && !!formData.errors?.['invalidEmail']"
+                [attr.aria-describedby]="formData.errors && (formControls['email'].touched || formControls['phone'].touched) ? 'contact-method-error' : null"
+                class="peer block px-4 pb-2.5 pt-5 w-full text-sm sm:text-base bg-white/70 backdrop-blur-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#8a6f10] focus:border-[#8a6f10] transition-all duration-200 hover:border-gray-400 text-gray-900 placeholder-transparent appearance-none"
+                [class.border-red-500]="formData.errors?.['invalidEmail']"
+                [class.focus:ring-red-500]="formData.errors?.['invalidEmail']"
+                [class.focus:border-red-500]="formData.errors?.['invalidEmail']">
+              <label for="email" class="absolute text-sm text-gray-500 transition-all duration-300 transform -translate-y-3 scale-75 top-4 z-10 origin-[0] start-4 peer-focus:text-[#8a6f10] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 cursor-text">
+                {{ 'CONTACT.EMAIL' | translate }} <span class="text-gray-400 text-xs">{{ 'CONTACT.EMAIL_HINT' | translate }}</span>
+              </label>
+    
+              @if (formControls['email'].touched && formControls['email'].errors) {
+              <div class="text-red-400 text-xs mt-1 flex items-center">
+                <svg class="w-3 h-3 mr-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd"
+                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                    clip-rule="evenodd"></path>
+                </svg>
+              @if (formControls['email'].errors['required']) {
+                <span>{{ 'VALIDATION.REQUIRED' | translate:{field: 'CONTACT.FIELDS.EMAIL' | translate} }}</span>
+                }
+              @if (formControls['email'].errors['email']) {
+                <span>{{ 'VALIDATION.INVALID_EMAIL' | translate }}</span>
+                }
+              </div>
+              }
+            </div>
+
+            <!-- numéro téléphone -->
+            <div class="form-group relative">
+              <input type="tel" id="phone" name="tel" formControlName="phone"
+                placeholder=" " autocomplete="tel"
+                [attr.aria-invalid]="formControls['phone'].touched && !!formData.errors?.['invalidPhone']"
+                [attr.aria-describedby]="formData.errors && (formControls['email'].touched || formControls['phone'].touched) ? 'contact-method-error' : null"
+                class="peer block px-4 pb-2.5 pt-5 w-full text-sm sm:text-base bg-white/70 backdrop-blur-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#8a6f10] focus:border-[#8a6f10] transition-all duration-200 hover:border-gray-400 text-gray-900 placeholder-transparent appearance-none"
+                [class.border-red-500]="formData.errors?.['invalidPhone']"
+                [class.focus:ring-red-500]="formData.errors?.['invalidPhone']"
+                [class.focus:border-red-500]="formData.errors?.['invalidPhone']">
+              <label for="phone" class="absolute text-sm text-gray-500 transition-all duration-300 transform -translate-y-3 scale-75 top-4 z-10 origin-[0] start-4 peer-focus:text-[#8a6f10] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 cursor-text">
+                {{ 'CONTACT.PHONE' | translate }} <span class="text-gray-400 text-xs">{{ 'CONTACT.PHONE_HINT' | translate }}</span>
+              </label>
+    
+              @if (formControls['phone'].touched && formControls['phone'].errors) {
+              <div class="text-red-400 text-xs mt-1 flex items-center">
+                <svg class="w-3 h-3 mr-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd"
+                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                    clip-rule="evenodd"></path>
+                </svg>
+              @if (formControls['phone'].errors['required']) {
+                <span>{{ 'VALIDATION.REQUIRED' | translate:{field: 'CONTACT.FIELDS.PHONE' | translate} }}</span>
+                }
+              @if (formControls['phone'].errors['minlength']) {
+                <span>{{ 'VALIDATION.MIN_LENGTH' | translate:{field: 'CONTACT.FIELDS.PHONE' | translate, min: '9'}
+                  }}</span>
+                }
+              </div>
+              }
+            </div>
+
+            @if ((formControls['email'].touched || formControls['phone'].touched) && formData.errors) {
+            <div id="contact-method-error" class="md:col-span-2 text-red-700 text-sm" role="alert">
+              @if (formData.errors['atLeastOneContactRequired']) {
+                {{ 'CONTACT.ERRORS.CONTACT_METHOD_REQUIRED' | translate }}
+              } @else if (formData.errors['invalidEmail']) {
+                {{ 'VALIDATION.INVALID_EMAIL' | translate }}
+              } @else if (formData.errors['invalidPhone']) {
+                {{ 'CONTACT.ERRORS.INVALID_PHONE' | translate }}
+              }
+            </div>
+            }
+
+          </div>
+
+        <!-- Sujet (Liste déroulante) -->
+        <div class="mb-6">
+          <label for="subject" class="block text-sm font-medium text-[#000] mb-2">
+            {{ 'CONTACT.SUBJECT' | translate }} <span class="text-red-400">*</span>
+          </label>
+          <div class="relative">
+            <select id="subject" name="subject" formControlName="subject" required
+              [attr.aria-invalid]="formControls['subject'].touched && formControls['subject'].invalid"
+              [attr.aria-describedby]="formControls['subject'].touched && formControls['subject'].errors ? 'subject-error' : null"
+              class="w-full px-3 py-3 sm:px-4 sm:py-4 text-sm sm:text-base bg-white/70 backdrop-blur-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#8a6f10] focus:border-[#8a6f10] transition-all duration-200 hover:border-gray-400 text-gray-900 appearance-none cursor-pointer"
+              [class.border-red-500]="formControls['subject'].touched && formControls['subject'].errors"
+              [class.text-red-400]="formControls['subject'].value === 'Dénonciations'">
+              <option value="">{{ 'CONTACT.SUBJECT_PLACEHOLDER' | translate }}</option>
+              <option value="Prise d'informations">{{ 'CONTACT.SUBJECT_OPTIONS.INFO' | translate }}</option>
+              <option value="Suggestions">{{ 'CONTACT.SUBJECT_OPTIONS.SUGGESTIONS' | translate }}</option>
+              <option value="Réclamations">{{ 'CONTACT.SUBJECT_OPTIONS.COMPLAINTS' | translate }}</option>
+              <option value="Dénonciations" class="text-red-400 font-bold uppercase">{{ 'CONTACT.SUBJECT_OPTIONS.DENUNCIATIONS' | translate }}</option>
+              <option value="Autres">{{ 'CONTACT.SUBJECT_OPTIONS.OTHERS' | translate }}</option>
+            </select>
+            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-400">
+              <svg class="h-4 w-4 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+              </svg>
+            </div>
+          </div>
+
+          <!-- Avertissement anonymat (WCAG 3.2.2) : prévient l'utilisateur AVANT
+               que la sélection "Dénonciations" ne désactive/anonymise les champs. -->
+          @if (formControls['subject'].value === 'Dénonciations') {
+          <div class="mt-3 flex items-start gap-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900" role="status">
+            <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/>
+            </svg>
+            <span>{{ 'CONTACT.DENUNCIATION_NOTICE' | translate }}</span>
+          </div>
+          }
+
+          <!-- Champ "Autres" conditionnel -->
+          @if (formControls['subject'].value === 'Autres') {
+          <div class="mt-4 animate-fade-in relative">
+            <input type="text" id="otherSubject" name="other-subject" formControlName="otherSubject"
+              placeholder=" "
+              class="peer block px-4 pb-2.5 pt-5 w-full text-sm sm:text-base bg-white/70 backdrop-blur-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#8a6f10] focus:border-[#8a6f10] transition-all duration-200 hover:border-gray-400 text-gray-900 placeholder-transparent appearance-none"
+              [class.border-red-500]="formControls['otherSubject'].touched && formControls['otherSubject'].errors">
+            <label for="otherSubject" class="absolute text-sm text-gray-500 transition-all duration-300 transform -translate-y-3 scale-75 top-4 z-10 origin-[0] start-4 peer-focus:text-[#8a6f10] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 cursor-text">
+              {{ 'CONTACT.OTHER_SUBJECT_LABEL' | translate }} <span class="text-red-400">*</span>
+            </label>
+          </div>
+          }
+
+          @if (formControls['subject'].touched && formControls['subject'].errors) {
+          <div id="subject-error" class="text-red-400 text-xs mt-1 flex items-center" role="alert">
+            <svg class="w-3 h-3 mr-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd"
+                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                clip-rule="evenodd"></path>
+            </svg>
+              @if (formControls['subject'].errors['required']) {
+            <span>{{ 'CONTACT.SUBJECT_REQUIRED' | translate }}</span>
+            }
+          </div>
+          }
+        </div>
+
+        <!-- Pièce Jointe -->
+        <div class="mb-6">
+          <label for="attachment" class="block text-sm font-medium text-[#000] mb-2">
+            {{ 'CONTACT.ATTACHMENT_LABEL' | translate }} <span class="text-gray-500 font-normal italic">{{ 'CONTACT.ATTACHMENT_HELP' | translate }}</span>
+          </label>
+          <div class="relative">
+            <input type="file" #fileInput id="attachment" name="attachment" (change)="onFileChange($event)"
+              class="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base bg-white/70 backdrop-blur-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#8a6f10] transition-all duration-200 hover:border-gray-400 text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-gray-600 file:text-white hover:file:bg-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              accept=".pdf,.docx,.jpg,.jpeg,.png" [disabled]="isUploading() || isSubmitting()">
+              
+              @if (isUploading()) {
+              <div class="absolute inset-0 bg-gray-800 bg-opacity-70 rounded-lg flex items-center justify-center z-10" role="status" aria-live="polite">
+                <div class="flex items-center space-x-3 bg-gray-900 px-4 py-2 rounded-full shadow-xl border border-gray-700">
+                  <svg class="animate-spin h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span class="text-white text-xs font-medium">{{ 'CONTACT.UPLOADING' | translate }}</span>
+                </div>
+              </div>
+              }
+          </div>
+        </div>
+
+        <!-- Message -->
+        <div class="mb-8 relative">
+          <textarea id="message" name="message" formControlName="message" rows="4" required
+            placeholder=" "
+            [attr.aria-invalid]="formControls['message'].touched && formControls['message'].invalid"
+            [attr.aria-describedby]="formControls['message'].touched && formControls['message'].errors ? 'message-error' : null"
+            class="peer block px-4 pb-2.5 pt-5 w-full text-sm sm:text-base bg-white/70 backdrop-blur-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#8a6f10] focus:border-[#8a6f10] transition-all duration-200 resize-vertical min-h-[100px] sm:min-h-[120px] hover:border-gray-400 text-gray-900 placeholder-transparent appearance-none"
+            [class.border-red-500]="formControls['message'].touched && formControls['message'].errors"
+            [class.focus:ring-red-500]="formControls['message'].touched && formControls['message'].errors"
+            [class.focus:border-red-500]="formControls['message'].touched && formControls['message'].errors"></textarea>
+          <label for="message" class="absolute text-sm text-gray-500 transition-all duration-300 transform -translate-y-3 scale-75 top-4 z-10 origin-[0] start-4 peer-focus:text-[#8a6f10] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 cursor-text">
+            {{ 'CONTACT.MESSAGE' | translate }} <span class="text-red-400">*</span>
+          </label>
+
+          @if (formControls['message'].touched && formControls['message'].errors) {
+          <div id="message-error" class="text-red-400 text-xs mt-1 flex items-center" role="alert">
+            <svg class="w-3 h-3 mr-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd"
+                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                clip-rule="evenodd"></path>
+            </svg>
+              @if (formControls['message'].errors['required']) {
+            <span>{{ 'VALIDATION.REQUIRED' | translate:{field: 'CONTACT.FIELDS.MESSAGE' | translate} }}</span>
+            }
+              @if (formControls['message'].errors['minlength']) {
+            <span>{{ 'VALIDATION.MIN_LENGTH' | translate:{field: 'CONTACT.FIELDS.MESSAGE' | translate, min: '10'}
+              }}</span>
+            }
+          </div>
+          }
+        </div>
+
+        <!-- Bouton de soumission -->
+        <div class="flex flex-col sm:flex-row justify-center lg:justify-end gap-3 sm:gap-4">
+          <button type="submit" [disabled]="isSubmitting() || isUploading()"
+            class="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-[#000] text-white font-medium text-sm sm:text-base rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black transition-[background,color,box-shadow,transform] duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[200px] shadow-lg hover:shadow-xl transform hover:scale-105 disabled:transform-none">
+
+            @if (!isSubmitting()) {
+            <span>{{ 'CONTACT.SEND_MESSAGE' | translate }}</span>
+            } @else {
+            <span class="flex items-center">
+              <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
+                viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                </path>
+              </svg>
+              {{ 'CONTACT.SENDING' | translate }}
+            </span>
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Section Agences Moderne -->
+  <div class="w-full max-w-5xl contacts-content-agencies mb-12 sm:mb-16">
+    <div class="section-header-modern">
+      <span class="section-label">FINSTAR-CM SA</span>
+      <h3>{{ ourAgenciesLabel() }}</h3>
+    </div>
+    
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full mt-8">
+      @for (location of data.agencies.locations; track location) {
+      <div class="agency-card-modern">
+        <div class="pin-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-map-pin"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg>
+        </div>
+        <div class="agency-info">
+          <span class="agency-name">{{ location }}</span>
+          <span class="agency-sub">{{ 'CONTACT.AGENCY_TYPE' | translate }}</span>
+        </div>
+      </div>
+      }
+    </div>
+  </div>
+
+  <!-- FAQ : après les agences, pour prolonger naturellement l'information locale. -->
+  <section class="faq-section faq-preview" aria-labelledby="faq-title">
+    <div class="section-header-modern">
+      <span class="section-label">FAQ</span>
+      <h2 id="faq-title" class="font-display">{{ faqTitle() }}</h2>
+    </div>
+    @if (faqSubtitle()) {
+    <p class="faq-subtitle">{{ faqSubtitle() }}</p>
+    }
+    <div class="faq-list">
+      @for (n of faqPreviewRange; track n) {
+      <details class="faq-item" [attr.open]="$first ? '' : null">
+        <summary class="faq-question">
+          <span>{{ 'FAQ.Q' + n | translate }}</span>
+          <svg class="faq-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </summary>
+        <p class="faq-answer">{{ 'FAQ.A' + n | translate }}</p>
+      </details>
+      }
+    </div>
+    <a class="faq-see-all" [href]="faqLink()">{{ 'FAQ.SEE_ALL' | translate }} <span aria-hidden="true">→</span></a>
+  </section>
+</div>
+
+<app-join-us></app-join-us>
+
+<app-modal [isOpen]="showModal()" [type]="modalType()" [title]="modalTitle() | translate"
+  [message]="modalMessage() | translate" [closeButtonText]="'COMMON.CLOSE' | translate"
+  (closed)="onModalClose()"></app-modal>
+
+} @else if (isLoading()) {
+<div class="brand-state">
+  <div class="flex flex-col items-center max-w-xs">
+    <div class="brand-spinner mb-4"></div>
+    <p class="text-sm sm:text-base">{{ loadingText() }}</p>
+  </div>
+</div>
+} @else {
+<div class="brand-state">
+  <div class="max-w-md">
+    <div class="text-4xl sm:text-6xl mb-4" aria-hidden="true">⚠️</div>
+    <h2 class="text-lg sm:text-xl font-semibold mb-2 font-display" style="color: var(--ink-950)">{{ errorTitle() }}</h2>
+    <p class="text-sm sm:text-base mb-4">{{ errorMessage() }}</p>
+    <button type="button" (click)="reloadPage()" class="brand-retry">{{ retryButton() }}</button>
+  </div>
+</div>
+}
