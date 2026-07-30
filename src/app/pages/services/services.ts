@@ -128,27 +128,29 @@ export class Services implements OnDestroy {
 
   isCreditProduct(product: any): boolean {
     const label = this.normalizeLabel(`${product?.Name ?? ''} ${product?.headlines ?? ''}`);
-    return label.includes('credit');
+    return product?.id === 2 || label.includes('credit') || label.includes('loan');
   }
 
   isAccountProduct(product: any): boolean {
     const label = this.normalizeLabel(`${product?.Name ?? ''} ${product?.headlines ?? ''}`);
-    return product?.id === 1 || label.includes('compte') || label.includes('epargne') || label.includes('depot');
-  }
-
-  shouldShowAccountJourneyButton(item: any): boolean {
-    const label = this.normalizeLabel(`${item?.name ?? ''} ${item?.description ?? ''}`);
-    return label.includes('terme');
+    return product?.id === 1 ||
+      ['compte', 'epargne', 'depot', 'account', 'saving', 'deposit']
+        .some(term => label.includes(term));
   }
 
   isTermAccount(account: any): boolean {
-    return this.normalizeLabel(account?.account_name).includes('terme');
+    const label = this.normalizeLabel(account?.account_name);
+    return Number(account?.account_id) === 11 ||
+      label.includes('terme') ||
+      label.includes('term');
   }
 
   goToSavingsJourney(): void {
     const savingsAccount = this.accountsData().find(account => {
       const label = this.normalizeLabel(account.account_name);
-      return label.includes('epargne');
+      return Number(account.account_id) === 7 ||
+        label.includes('epargne') ||
+        label.includes('saving');
     });
     const fallbackGuide = this.accountOpeningGuides()[0];
     const targetId = savingsAccount?.account_id ?? fallbackGuide?.account_ids?.[0];

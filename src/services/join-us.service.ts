@@ -26,7 +26,7 @@ export class JoinUsService {
 
       callToActionSections.forEach(section => {
         sections.push({
-          headline: section.headline || 'Rejoignez plus de 4 000 clients accompagnés',
+          headline: section.headline || 'Rejoignez plus de 1 500 clients accompagnés',
           call_to_action_link: section.call_to_action_link || 'Prenez rendez-vous dès maintenant',
           subheadline: section.subheadline || undefined,
           page_slug: page.Slug,

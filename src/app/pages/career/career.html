@@ -65,11 +65,8 @@
         <div class="flex justify-between items-center">
           <div class="flex-grow">
             <div class="career-list-title text-base sm:text-xl md:text-2xl text-yellow-600 mb-1">
-              {{ job.title }}
-              @if (job.quantity) { ({{job.quantity}}) }
-              @if (job.gender) { ({{job.gender}}) }
+              {{ jobDisplayTitle(job) }}
             </div>
-            <div class="career-list-desc text-xs sm:text-sm text-black/80">{{ job.location }}</div>
           </div>
           <div class="career-list-arrow opacity-0 transform translate-x-4 transition-all duration-300">
             <div class="arrow-icon"></div>
@@ -84,7 +81,7 @@
       class="career-details bg-white border-2 border-pink-400 rounded-b-xl md:rounded-r-2xl md:rounded-bl-none flex flex-col justify-between items-center p-4 sm:p-6 md:p-8 ring-2 sm:ring-4 ring-pink-200">
       <div>
         <h3 class="career-details-title text-lg sm:text-xl md:text-2xl font-bold mb-2 sm:mb-4">
-          {{ jobsData()[selectedJobIndex].title }}
+          {{ jobDisplayTitle(jobsData()[selectedJobIndex]) }}
         </h3>
         @if (isSupervisionJob(jobsData()[selectedJobIndex])) {
         <div class="recruitment-mode" role="note">

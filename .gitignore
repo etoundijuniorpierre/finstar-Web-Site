@@ -156,3 +156,4 @@ tmp/
 
 image-download.service.ts
 supabase/finstar_schema.sql
+.scripts/

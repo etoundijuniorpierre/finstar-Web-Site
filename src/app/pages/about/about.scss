@@ -127,11 +127,21 @@
 }
 
 .institutional-card {
+  position: relative;
+  overflow: hidden;
   padding: clamp(1.5rem, 3vw, 2.25rem);
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    height: 3px;
+    background: var(--brand-gradient);
+  }
 
   h3 {
     margin: 0 0 1rem;
@@ -145,8 +155,85 @@
     line-height: 1.7;
   }
 
+  &.values,
+  &.beliefs,
+  &.promises,
   &.partners {
     grid-column: 1 / -1;
+  }
+
+  &.vision,
+  &.mission {
+    background:
+      linear-gradient(145deg, rgba(255, 214, 0, 0.055), rgba(255, 108, 171, 0.025)),
+      var(--surface);
+  }
+}
+
+.card-description {
+  margin: -0.35rem 0 1rem;
+  color: var(--ink-700);
+  font-size: 0.98rem;
+  line-height: 1.6;
+}
+
+.card-header {
+  margin: 0 0 1.25rem;
+  padding: 0.85rem 1rem;
+  color: var(--ink-950);
+  background: linear-gradient(135deg, rgba(255, 214, 0, 0.1), rgba(255, 108, 171, 0.08));
+  border-left: 3px solid var(--brand-gold-strong);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.principles-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+  gap: 0.9rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    position: relative;
+    overflow: hidden;
+    padding: 1rem;
+    background: var(--surface-subtle, #fafafa);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 3px;
+      background: linear-gradient(180deg, var(--brand-gold-strong), var(--brand-pink));
+    }
+  }
+
+  h4 {
+    margin: 0 0 0.45rem;
+    color: var(--ink-950);
+    font: 750 1rem / 1.35 var(--font-sans);
+  }
+
+  p {
+    margin: 0;
+    color: var(--ink-700);
+    font-size: 0.94rem;
+    line-height: 1.6;
+  }
+}
+
+@media (min-width: 1180px) {
+  .institutional-card.beliefs,
+  .institutional-card.values,
+  .institutional-card.promises {
+    .principles-list {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
   }
 }
 
@@ -193,6 +280,9 @@
     grid-template-columns: 1fr;
   }
 
+  .institutional-card.values,
+  .institutional-card.beliefs,
+  .institutional-card.promises,
   .institutional-card.partners {
     grid-column: auto;
   }
@@ -378,8 +468,7 @@
       flex-direction: column;
       justify-content: center;
 
-      &::before {
-        content: 'Partenaire';
+      small {
         font-size: 0.7rem;
         font-weight: 500;
         color: #FF6CAB;
@@ -750,7 +839,7 @@
 
     span {
       align-items: center;
-      &::before {
+      small {
         text-align: center;
       }
     }

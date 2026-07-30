@@ -8,7 +8,8 @@
             {{ aboutData()?.subheadline }}
         </p>
         @if (aboutData()?.image) {
-        <img [ngSrc]="aboutData()!.image!" width="1200" height="800" priority alt="Équipe FINSTAR-CM SA en échange avec une cliente">
+        <img [ngSrc]="aboutData()!.image!" width="1200" height="800" priority
+            [alt]="'ABOUT.HERO_IMAGE_ALT' | translate">
         }
     </div>
 </div>
@@ -26,33 +27,41 @@
         <article class="institutional-card" [class]="'institutional-card ' + item.category"
             [style.animation-delay]="i * 0.06 + 's'" [@slideIn]="'in'">
             <h3>{{ item.title }}</h3>
+            @if (item.description) {
+            <p class="card-description">{{ item.description }}</p>
+            }
+            @if (item.header) {
+            <p class="card-header">{{ item.header }}</p>
+            }
 
             @switch (item.category) {
-            @case ('values') {
-                @if (item.values?.length) {
-                <ul class="values-list">
-                    @for (value of item.values; track value) {
-                    <li>{{ value }}</li>
-                    }
-                </ul>
-                }
-                @if (item.content) { <p class="content-text">{{ item.content }}</p> }
-            }
             @case ('partners') {
                 @if (item.partners?.length) {
                 <div class="partners-container">
                     @for (partner of item.partners; track partner.name) {
                     <a [href]="partner.url" target="_blank" rel="noopener noreferrer" class="partner-link"
-                        [attr.aria-label]="'Visitez le site de ' + partner.name">
+                        [attr.aria-label]="'ABOUT.VISIT_PARTNER' | translate:{ partner: partner.name }">
                         <img [ngSrc]="partner.image" width="100" height="100" [alt]="partner.alt" loading="lazy">
-                        <span>{{ partner.name }}</span>
+                        <span>
+                            <small>{{ 'ABOUT.PARTNER_LABEL' | translate }}</small>
+                            {{ partner.name }}
+                        </span>
                     </a>
                     }
                 </div>
                 }
             }
             @default {
-                @if (item.items?.length) {
+                @if (item.details?.length) {
+                <ul class="principles-list">
+                    @for (detail of item.details; track detail.id) {
+                    <li>
+                        <h4>{{ detail.title }}</h4>
+                        @if (detail.content) { <p>{{ detail.content }}</p> }
+                    </li>
+                    }
+                </ul>
+                } @else if (item.items?.length) {
                 <ul class="convictions-list">
                     @for (entry of item.items; track entry) { <li>{{ entry }}</li> }
                 </ul>
@@ -70,7 +79,7 @@
 @if (partnerImages().length > 0) {
 <section class="about-partners" aria-labelledby="partners-gallery-title">
     <h2 id="partners-gallery-title">{{ 'ABOUT.PARTNERS_GALLERY' | translate }}</h2>
-    <div class="partners-scroll-container" aria-label="Défilement des partenaires">
+    <div class="partners-scroll-container" [attr.aria-label]="'ABOUT.PARTNERS_CAROUSEL_LABEL' | translate">
         <div class="partners-track" appPauseOffscreen>
             @for (image of partnerImages(); track $index) {
             <div class="partner-item" aria-hidden="true">
@@ -87,7 +96,7 @@
     </div>
 </section>
 }
-<app-join-us></app-join-us>
+<app-join-us pageSlug="about"></app-join-us>
 } @else if (isLoading()) {
 <div class="brand-state">
     <div class="flex flex-col items-center max-w-xs">

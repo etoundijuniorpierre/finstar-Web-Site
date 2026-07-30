@@ -85,15 +85,16 @@ export class Home implements AfterViewInit, OnDestroy {
   displayedStats = computed(() => {
     const stats = this.animatedStats();
     const values = this.animatedValues();
+    const locale = this.i18nService.currentLanguage().startsWith('fr')
+      ? 'fr-FR'
+      : 'en-US';
 
     return stats.map((stat, index) => {
-      const label = (stat.label || '').toLowerCase();
-      // On ajoute le suffixe '+' seulement si c'est une stat de type client ou agence (FR/EN)
-      const hasPlus = label.match(/client|customer|agenc|agency/);
+      const hasPlus = [9, 10, 11].includes(Number(stat.statistics_id));
       
       return {
         ...stat,
-        displayValue: values[index] ?? 0,
+        displayValue: new Intl.NumberFormat(locale).format(values[index] ?? 0),
         suffix: hasPlus ? '+' : ''
       };
     });

@@ -1,3 +1,4 @@
+type DirectusJsonObject = Record<string, unknown>;
 
 type Pages_sections_Statistics = {
   id: number;
@@ -70,7 +71,7 @@ type Pages_sections = {
   subheadline3: string | null;
   body_content: string | null;
   video_url: string | null;
-  table_data: string | null;
+  table_data: string | DirectusJsonObject | null;
   translations?: Pages_sections_translations[];
 };
 
@@ -85,7 +86,7 @@ type Pages_sections_translations = {
   call_to_action: string | null;
   call_to_action_link: string | null;
   subheadline2: string | LoanProcess[] | null;
-  table_data: string | null;
+  table_data: string | DirectusJsonObject | null;
 };
 
 type Statistics = {

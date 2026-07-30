@@ -2228,31 +2228,6 @@ $breakpoints: (
   }
 }
 
-.item-journey-link {
-  align-self: flex-start;
-  margin-top: 0.9rem;
-  padding: 0.72rem 1rem;
-  border: 1px solid rgba(183, 155, 46, 0.38);
-  border-radius: 999px;
-  background: #fff;
-  color: var(--ink-950);
-  font-weight: 850;
-  cursor: pointer;
-  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
-
-  &:hover {
-    transform: translateY(-1px);
-    border-color: var(--brand-gold-strong);
-    color: var(--brand-gold-strong);
-    box-shadow: 0 12px 28px rgba(42, 36, 20, 0.1);
-  }
-
-  &:focus-visible {
-    outline: 3px solid rgba(255, 229, 66, 0.5);
-    outline-offset: 3px;
-  }
-}
-
 .items-empty {
   margin: 0;
   padding: 2rem;
@@ -2425,7 +2400,7 @@ $breakpoints: (
 
 .minimum-chip {
   flex: 0 0 auto;
-  max-width: 15rem;
+  max-width: 17rem;
   padding: 0.9rem 1rem;
   color: var(--ink-950);
   background: #fff8d6;
@@ -2696,7 +2671,7 @@ $breakpoints: (
 
 .account-fit-card {
   margin: 1.5rem 0;
-  padding: 1.25rem 1.4rem;
+  padding: 1.15rem 1.2rem;
   background: linear-gradient(135deg, #fff8d7, #fffdf5);
   border: 1px solid rgba(183, 155, 46, 0.28);
   border-radius: var(--radius-sm);

@@ -101,6 +101,73 @@ function preferTranslation<T>(
   return translated as T;
 }
 
+/**
+ * Normalisation de transition pour les anciennes valeurs encore présentes
+ * dans Directus. Elle évite qu'un ancien libellé réapparaisse pendant la
+ * migration des contenus, sans modifier les noms de produits comme FINSAVE.
+ */
+function normalizeFinstarText(value: string | null | undefined): string | null {
+  if (value == null) return null;
+
+  // Signature de marque conservée telle quelle selon la consigne métier.
+  const signature = "FINSTAR, l'étoile de la microfinance !";
+  const englishSignature = 'FINSTAR, the star of microfinance!';
+  const signaturePlaceholder = '__FINSTAR_SIGNATURE__';
+  const englishSignaturePlaceholder = '__FINSTAR_EN_SIGNATURE__';
+
+  return value
+    .replaceAll(signature, signaturePlaceholder)
+    .replaceAll(englishSignature, englishSignaturePlaceholder)
+    .replace(
+      'Une microfinance agréée pour accompagner les projets des Camerounais',
+      'Un établissement de microfinance étoilée qui éclaire vos projets et accompagne votre réussite',
+    )
+    .replace(
+      'FINSTAR-CM SA accompagne les particuliers, entrepreneurs et PME avec des solutions d’épargne, de crédit et de conseil portées par un établissement de microfinance de deuxième catégorie',
+      'FINSTAR-CM SA accompagne les particuliers, les associations, les entrepreneurs ainsi que les très petites, petites et moyennes entreprises en leur offrant des solutions d’épargne, de financement et d’accompagnement adaptées à leurs besoins, afin de transformer leurs ambitions en réussites durables',
+    )
+    .replace(
+      'An approved microfinance institution supporting the projects of Cameroonians',
+      'A star microfinance institution that illuminates your projects and supports your success',
+    )
+    .replace(
+      'FINSTAR-CM SA supports individuals, entrepreneurs and SMEs with savings, credit and advisory solutions delivered by a second-tier microfinance institution.',
+      'FINSTAR-CM SA supports individuals, associations, entrepreneurs, very small, small and medium-sized enterprises with savings, financing and advisory solutions tailored to their needs, helping turn ambitions into lasting success.',
+    )
+    .replace(
+      '500 FCFA, plus un carnet de collecte à 500 FCFA',
+      '1 000 FCFA, répartis comme suit : 500 FCFA correspondant au premier dépôt sur le compte et 500 FCFA pour le carnet de collecte',
+    )
+    .replace(
+      'Retrait à distance ou procuration sous 50 000 FCFA',
+      'Le retrait à distance est disponible pour les montants inférieurs à 50 000 FCFA. Toute procuration est traitée selon les conditions applicables en agence.',
+    )
+    .replace(
+      '500 FCFA, plus a collection booklet at 500 FCFA',
+      '1,000 FCFA, split as follows: 500 FCFA for the first account deposit and 500 FCFA for the collection booklet',
+    )
+    .replace(
+      'Remote withdrawal or proxy under 50,000 FCFA',
+      'Remote withdrawals are available for amounts below 50,000 FCFA. Proxies are handled according to the conditions applicable at the branch.',
+    )
+    .replace(
+      'Rejoignez plus de 4 000 clients accompagnés',
+      'Rejoignez plus de 1 500 clients accompagnés',
+    )
+    .replace(
+      'Join more than 4,000 clients supported',
+      'Join more than 1,500 clients supported',
+    )
+    .replace(/\bFINSTAR\b(?!-CM)/g, 'FINSTAR-CM')
+    .replace(/\b(\d{4,})\s*FCFA\b/g, (_, amount: string) =>
+      `${Number(amount).toLocaleString('fr-FR').replace(/\u202f/g, ' ')} FCFA`,
+    )
+    .replace(/\.{2,}/g, '.')
+    .replaceAll(signaturePlaceholder, signature)
+    .replaceAll(englishSignaturePlaceholder, englishSignature)
+    .trim();
+}
+
 @Injectable({ providedIn: 'root' })
 export class DirectusSdkService {
   private readonly transferState = inject(TransferState);
@@ -235,7 +302,13 @@ export class DirectusSdkService {
         t.languages_code === lang,
     );
 
-    if (!translation) return account;
+    if (!translation) {
+      return {
+        ...account,
+        Description: normalizeFinstarText(account.Description) ?? account.Description,
+        full_description: normalizeFinstarText(account.full_description) ?? account.full_description,
+      };
+    }
 
     return {
       ...account,
@@ -243,14 +316,14 @@ export class DirectusSdkService {
         translation.account_name,
         account.account_name,
       ),
-      Description: preferTranslation(
+      Description: normalizeFinstarText(preferTranslation(
         translation.Description,
         account.Description,
-      ),
-      full_description: preferTranslation(
+      )) ?? account.Description,
+      full_description: normalizeFinstarText(preferTranslation(
         translation.full_description,
         account.full_description,
-      ),
+      )) ?? account.full_description,
     };
   }
 
@@ -299,20 +372,27 @@ export class DirectusSdkService {
         t.languages_code === lang,
     );
 
-    if (!translation) return section;
+    if (!translation) {
+      return {
+        ...section,
+        headline: normalizeFinstarText(section.headline),
+        subheadline: normalizeFinstarText(section.subheadline),
+        body_content: normalizeFinstarText(section.body_content),
+      };
+    }
 
     return {
       ...section,
-      headline: preferTranslation(translation.headline, section.headline),
-      subheadline: preferTranslation(
+      headline: normalizeFinstarText(preferTranslation(translation.headline, section.headline)),
+      subheadline: normalizeFinstarText(preferTranslation(
         translation.subheadline,
         section.subheadline,
-      ),
+      )),
       headlines2: preferTranslation(translation.headlines2, section.headlines2),
-      body_content: preferTranslation(
+      body_content: normalizeFinstarText(preferTranslation(
         translation.body_content,
         section.body_content,
-      ),
+      )),
       call_to_action: preferTranslation(
         translation.call_to_action,
         section.call_to_action,
@@ -389,11 +469,17 @@ export class DirectusSdkService {
     const translation = this.itemsTranslations().find(
       (t) => t.items_id === item.id && t.languages_code === lang,
     );
-    if (!translation) return item;
+    if (!translation) {
+      return {
+        ...item,
+        name: normalizeFinstarText(item.name) ?? item.name,
+        description: normalizeFinstarText(item.description),
+      };
+    }
     return {
       ...item,
       name: preferTranslation(translation.name, item.name),
-      description: preferTranslation(translation.description, item.description),
+      description: normalizeFinstarText(preferTranslation(translation.description, item.description)),
     };
   }
 
@@ -1434,6 +1520,13 @@ export class DirectusSdkService {
         return item ? this.getTranslatedItem(item) : null;
       })
       .filter(Boolean) as Items[];
+  }
+
+  public getStatisticById(statisticId: number): Statistic | undefined {
+    const statistic = this.statistics().find(
+      (item) => item.statistics_id === statisticId,
+    );
+    return statistic ? this.getTranslatedStatistic(statistic) : undefined;
   }
 
   public getProductById(productId: number): Product | undefined {

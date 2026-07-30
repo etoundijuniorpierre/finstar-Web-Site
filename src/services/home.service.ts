@@ -58,7 +58,20 @@ export class HomeService {
 
   statsData = computed(() => {
     const section = this.statsSection();
-    return section?.statistics || [];
+    const linkedStatistics = section?.statistics || [];
+    const dailySavers = this.directus.stats().find((stat) =>
+      /épargnant|daily saver/i.test(stat.label || ''),
+    );
+
+    if (
+      dailySavers &&
+      !linkedStatistics.some((stat) => stat.statistics_id === dailySavers.statistics_id)
+    ) {
+      const translatedDailySavers = this.directus.getStatisticById(dailySavers.statistics_id);
+      return translatedDailySavers ? [...linkedStatistics, translatedDailySavers] : linkedStatistics;
+    }
+
+    return linkedStatistics;
   });
 
   testimonialsData = computed(() => {
@@ -70,7 +83,9 @@ export class HomeService {
   animatedStats = computed(() => {
     return this.statsData().map(stat => ({
       ...stat,
-      target: stat.value ? parseInt(stat.value.toString().replace('%', '')) : 0
+      target: stat.value
+        ? parseInt(stat.value.toString().replace(/[^\d-]/g, ''), 10)
+        : 0
     }));
   });
 

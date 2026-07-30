@@ -124,4 +124,16 @@ export class Career {
     const label = this.normalizeJobLabel(job);
     return label.includes('encadrement') || label.includes('supervisor');
   }
+
+  /**
+   * Les intitulés courts décrivent la famille de candidature sans exposer
+   * des mentions de genre, de lieu ou de contrat devenues inutiles.
+   * Le titre Directus d'origine reste utilisé pour identifier le formulaire.
+   */
+  jobDisplayTitle(job: any): string {
+    if (this.isSupervisionJob(job)) return this.i18nService.translate.instant('CAREER.ROLE_FINSTAR_STAFF');
+    if (this.isCollectorJob(job)) return this.i18nService.translate.instant('CAREER.ROLE_COLLECTION_AGENT');
+    if (this.isStageJob(job)) return this.i18nService.translate.instant('CAREER.ROLE_INTERN');
+    return job?.title ?? '';
+  }
 }

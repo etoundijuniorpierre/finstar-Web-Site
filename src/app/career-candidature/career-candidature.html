@@ -35,7 +35,11 @@
             </div>
             <div class="form-group">
               <label for="dureeStage">{{ 'CANDIDATURE.STAGE_DURATION' | translate }} <span class="optional-text">({{ 'CANDIDATURE.OPTIONAL' | translate }})</span></label>
-              <input id="dureeStage" type="text" formControlName="dureeStage" [placeholder]="(candidatureForm.get('typeStage')?.value === 'academique' ? 'CANDIDATURE.STAGE_DURATION_ACADEMIC' : 'CANDIDATURE.STAGE_DURATION_PROFESSIONAL') | translate" />
+              <div class="duration-input">
+                <input id="dureeStage" type="text" formControlName="dureeStage"
+                  [placeholder]="'CANDIDATURE.STAGE_DURATION_PLACEHOLDER' | translate" />
+                <span aria-hidden="true">{{ 'CANDIDATURE.MONTHS' | translate }}</span>
+              </div>
             </div>
           </div>
           @if (candidatureForm.get('typeStage')?.value === 'academique') {
