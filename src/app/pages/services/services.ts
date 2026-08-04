@@ -40,6 +40,8 @@ export class Services implements OnDestroy {
   private descriptionResetTimeout?: ReturnType<typeof setTimeout>;
   private tabFocusFrame?: number;
   private accountFocusFrame?: number;
+  private productScrollFrame?: number;
+  private creditFocusFrame?: number;
 
   serviceData = this.servicesService.servicesPage;
   isLoading = this.servicesService.isLoading;
@@ -237,6 +239,12 @@ export class Services implements OnDestroy {
     if (this.accountFocusFrame) {
       cancelAnimationFrame(this.accountFocusFrame);
     }
+    if (this.productScrollFrame) {
+      cancelAnimationFrame(this.productScrollFrame);
+    }
+    if (this.creditFocusFrame) {
+      cancelAnimationFrame(this.creditFocusFrame);
+    }
   }
 
   // Sélectionner un produit
@@ -247,6 +255,7 @@ export class Services implements OnDestroy {
   onTabClick(event: Event, productId: number) {
     event.preventDefault();
     this.selectProduct(productId);
+    this.scrollToItems();
   }
 
   onTabKeydown(event: KeyboardEvent, productId: number): void {
@@ -275,19 +284,18 @@ export class Services implements OnDestroy {
 
   // Scroller vers la section des items
   scrollToItems() {
-    if (isPlatformBrowser(this.platformId)) {
-      const itemsSection = document.getElementById('product-items-section');
-      if (itemsSection) {
-        const offset = 100;
-        const elementPosition = itemsSection.getBoundingClientRect().top;
-        const offsetPosition = elementPosition + window.pageYOffset - offset;
-        window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
-      }
+    if (this.productScrollFrame) {
+      cancelAnimationFrame(this.productScrollFrame);
     }
+    this.productScrollFrame = this.scheduleScrollToElement('product-items-section');
   }
 
   selectType(index: number) {
     this.selectedType.set(index);
+    if (this.creditFocusFrame) {
+      cancelAnimationFrame(this.creditFocusFrame);
+    }
+    this.creditFocusFrame = this.scheduleScrollToElement('credit-conditions');
   }
 
   isArray(value: any): boolean {
@@ -295,9 +303,16 @@ export class Services implements OnDestroy {
   }
 
   // Sélectionner un compte avec animation et scroll
-  selectAccount(id: number) {
-    if (this.selectedAccountId() === id) return;
-    this.selectedAccountId.set(id);
+  selectAccount(id: number, scrollToGuide = false) {
+    if (this.selectedAccountId() !== id) {
+      this.selectedAccountId.set(id);
+    }
+    if (scrollToGuide) {
+      if (this.accountFocusFrame) {
+        cancelAnimationFrame(this.accountFocusFrame);
+      }
+      this.accountFocusFrame = this.scheduleScrollToElement('account-guide-detail');
+    }
   }
 
   scrollToCreditApplication(event?: Event): void {
@@ -324,12 +339,18 @@ export class Services implements OnDestroy {
     this.selectAccount(guide.account_ids[0]);
 
     if (isPlatformBrowser(this.platformId)) {
-      this.accountFocusFrame = requestAnimationFrame(() => {
-        if (!this.destroyRef.destroyed) {
-          document.getElementById('account-details')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      });
+      this.accountFocusFrame = this.scheduleScrollToElement('account-details');
     }
+  }
+
+  private scheduleScrollToElement(elementId: string): number | undefined {
+    if (!isPlatformBrowser(this.platformId)) return undefined;
+
+    return requestAnimationFrame(() => {
+      if (!this.destroyRef.destroyed) {
+        document.getElementById(elementId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
   }
 
   // Scroll vers la section description avec un offset

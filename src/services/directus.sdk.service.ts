@@ -123,16 +123,16 @@ function normalizeFinstarText(value: string | null | undefined): string | null {
       'Un établissement de microfinance étoilée qui éclaire vos projets et accompagne votre réussite',
     )
     .replace(
-      'FINSTAR-CM SA accompagne les particuliers, entrepreneurs et PME avec des solutions d’épargne, de crédit et de conseil portées par un établissement de microfinance de deuxième catégorie',
-      'FINSTAR-CM SA accompagne les particuliers, les associations, les entrepreneurs ainsi que les très petites, petites et moyennes entreprises en leur offrant des solutions d’épargne, de financement et d’accompagnement adaptées à leurs besoins, afin de transformer leurs ambitions en réussites durables',
+      'FINSTAR-CM S.A. accompagne les particuliers, entrepreneurs et PME avec des solutions d’épargne, de crédit et de conseil portées par un établissement de microfinance de deuxième catégorie',
+      'FINSTAR-CM S.A. accompagne les particuliers, les associations, les entrepreneurs ainsi que les très petites, petites et moyennes entreprises en leur offrant des solutions d’épargne, de financement et d’accompagnement adaptées à leurs besoins, afin de transformer leurs ambitions en réussites durables',
     )
     .replace(
       'An approved microfinance institution supporting the projects of Cameroonians',
       'A star microfinance institution that illuminates your projects and supports your success',
     )
     .replace(
-      'FINSTAR-CM SA supports individuals, entrepreneurs and SMEs with savings, credit and advisory solutions delivered by a second-tier microfinance institution.',
-      'FINSTAR-CM SA supports individuals, associations, entrepreneurs, very small, small and medium-sized enterprises with savings, financing and advisory solutions tailored to their needs, helping turn ambitions into lasting success.',
+      'FINSTAR-CM S.A. supports individuals, entrepreneurs and SMEs with savings, credit and advisory solutions delivered by a second-tier microfinance institution.',
+      'FINSTAR-CM S.A. supports individuals, associations, entrepreneurs, very small, small and medium-sized enterprises with savings, financing and advisory solutions tailored to their needs, helping turn ambitions into lasting success.',
     )
     .replace(
       '500 FCFA, plus un carnet de collecte à 500 FCFA',
@@ -159,8 +159,12 @@ function normalizeFinstarText(value: string | null | undefined): string | null {
       'Join more than 1,500 clients supported',
     )
     .replace(/\bFINSTAR\b(?!-CM)/g, 'FINSTAR-CM')
-    .replace(/\b(\d{4,})\s*FCFA\b/g, (_, amount: string) =>
-      `${Number(amount).toLocaleString('fr-FR').replace(/\u202f/g, ' ')} FCFA`,
+    .replace(
+      /\b(\d{4,})\s*FCFA\b/g,
+      (_, amount: string) =>
+        `${Number(amount)
+          .toLocaleString('fr-FR')
+          .replace(/\u202f/g, ' ')} FCFA`,
     )
     .replace(/\.{2,}/g, '.')
     .replaceAll(signaturePlaceholder, signature)
@@ -180,9 +184,9 @@ export class DirectusSdkService {
   private readonly directusClientUrl = this.isBrowser
     ? new URL(environment.browserApiUrl, window.location.origin).toString()
     : environment.apiUrl;
-  private readonly directusClient = createDirectus<Schema>(this.directusClientUrl).with(
-    rest(),
-  );
+  private readonly directusClient = createDirectus<Schema>(
+    this.directusClientUrl,
+  ).with(rest());
   private readonly i18nService = inject(I18nService);
 
   private readonly globalSettings = signal<GlobalSettings | null>(null);
@@ -305,8 +309,11 @@ export class DirectusSdkService {
     if (!translation) {
       return {
         ...account,
-        Description: normalizeFinstarText(account.Description) ?? account.Description,
-        full_description: normalizeFinstarText(account.full_description) ?? account.full_description,
+        Description:
+          normalizeFinstarText(account.Description) ?? account.Description,
+        full_description:
+          normalizeFinstarText(account.full_description) ??
+          account.full_description,
       };
     }
 
@@ -316,14 +323,17 @@ export class DirectusSdkService {
         translation.account_name,
         account.account_name,
       ),
-      Description: normalizeFinstarText(preferTranslation(
-        translation.Description,
-        account.Description,
-      )) ?? account.Description,
-      full_description: normalizeFinstarText(preferTranslation(
-        translation.full_description,
-        account.full_description,
-      )) ?? account.full_description,
+      Description:
+        normalizeFinstarText(
+          preferTranslation(translation.Description, account.Description),
+        ) ?? account.Description,
+      full_description:
+        normalizeFinstarText(
+          preferTranslation(
+            translation.full_description,
+            account.full_description,
+          ),
+        ) ?? account.full_description,
     };
   }
 
@@ -383,16 +393,16 @@ export class DirectusSdkService {
 
     return {
       ...section,
-      headline: normalizeFinstarText(preferTranslation(translation.headline, section.headline)),
-      subheadline: normalizeFinstarText(preferTranslation(
-        translation.subheadline,
-        section.subheadline,
-      )),
+      headline: normalizeFinstarText(
+        preferTranslation(translation.headline, section.headline),
+      ),
+      subheadline: normalizeFinstarText(
+        preferTranslation(translation.subheadline, section.subheadline),
+      ),
       headlines2: preferTranslation(translation.headlines2, section.headlines2),
-      body_content: normalizeFinstarText(preferTranslation(
-        translation.body_content,
-        section.body_content,
-      )),
+      body_content: normalizeFinstarText(
+        preferTranslation(translation.body_content, section.body_content),
+      ),
       call_to_action: preferTranslation(
         translation.call_to_action,
         section.call_to_action,
@@ -479,7 +489,9 @@ export class DirectusSdkService {
     return {
       ...item,
       name: preferTranslation(translation.name, item.name),
-      description: normalizeFinstarText(preferTranslation(translation.description, item.description)),
+      description: normalizeFinstarText(
+        preferTranslation(translation.description, item.description),
+      ),
     };
   }
 
@@ -934,9 +946,19 @@ export class DirectusSdkService {
       // Compatibilité avec l'ancien schéma jusqu'à l'exécution du nouveau SQL.
       if (response.status === 404) {
         const {
-          Type_candidature, Type_stage, Duree_stage, Theme_stage,
-          Etablissement, Service_stage, Avaliste, Avaliste_nom, Avaliste_prenom,
-          Avaliste_telephone, Avaliste_adresse, Avaliste_relation, Caution_acceptee,
+          Type_candidature,
+          Type_stage,
+          Duree_stage,
+          Theme_stage,
+          Etablissement,
+          Service_stage,
+          Avaliste,
+          Avaliste_nom,
+          Avaliste_prenom,
+          Avaliste_telephone,
+          Avaliste_adresse,
+          Avaliste_relation,
+          Caution_acceptee,
           ...legacyCandidatureData
         } = candidatureData;
         response = await fetch(`${url}/Candidatures`, {

@@ -12,7 +12,7 @@ export interface IconSize {
 export class DynamicIconsService {
   private readonly layoutService = inject(LayoutService);
   private readonly platformId = inject(PLATFORM_ID);
-  
+
   private readonly iconSizes: IconSize[] = [
     { size: 72, name: 'icon-72x72.png' },
     { size: 96, name: 'icon-96x96.png' },
@@ -31,7 +31,7 @@ export class DynamicIconsService {
   constructor() {
     if (isPlatformBrowser(this.platformId)) {
       this.initCanvas();
-      
+
       // React to favicon changes from Directus
       effect(() => {
         const faviconUrl = this.layoutService.faviconData();
@@ -57,7 +57,7 @@ export class DynamicIconsService {
     try {
       const img = new Image();
       img.crossOrigin = 'anonymous';
-      
+
       await new Promise<void>((resolve, reject) => {
         img.onload = () => resolve();
         img.onerror = () => reject(new Error('Failed to load favicon'));
@@ -80,7 +80,6 @@ export class DynamicIconsService {
           this.generatedIcons.set(`favicon-${size}x${size}.png`, iconDataUrl);
         }
       }
-
     } catch (error) {
       console.warn('[DynamicIconsService] Failed to generate icons:', error);
     }
@@ -89,23 +88,29 @@ export class DynamicIconsService {
   /**
    * Generate a single icon of specified size
    */
-  private generateIcon(sourceImage: HTMLImageElement, size: number): string | null {
+  private generateIcon(
+    sourceImage: HTMLImageElement,
+    size: number,
+  ): string | null {
     if (!this.canvas || !this.ctx) return null;
 
     try {
       this.canvas.width = size;
       this.canvas.height = size;
-      
+
       // Clear canvas
       this.ctx.clearRect(0, 0, size, size);
-      
+
       // Draw the image scaled to fit
       this.ctx.drawImage(sourceImage, 0, 0, size, size);
-      
+
       // Return as data URL
       return this.canvas.toDataURL('image/png');
     } catch (error) {
-      console.warn(`[DynamicIconsService] Failed to generate ${size}x${size} icon:`, error);
+      console.warn(
+        `[DynamicIconsService] Failed to generate ${size}x${size} icon:`,
+        error,
+      );
       return null;
     }
   }
@@ -117,12 +122,14 @@ export class DynamicIconsService {
     if (!isPlatformBrowser(this.platformId)) return;
 
     // Update manifest link to point to our dynamic manifest
-    let manifestLink = document.querySelector('link[rel="manifest"]') as HTMLLinkElement;
+    let manifestLink = document.querySelector(
+      'link[rel="manifest"]',
+    ) as HTMLLinkElement;
     if (manifestLink) {
       // Create a blob URL with updated manifest
       const updatedManifest = this.generateUpdatedManifest();
-      const blob = new Blob([JSON.stringify(updatedManifest, null, 2)], { 
-        type: 'application/json' 
+      const blob = new Blob([JSON.stringify(updatedManifest, null, 2)], {
+        type: 'application/json',
       });
       const blobUrl = URL.createObjectURL(blob);
       manifestLink.href = blobUrl;
@@ -149,15 +156,15 @@ export class DynamicIconsService {
         purpose: string;
       }>;
     } = {
-      name: "FINSTAR-CM SA - Institution de Microfinance",
-      short_name: "FINSTAR-CM",
+      name: 'FINSTAR-CM S.A. - Institution de Microfinance',
+      short_name: 'FINSTAR-CM',
       description: "Solutions d'épargne et de crédit sécurisées au Cameroun",
-      display: "standalone",
-      scope: "./",
-      start_url: "./",
-      theme_color: "#1a365d",
-      background_color: "#ffffff",
-      icons: []
+      display: 'standalone',
+      scope: './',
+      start_url: './',
+      theme_color: '#1a365d',
+      background_color: '#ffffff',
+      icons: [],
     };
 
     // Add generated icons to manifest
@@ -167,8 +174,8 @@ export class DynamicIconsService {
         baseManifest.icons.push({
           src: iconDataUrl,
           sizes: `${size}x${size}`,
-          type: "image/png",
-          purpose: "maskable any"
+          type: 'image/png',
+          purpose: 'maskable any',
         });
       }
     }
@@ -195,7 +202,7 @@ export class DynamicIconsService {
    */
   updateFaviconLinks(): void {
     if (!isPlatformBrowser(this.platformId)) return;
-    
+
     // Update apple-touch-icon
     const appleTouchIcon = this.generatedIcons.get('favicon-180x180.png');
     if (appleTouchIcon) {
@@ -215,10 +222,17 @@ export class DynamicIconsService {
     }
   }
 
-  private updateOrCreateLink(rel: string, href: string, sizes?: string, type?: string): void {
+  private updateOrCreateLink(
+    rel: string,
+    href: string,
+    sizes?: string,
+    type?: string,
+  ): void {
     const sizeSelector = sizes ? `[sizes="${sizes}"]` : '';
-    let link = document.head.querySelector(`link[rel="${rel}"]${sizeSelector}`) as HTMLLinkElement;
-    
+    let link = document.head.querySelector(
+      `link[rel="${rel}"]${sizeSelector}`,
+    ) as HTMLLinkElement;
+
     if (!link) {
       link = document.createElement('link');
       link.rel = rel;
@@ -226,7 +240,7 @@ export class DynamicIconsService {
       if (type) link.type = type;
       document.head.appendChild(link);
     }
-    
+
     link.href = href;
   }
 }

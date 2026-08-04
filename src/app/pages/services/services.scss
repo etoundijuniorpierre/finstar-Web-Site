@@ -1630,6 +1630,10 @@ $breakpoints: (
     margin: 0 auto 2rem auto;
     min-width: 0;
     border-radius: 20px;
+    // En colonne, la hauteur vient du contenu : garder min-height/overflow du
+    // mode deux colonnes tronquait la fin de la checklist.
+    min-height: 0;
+    overflow: visible;
   }
 
   .credit-table-col {
@@ -1637,7 +1641,9 @@ $breakpoints: (
     width: 100%;
     flex: none; // Évite l'écrasement sur mobile
     position: relative;
-    min-height: 300px; // Hauteur minimale pour le contenu
+    // Pas de hauteur minimale : la colonne de gauche ne contient que quelques
+    // boutons et se retrouvait étirée avec un grand vide sous la liste.
+    min-height: 0;
   }
 
   .credit-table-col-left {
@@ -1656,7 +1662,9 @@ $breakpoints: (
   }
 
   .credit-table-row-content {
-    min-height: 180px !important; // Hauteur minimale garantie
+    // La checklist définit sa propre hauteur : une hauteur minimale imposée
+    // tronquait les derniers éléments dans le conteneur à overflow caché.
+    min-height: 0 !important;
     padding: 20px 15px !important;
     line-height: 1.6;
     font-weight: 400;
@@ -2950,5 +2958,137 @@ $breakpoints: (
     p {
       grid-column: 1;
     }
+  }
+}
+
+#product-items-section,
+#account-guide-detail,
+#credit-conditions {
+  scroll-margin-top: 7rem;
+}
+
+@media (max-width: 849px) {
+  .products-tabs-section {
+    .hero-content-col {
+      min-height: 0;
+    }
+
+    .tab-panel {
+      min-height: 18rem;
+      padding: 2rem 1.25rem;
+    }
+  }
+
+  .account-selector-label {
+    grid-column: 1 / -1;
+  }
+
+  .credit-header {
+    padding: clamp(1.5rem, 6vw, 2.5rem) 1rem;
+  }
+
+  .process-container,
+  .loan-process {
+    margin-bottom: 1.5rem;
+  }
+
+  .credit-table-wrapper {
+    overflow: visible;
+    padding: 1.25rem 0.75rem 0;
+  }
+
+  .credit-table {
+    min-height: 0;
+    overflow: visible;
+  }
+
+  .credit-table-col {
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+  }
+
+  .credit-section,
+  .credit-table-col-right {
+    overflow: visible;
+  }
+
+  .credit-table-col-left .credit-table-row:not(.credit-table-row-header) {
+    min-height: 0;
+    padding: 1rem;
+
+    &.selected {
+      padding-left: calc(1rem - 6px);
+    }
+  }
+
+  .credit-table-col-left .credit-table-row-header,
+  .credit-table-col-right .credit-table-row-header {
+    height: auto;
+    min-height: 4rem;
+    padding: 1.1rem 1rem;
+  }
+
+  .credit-table-row-content {
+    flex: 0 0 auto;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible;
+    padding: 1.25rem 1rem !important;
+  }
+
+  .credit-file-summary {
+    gap: 1rem;
+    padding-bottom: 1rem;
+  }
+
+  .requirements-list {
+    gap: 0.55rem;
+    overflow: visible;
+  }
+
+  .requirements-list li {
+    padding: 0.8rem;
+  }
+}
+
+@media (max-width: 575px) {
+  .credit-table-wrapper {
+    padding-top: 0.75rem;
+  }
+}
+
+
+@media (max-width: 900px) {
+  .credit-section,
+  .credit-table-wrapper,
+  .credit-table,
+  .credit-table-col {
+    display: block;
+    height: auto;
+    min-height: auto;
+    overflow: visible;
+  }
+
+  .credit-section {
+    margin-bottom: clamp(2rem, 6vw, 3rem);
+    padding-bottom: clamp(2rem, 6vw, 3rem);
+  }
+
+  .credit-table-wrapper {
+    padding-bottom: clamp(1.5rem, 5vw, 2.5rem);
+  }
+
+  .credit-table-row-content {
+    display: block !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible;
+  }
+
+  .requirements-list {
+    margin-top: 1.25rem;
+    min-height: 0;
+    overflow: visible;
   }
 }

@@ -60,7 +60,10 @@ export class DynamicSocialImageService {
 
       return canvas.toDataURL('image/png');
     } catch (error) {
-      console.warn('[DynamicSocialImageService] Failed to generate home page preview:', error);
+      console.warn(
+        '[DynamicSocialImageService] Failed to generate home page preview:',
+        error,
+      );
       return this.getFallbackImage();
     }
   }
@@ -85,7 +88,10 @@ export class DynamicSocialImageService {
   /**
    * Draw favicon on the canvas
    */
-  private async drawFavicon(ctx: CanvasRenderingContext2D, faviconUrl: string): Promise<void> {
+  private async drawFavicon(
+    ctx: CanvasRenderingContext2D,
+    faviconUrl: string,
+  ): Promise<void> {
     return new Promise((resolve, reject) => {
       const img = new Image();
       img.crossOrigin = 'anonymous';
@@ -104,7 +110,10 @@ export class DynamicSocialImageService {
   /**
    * Draw home page content on the canvas
    */
-  private async drawHomePageContent(ctx: CanvasRenderingContext2D, heroBanner: any): Promise<void> {
+  private async drawHomePageContent(
+    ctx: CanvasRenderingContext2D,
+    heroBanner: any,
+  ): Promise<void> {
     ctx.fillStyle = '#ffffff';
     ctx.textAlign = 'center';
 
@@ -114,7 +123,7 @@ export class DynamicSocialImageService {
     // Company name at top
     ctx.font = '700 24px "Instrument Sans", Arial, sans-serif';
     ctx.fillStyle = '#ffd700'; // Accent color
-    ctx.fillText('FINSTAR-CM SA', centerX, 120);
+    ctx.fillText('FINSTAR-CM S.A.', centerX, 120);
 
     // Tagline
     ctx.font = '400 16px "Instrument Sans", Arial, sans-serif';
@@ -125,14 +134,28 @@ export class DynamicSocialImageService {
     if (heroBanner.headline) {
       ctx.font = '700 48px "Instrument Sans", Arial, sans-serif';
       ctx.fillStyle = '#ffffff';
-      this.drawMultilineText(ctx, heroBanner.headline, centerX - maxWidth / 2, 250, maxWidth, 60);
+      this.drawMultilineText(
+        ctx,
+        heroBanner.headline,
+        centerX - maxWidth / 2,
+        250,
+        maxWidth,
+        60,
+      );
     }
 
     // Subheadline (from Directus data)
     if (heroBanner.subheadline) {
       ctx.font = '400 18px "Instrument Sans", Arial, sans-serif';
       ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-      this.drawMultilineText(ctx, heroBanner.subheadline, centerX - maxWidth / 2, 380, maxWidth, 30);
+      this.drawMultilineText(
+        ctx,
+        heroBanner.subheadline,
+        centerX - maxWidth / 2,
+        380,
+        maxWidth,
+        30,
+      );
     }
 
     // Try to load and draw hero background image if available
@@ -148,7 +171,10 @@ export class DynamicSocialImageService {
   /**
    * Draw hero background image as overlay
    */
-  private async drawHeroBackgroundImage(ctx: CanvasRenderingContext2D, imageUrl: string): Promise<void> {
+  private async drawHeroBackgroundImage(
+    ctx: CanvasRenderingContext2D,
+    imageUrl: string,
+  ): Promise<void> {
     return new Promise((resolve, reject) => {
       const img = new Image();
       img.crossOrigin = 'anonymous';
@@ -170,7 +196,8 @@ export class DynamicSocialImageService {
 
         resolve();
       };
-      img.onerror = () => reject(new Error('Failed to load hero background image'));
+      img.onerror = () =>
+        reject(new Error('Failed to load hero background image'));
       img.src = imageUrl;
     });
   }
@@ -184,7 +211,7 @@ export class DynamicSocialImageService {
     x: number,
     y: number,
     maxWidth: number,
-    lineHeight: number
+    lineHeight: number,
   ): void {
     const words = text.split(' ');
     let line = '';
@@ -227,7 +254,10 @@ export class DynamicSocialImageService {
 
       return dataUrl;
     } catch (error) {
-      console.warn('[DynamicSocialImageService] Failed to generate and cache:', error);
+      console.warn(
+        '[DynamicSocialImageService] Failed to generate and cache:',
+        error,
+      );
       return this.getFallbackImage();
     }
   }

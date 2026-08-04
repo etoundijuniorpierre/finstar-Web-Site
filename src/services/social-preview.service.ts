@@ -55,9 +55,11 @@ export class SocialPreviewService {
   /**
    * Generate dynamic meta tags for social sharing
    */
-  async generateSocialMeta(config: SocialPreviewConfig): Promise<Record<string, string>> {
+  async generateSocialMeta(
+    config: SocialPreviewConfig,
+  ): Promise<Record<string, string>> {
     const imageUrl = await this.generatePreviewImage(config);
-    const siteName = config.siteName || 'FINSTAR-CM SA';
+    const siteName = config.siteName || 'FINSTAR-CM S.A.';
 
     return {
       // Open Graph
@@ -142,11 +144,14 @@ export class SocialPreviewService {
       // Site name
       ctx.font = '400 18px "Instrument Sans", Arial, sans-serif';
       ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-      ctx.fillText(config.siteName || 'FINSTAR-CM SA', 600, 550);
+      ctx.fillText(config.siteName || 'FINSTAR-CM S.A.', 600, 550);
 
       return canvas.toDataURL('image/png');
     } catch (error) {
-      console.warn('[SocialPreviewService] Failed to generate branded preview:', error);
+      console.warn(
+        '[SocialPreviewService] Failed to generate branded preview:',
+        error,
+      );
       return this.getDefaultImageUrl();
     }
   }

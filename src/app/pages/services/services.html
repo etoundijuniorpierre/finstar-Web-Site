@@ -195,14 +195,14 @@
         @for (guide of guides; track guide.key) {
         <button type="button" [class.active]="selectedAccountGuide().key === guide.key"
           [attr.aria-pressed]="selectedAccountGuide().key === guide.key"
-          (click)="selectAccount(guide.account_ids[0])">
+          (click)="selectAccount(guide.account_ids[0], true)">
           <strong>{{ guide.label }}</strong>
           <small>{{ guide.tagline }}</small>
         </button>
         }
       </nav>
       @if (selectedAccountGuide(); as guide) {
-      <article class="account-file" aria-live="polite">
+      <article class="account-file" id="account-guide-detail" aria-live="polite">
         <div class="account-file-title">
           <div><span>{{ 'SERVICES.ACCOUNT_FILE_LABEL' | translate }}</span><h3>{{ guide.label }}</h3></div>
           <div class="minimum-chip"><small>{{ 'SERVICES.OPENING_AT' | translate }}</small><strong>{{ guide.opening_minimum }}</strong></div>
@@ -292,7 +292,7 @@
           </button>
           }
         </div>
-        <div class="credit-table-col credit-table-col-right">
+        <div class="credit-table-col credit-table-col-right" id="credit-conditions">
           <div class="credit-table-row credit-table-row-header">{{ loanConditions() }}</div>
           <div class="credit-table-row credit-table-row-content">
             @if (selectedCredit(); as credit) {

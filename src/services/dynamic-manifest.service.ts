@@ -1,4 +1,10 @@
-import { inject, Injectable, PLATFORM_ID, effect, OnDestroy } from '@angular/core';
+import {
+  inject,
+  Injectable,
+  PLATFORM_ID,
+  effect,
+  OnDestroy,
+} from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { LayoutService } from './layout.service';
 import { DynamicIconsService } from './dynamic-icons.service';
@@ -8,7 +14,7 @@ export class DynamicManifestService implements OnDestroy {
   private readonly layoutService = inject(LayoutService);
   private readonly dynamicIcons = inject(DynamicIconsService);
   private readonly platformId = inject(PLATFORM_ID);
-  
+
   private manifestBlobUrl: string | null = null;
   private updateTimeout?: ReturnType<typeof setTimeout>;
   private destroyed = false;
@@ -39,7 +45,9 @@ export class DynamicManifestService implements OnDestroy {
   private updateManifest(): void {
     if (!isPlatformBrowser(this.platformId) || this.destroyed) return;
 
-    const manifestLink = document.querySelector('link[rel="manifest"]') as HTMLLinkElement;
+    const manifestLink = document.querySelector(
+      'link[rel="manifest"]',
+    ) as HTMLLinkElement;
     if (!manifestLink) return;
 
     // Clean up previous blob URL
@@ -49,14 +57,16 @@ export class DynamicManifestService implements OnDestroy {
 
     // Generate new manifest with dynamic icons
     const manifest = this.generateManifest();
-    const blob = new Blob([JSON.stringify(manifest, null, 2)], { 
-      type: 'application/json' 
+    const blob = new Blob([JSON.stringify(manifest, null, 2)], {
+      type: 'application/json',
     });
-    
+
     this.manifestBlobUrl = URL.createObjectURL(blob);
     manifestLink.href = this.manifestBlobUrl;
-    
-    console.log('[DynamicManifestService] Updated manifest with Directus favicon icons');
+
+    console.log(
+      '[DynamicManifestService] Updated manifest with Directus favicon icons',
+    );
   }
 
   /**
@@ -79,20 +89,20 @@ export class DynamicManifestService implements OnDestroy {
         purpose: string;
       }>;
     } = {
-      name: "FINSTAR-CM SA - Institution de Microfinance",
-      short_name: "FINSTAR-CM",
+      name: 'FINSTAR-CM S.A. - Institution de Microfinance',
+      short_name: 'FINSTAR-CM',
       description: "Solutions d'épargne et de crédit sécurisées au Cameroun",
-      display: "standalone",
-      scope: "./",
-      start_url: "./",
-      theme_color: "#1a365d",
-      background_color: "#ffffff",
-      icons: []
+      display: 'standalone',
+      scope: './',
+      start_url: './',
+      theme_color: '#1a365d',
+      background_color: '#ffffff',
+      icons: [],
     };
 
     // Get all generated icons from the dynamic icons service
     const generatedIcons = this.dynamicIcons.getAllIcons();
-    
+
     // Define the icon sizes we want in the manifest
     const iconSizes = [
       { size: 72, name: 'icon-72x72.png' },
@@ -112,16 +122,16 @@ export class DynamicManifestService implements OnDestroy {
         baseManifest.icons.push({
           src: iconDataUrl,
           sizes: `${size}x${size}`,
-          type: "image/png",
-          purpose: "maskable any"
+          type: 'image/png',
+          purpose: 'maskable any',
         });
       } else {
         // Fallback to static icons if dynamic generation failed
         baseManifest.icons.push({
           src: `icons/${name}`,
           sizes: `${size}x${size}`,
-          type: "image/png",
-          purpose: "maskable any"
+          type: 'image/png',
+          purpose: 'maskable any',
         });
       }
     }
