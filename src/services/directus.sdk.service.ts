@@ -120,7 +120,7 @@ function normalizeFinstarText(value: string | null | undefined): string | null {
     .replaceAll(englishSignature, englishSignaturePlaceholder)
     .replace(
       'Une microfinance agréée pour accompagner les projets des Camerounais',
-      'Un établissement de microfinance étoilée qui éclaire vos projets et accompagne votre réussite',
+      'Un établissement de microfinance étoilé qui éclaire vos projets et accompagne votre réussite',
     )
     .replace(
       'FINSTAR-CM S.A. accompagne les particuliers, entrepreneurs et PME avec des solutions d’épargne, de crédit et de conseil portées par un établissement de microfinance de deuxième catégorie',
