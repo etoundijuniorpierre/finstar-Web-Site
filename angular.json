@@ -24,16 +24,10 @@
           "options": {
             "outputPath": "dist/finstar-cm",
             "index": "src/index.html",
+            "outputMode": "server",
             "browser": "src/main.ts",
             "polyfills": [
               "zone.js"
-            ],
-            "allowedCommonJsDependencies": [
-              "canvg",
-              "jspdf",
-              "raf",
-              "rgbcolor",
-              "core-js"
             ],
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
@@ -54,7 +48,11 @@
               "src/tailwind.css",
               "src/styles.scss"
             ],
-            "scripts": []
+            "scripts": [],
+            "server": "src/main.server.ts",
+            "ssr": {
+              "entry": "src/server.ts"
+            }
           },
           "configurations": {
             "production": {

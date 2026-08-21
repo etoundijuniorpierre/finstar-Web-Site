@@ -16,7 +16,9 @@
     "generate:social-image": "node scripts/generate-social-image.js",
     "generate:social-image:dev": "node scripts/generate-social-image.js http://localhost:4200",
     "generate:social-image:prod": "node scripts/generate-social-image.js https://your-domain.com",
-    "generate:static-favicons": "node scripts/generate-static-favicons.js"
+    "generate:static-favicons": "node scripts/generate-static-favicons.js",
+    "check:env": "node scripts/check-build-env.mjs",
+    "build:deploy": "npm run check:env && npm run build"
   },
   "private": true,
   "dependencies": {

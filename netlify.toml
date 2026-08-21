@@ -1,15 +1,31 @@
+# Configuration de déploiement versionnée : elle prime sur les réglages saisis
+# dans l'interface Netlify, qui n'étaient visibles nulle part dans le dépôt.
+
 [build]
-  command = "npm run build"
+  # `build:deploy` échoue si DIRECTUS_URL/DIRECTUS_TOKEN manquent, au lieu de
+  # publier des pages pré-rendues vides de contenu.
+  command = "npm run build:deploy"
   publish = "dist/finstar-cm/browser"
 
-# Proxy vers le serveur Directus : doit être déclaré AVANT la règle SPA,
-# sinon /directus/* renvoie index.html au lieu du JSON de l'API.
+[build.environment]
+  NODE_VERSION = "20"
+
+# Les pages référencent leurs médias via `/directus/...`, chemin servi par le
+# serveur Express en local. En publication statique, ce serveur n'existe pas :
+# Netlify relaie donc lui-même vers Directus. Le navigateur ne voit que l'origine
+# HTTPS du site, ce qui évite au passage le blocage pour contenu mixte, Directus
+# n'étant accessible qu'en HTTP. Les fichiers sont publics en lecture ; aucun
+# jeton ne transite ici.
 [[redirects]]
   from = "/directus/*"
   to = "http://84.247.169.140:8056/:splat"
   status = 200
   force = true
 
+# Les pages publiques sont pré-rendues : Netlify sert d'abord le fichier
+# correspondant. Cette règle ne s'applique donc qu'aux routes rendues côté
+# client (l'administration) et aux URL inconnues, qui reçoivent l'index racine
+# — le routeur Angular prend alors le relais.
 [[redirects]]
   from = "/*"
   to = "/index.html"
