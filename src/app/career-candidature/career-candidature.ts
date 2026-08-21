@@ -3,10 +3,10 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ToastrService } from 'ngx-toastr';
-import { DirectusSdkService } from '../../services/directus.sdk.service';
+import { SubmissionsService } from '../../services/submissions.service';
 import { EmailService } from '../../services/email-service';
 import { PdfService } from '../../services/pdf-service';
-import { SupabaseCandidature } from '../../types/supabase';
+import { JobApplication } from '../../types/submissions';
 import { SeoService } from '../../services/seo.service';
 import { ActivatedRoute } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
@@ -25,7 +25,7 @@ export class CareerCandidature implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly translate = inject(TranslateService);
   private readonly toastr = inject(ToastrService);
-  private readonly directusSdkService = inject(DirectusSdkService);
+  private readonly submissions = inject(SubmissionsService);
   private readonly emailService = inject(EmailService);
   private readonly pdfService = inject(PdfService);
   private readonly platformId = inject(PLATFORM_ID);
@@ -178,7 +178,7 @@ export class CareerCandidature implements OnInit {
     this.candidatureForm.get(controlName)?.setValue(digits, { emitEvent: false });
   }
 
-  private transformFormDataForSupabase(formData: any, ficheUrl: string = ''): SupabaseCandidature {
+  private buildApplicationPayload(formData: any, ficheFileId: string = ''): JobApplication {
     const villesSelectionnees = this.villes.filter(ville => {
       const controlName = 'ville_' + this.normalizeVilleName(ville);
       return formData[controlName];
@@ -198,41 +198,41 @@ export class CareerCandidature implements OnInit {
     }
 
     return {
-      Nom: formData.nom,
-      Prenom: formData.prenom,
-      Age: Number(formData.age),
-      Ville_de_residence: formData.villeResidence,
-      Tel: formData.telephone.replace(/\D/g, ''),
-      Email: formData.email,
-      Dernier_diplome: formData.dernierDiplome,
-      Situation_matrimoniale: formData.situationMatrimmoniale,
-      Nombre_d_enfants: formData.nombreEnfants.toString(),
+      nom: formData.nom,
+      prenom: formData.prenom,
+      age: Number(formData.age),
+      ville_residence: formData.villeResidence,
+      telephone: formData.telephone.replace(/\D/g, ''),
+      email: formData.email,
+      dernier_diplome: formData.dernierDiplome,
+      situation_matrimoniale: formData.situationMatrimmoniale,
+      nombre_enfants: formData.nombreEnfants.toString(),
       a_deja_travaille: formData.dejaTravaille,
       dernier_emploi: formData.ouTravaille || null,
-      Nouvel_emploi_jours_et_horaires: joursHoraires,
-      Travail_hors_de_la_ville: formData.travailHorsVille,
-      Condition_de_travail_hors_de_la_ville: this.isCollectorApplication()
+      disponibilites: joursHoraires,
+      travail_hors_ville: formData.travailHorsVille,
+      condition_hors_ville: this.isCollectorApplication()
         ? `${this.translate.instant('CANDIDATURE.PDF.AVALIST_SECTION')} : ${this.formatAvaliste(formData)} ; ${formData.cautionAcceptee ? this.translate.instant('COMMON.YES') : this.translate.instant('COMMON.NO')}`
         : formData.conditions || null,
-      Salaire_souhaite: formData.salaireSouhaite.toString().replace(/\./g, ''),
-      Methodes_de_remuneration: this.mapMethodeRemuneration(formData.methodeRemuneration),
-      Villes_de_preference: villesSelectionnees,
-      Poste_souhaite: formData.posteSouhaite,
-      CV_Url: formData.cvUrl,
-      Fiche_Url: ficheUrl,
-      Type_candidature: this.isStageApplication() ? 'stage' : (this.isCollectorApplication() ? 'collectrice' : (this.isSupervisionApplication() ? 'agent_encadrement' : 'emploi')),
-      Type_stage: this.isStageApplication() ? formData.typeStage : null,
-      Duree_stage: this.isStageApplication() ? formData.dureeStage || null : null,
-      Theme_stage: this.isStageApplication() ? formData.themeStage || null : null,
-      Etablissement: this.isStageApplication() ? formData.etablissement || null : null,
-      Service_stage: this.isStageApplication() ? formData.serviceStage || null : null,
-      Avaliste: this.isCollectorApplication() ? this.formatAvaliste(formData) || null : null,
-      Avaliste_nom: this.isCollectorApplication() ? formData.avalisteNom || null : null,
-      Avaliste_prenom: this.isCollectorApplication() ? formData.avalistePrenom || null : null,
-      Avaliste_telephone: this.isCollectorApplication() ? formData.avalisteTelephone || null : null,
-      Avaliste_adresse: this.isCollectorApplication() ? formData.avalisteAdresse || null : null,
-      Avaliste_relation: this.isCollectorApplication() ? formData.avalisteRelation || null : null,
-      Caution_acceptee: this.isCollectorApplication() ? Boolean(formData.cautionAcceptee) : null
+      salaire_souhaite: formData.salaireSouhaite.toString().replace(/\./g, ''),
+      mode_remuneration: this.mapMethodeRemuneration(formData.methodeRemuneration),
+      villes_preference: villesSelectionnees,
+      poste_souhaite: formData.posteSouhaite,
+      cv: formData.cvFileId || null,
+      fiche_recapitulative: ficheFileId || null,
+      type_candidature: this.isStageApplication() ? 'stage' : (this.isCollectorApplication() ? 'collectrice' : (this.isSupervisionApplication() ? 'agent_encadrement' : 'emploi')),
+      type_stage: this.isStageApplication() ? formData.typeStage : null,
+      duree_stage: this.isStageApplication() ? formData.dureeStage || null : null,
+      theme_stage: this.isStageApplication() ? formData.themeStage || null : null,
+      etablissement: this.isStageApplication() ? formData.etablissement || null : null,
+      service_stage: this.isStageApplication() ? formData.serviceStage || null : null,
+      avaliste: this.isCollectorApplication() ? this.formatAvaliste(formData) || null : null,
+      avaliste_nom: this.isCollectorApplication() ? formData.avalisteNom || null : null,
+      avaliste_prenom: this.isCollectorApplication() ? formData.avalistePrenom || null : null,
+      avaliste_telephone: this.isCollectorApplication() ? formData.avalisteTelephone || null : null,
+      avaliste_adresse: this.isCollectorApplication() ? formData.avalisteAdresse || null : null,
+      avaliste_relation: this.isCollectorApplication() ? formData.avalisteRelation || null : null,
+      caution_acceptee: this.isCollectorApplication() ? Boolean(formData.cautionAcceptee) : null
     };
   }
 
@@ -343,7 +343,7 @@ export class CareerCandidature implements OnInit {
         if (!file) continue;
         const extension = file.name.includes('.') ? `.${file.name.split('.').pop()}` : '';
         const fileName = `candidature-${namePart}-${jobPart}-${key}-${uniqueId}${extension}`;
-        urls[key] = await this.directusSdkService.uploadFile(file, key, fileName, 'candidatures');
+        urls[key] = await this.submissions.uploadFile(file, fileName, 'candidatures');
       }
       return urls;
     } finally {
@@ -386,13 +386,15 @@ export class CareerCandidature implements OnInit {
             : (this.isSupervisionApplication() ? 'fiche-candidature-agent-encadrement' : 'fiche-candidature'));
         const recapFileName = `${recapPrefix}-${namePart}-${jobPart}-${uniqueId}.pdf`;
 
+        // `uploadAttachments` renvoie désormais des identifiants de fichiers
+        // Directus, et non plus des URL de stockage externes.
         const documentUrls = await this.uploadAttachments(namePart, jobPart, uniqueId);
-        const cvUrl = documentUrls['cv'] ?? '';
+        const cvFileId = documentUrls['cv'] ?? '';
 
         const formDataFull = { 
           ...formDataRaw,
           avaliste: this.formatAvaliste(formDataRaw),
-          cvUrl: cvUrl,
+          cvFileId,
           villesDePreference: villesSelectionnees,
           typeCandidature: this.isStageApplication()
             ? `stage_${formDataRaw.typeStage}`
@@ -406,7 +408,7 @@ export class CareerCandidature implements OnInit {
         let candidaturePdfUrl = '';
         try {
           const pdfBlob = await this.pdfService.generateCandidaturePdf(formDataFull as any);
-          candidaturePdfUrl = await this.directusSdkService.uploadFile(pdfBlob, 'Formulaire', recapFileName, 'candidatures');
+          candidaturePdfUrl = await this.submissions.uploadFile(pdfBlob, recapFileName, 'candidatures');
         } catch (pdfError) {
           console.error('Erreur lors de la génération/upload du PDF:', pdfError);
           this.toastr.error(this.translate.instant('ERROR.UPLOAD_FAILED'), this.translate.instant('ERROR.TITLE'));
@@ -414,11 +416,11 @@ export class CareerCandidature implements OnInit {
           return;
         }
 
-        // Sauvegarde DB Supabase
-        const dbDataToSave = this.transformFormDataForSupabase(formDataFull, candidaturePdfUrl);
+        // Enregistrement de la candidature dans Directus (via le serveur SSR).
+        const dbDataToSave = this.buildApplicationPayload(formDataFull, candidaturePdfUrl);
         
         try {
-          await this.directusSdkService.submitCandidature(dbDataToSave, documentUrls);
+          await this.submissions.submitApplication({ ...dbDataToSave, documents: documentUrls });
         } catch (dbError) {
           console.error('Erreur lors de la sauvegarde DB:', dbError);
           this.toastr.error(this.translate.instant('ERROR.DB_SAVE_FAILED'), this.translate.instant('ERROR.TITLE'));

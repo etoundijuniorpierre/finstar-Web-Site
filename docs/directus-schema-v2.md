@@ -52,16 +52,18 @@ donc réversible tant que l'ancienne instance existe.
 | `stats` | `sort`, `value` (**integer**), `label`, `show_plus` (**boolean**) | ✅ |
 | `testimonials` | `sort`, `quote`, `author_name`, `author_title`, `author_image` (file) | ✅ |
 | `credit_products` | `sort`, `key` (slug stable), `name`, `image` (file), `headline` | ✅ |
-| `product_items` | `product` (**M2O** → `credit_products`), `sort`, `name`, `image` (file), `description` | ✅ |
+| `product_items` | `product` (**M2O** → `credit_products`), `sort`, `name`, `image` (file), `description`, `opening_minimum`, `eligibility`, `documents`, `benefits` | ✅ |
 | `credit_categories` | `sort`, `category`, `interest_rates` (json[]), `requirements` (json[]) | ✅ |
 | `loan_process` | `sort`, `title`, `steps` (json : `[{ step, details[] }]`) | ✅ |
 | `about_blocks` | `sort`, `kind` (**enum** `mission\|vision\|values\|partners`), `title`, `body`, `values` (json[]) | ✅ |
 | `partners` | `sort`, `name`, `logo` (file), `url` | — |
 | `agencies` | `sort`, `name`, `city` | ✅ |
 | `job_offers` | `sort`, `key`, `title`, `description`, `diplomas` (json[]), `mission`, `skills` (json[]), `tasks` (json[]), `remuneration`, `dossier` (json[]) | ✅ |
+| `account_types` | `sort`, `key`, `legacy_id`, `min_amount`, `account_name`, `description`, `full_description` | ✅ |
+| `account_opening_guides` | `sort`, `key`, `account_ids`, `opening_fee`, `opening_minimum`, `label`, `tagline`, `best_for`, `use_cases`, `documents`, `benefits`, `practical_note` | ✅ |
 | `languages` | `code`, `name`, `direction` | — |
 
-**Total : 7 singletons + 12 collections** (+ leurs `_translations`), contre ~27 collections aujourd'hui.
+**Total de la cible étendue : 7 singletons + collections éditoriales et fonctionnelles du lot** (+ leurs `_translations`). Les deux collections de comptes ont été ajoutées après constat que ces blocs étaient désormais rendus par le frontend.
 
 ---
 
@@ -105,7 +107,7 @@ donc réversible tant que l'ancienne instance existe.
 ### Collections
 | Collection | Motif |
 |---|---|
-| `Account_types` (+ `_translations`, `Pages_sections_Account_types`) | 11 fiches rédigées, **jamais rendues** (bloc HTML commenté). Conservées dans le backup ; ré-importables si on décide de ré-afficher `app-account-card`. |
+| `Pages_sections_Account_types` | Jonction legacy remplacée par `account_types` et `account_opening_guides`, car le bloc de comparaison des comptes est désormais rendu. |
 | `Contact_form_data` | Legacy. Les soumissions vont dans **Supabase**. Contient de la **PII** → export chiffré avant mise hors service. |
 | `JobDemandForm` | Idem (candidatures). |
 

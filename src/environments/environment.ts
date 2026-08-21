@@ -14,14 +14,6 @@ export const environment: Environment = {
     contactEmail: 'teamkf48inscription@gmail.com',
     careerEmail: 'teamkf48inscription@gmail.com'
   },
-  supabase: {
-    url: 'https://orontrbloeemieohnxhd.supabase.co/rest/v1',
-    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9yb250cmJsb2VlbWllb2hueGhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM5NDk2OTcsImV4cCI6MjA5OTUyNTY5N30.cgZ5GIgpH0JE-SAqmSfhpbRS18vEGuxBR9XwhxKQSXM',
-    contactsBucket: 'Contacts',
-    candidaturesBucket: 'Candidatures'
-  },
   goatCounterCode: 'team48',
-  goatCounterToken: 'euvtpfi3sd0qxppcfz5aevupfkf8fvmx77hegydlus73c3zd',
-  directusToken: 'CwfXkGtZTrLb3Vp6--zZccqWEib5AhaU',
   goatCounterMockData: true
 };

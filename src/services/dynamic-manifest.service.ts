@@ -73,6 +73,10 @@ export class DynamicManifestService implements OnDestroy {
    * Generate manifest with dynamic icons
    */
   private generateManifest(): any {
+    // Un manifeste servi depuis une URL `blob:` n'a pas de base HTTP permettant
+    // de résoudre `./`. Les URL de navigation et les icônes de secours doivent
+    // donc être absolues.
+    const appRoot = `${window.location.origin}/`;
     const baseManifest: {
       name: string;
       short_name: string;
@@ -93,8 +97,8 @@ export class DynamicManifestService implements OnDestroy {
       short_name: 'FINSTAR-CM',
       description: "Solutions d'épargne et de crédit sécurisées au Cameroun",
       display: 'standalone',
-      scope: './',
-      start_url: './',
+      scope: appRoot,
+      start_url: appRoot,
       theme_color: '#1a365d',
       background_color: '#ffffff',
       icons: [],
@@ -128,7 +132,7 @@ export class DynamicManifestService implements OnDestroy {
       } else {
         // Fallback to static icons if dynamic generation failed
         baseManifest.icons.push({
-          src: `icons/${name}`,
+          src: `${appRoot}icons/${name}`,
           sizes: `${size}x${size}`,
           type: 'image/png',
           purpose: 'maskable any',

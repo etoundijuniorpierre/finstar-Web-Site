@@ -11,11 +11,12 @@ import { DynamicManifestService } from "../services/dynamic-manifest.service";
 import { LanguageInitService } from "../services/language-init.service";
 import { TranslateModule } from '@ngx-translate/core';
 import { environment } from '../environments/environment';
+import { RatingWidget } from './shared/rating-widget/rating-widget';
 
 @Component({
   selector: 'app-root',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet, Navbar, Footer, Favicon, TranslateModule],
+  imports: [RouterOutlet, Navbar, Footer, Favicon, TranslateModule, RatingWidget],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
@@ -42,7 +43,12 @@ export class App implements OnInit {
 
   private initAnalytics(): void {
     const code = environment.goatCounterCode;
-    if (!code) return;
+    const hostname = window.location.hostname.toLowerCase();
+    const isLocal = hostname === 'localhost'
+      || hostname === '127.0.0.1'
+      || hostname === '::1'
+      || hostname.endsWith('.localhost');
+    if (!code || isLocal) return;
 
     this.goatCounterCode = code;
 

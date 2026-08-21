@@ -197,6 +197,7 @@
     "CAREER": "Carrière",
     "ABOUT": "À Propos",
     "CONTACTS": "Contacts",
+    "AGENCIES": "Nos agences",
     "FAQ": "Questions fréquentes",
     "METRICS": "Métriques",
     "MENU": "Menu",
@@ -212,8 +213,30 @@
     "CUSTOMER_SERVICE": "À votre service",
     "SATISFACTION_GUARANTEED": "Satisfaction et proximité"
   },
+  "AGENCIES": {
+    "KICKER": "Notre réseau",
+    "TITLE": "Où nous rencontrer",
+    "SUBTITLE": "Une direction générale à Yaoundé, qui pilote l’établissement, ses partenariats et le suivi du réseau, et cinq agences dans le Centre, le Littoral et l’Ouest où vous ouvrez un compte, épargnez, sollicitez un crédit et réalisez vos opérations du quotidien : partout les mêmes conseillers, les mêmes services et le même engagement à répondre à toutes vos préoccupations.",
+    "BRANCH": "Agence",
+    "HEAD_OFFICE": "Direction générale",
+    "PHONE": "Téléphone",
+    "EMPTY": "Les informations des agences sont momentanément indisponibles. Consultez la page Contacts.",
+    "NEED_HELP": "Une question avant votre visite ?",
+    "NEED_HELP_TEXT": "Notre équipe reste à votre écoute pour vous orienter vers l’implantation la plus adaptée.",
+    "HOME_TITLE": "FINSTAR-CM S.A. près de vous",
+    "HOME_TEXT": "Consultez les adresses de nos agences et préparez votre visite.",
+    "VIEW_ALL": "Voir toutes les agences",
+    "BRANCHES_TITLE": "Nos agences",
+    "BRANCHES_TEXT": "Poussez la porte de l’agence la plus proche de vous : ouverture de compte, épargne, crédit et opérations du quotidien.",
+    "HEAD_OFFICE_ROLE": "Pilotage de l’établissement, partenariats et suivi du réseau. Elle n’accueille pas les opérations courantes : pour un compte ou un crédit, rendez-vous en agence.",
+    "ADDRESS": "Adresse",
+    "REGION": "Région",
+    "HOURS": "Horaires",
+    "DETAILS": "Voir les informations",
+    "REGIONS": "Régions couvertes"
+  },
   "FOOTER": {
-    "COPYRIGHT": "Copyright © {{year}} FINSTAR-CM S.A. agréé N° 0000499, immatriculé RC/YAO/2023/B/288. — Tous droits réservés"
+    "COPYRIGHT": "Copyright © {{year}} FINSTAR-CM S.A. agréé N° 0000499, immatriculé RC/BJN/2023/B/03. — Tous droits réservés"
   },
   "TRUST": {
     "KICKER": "Cadre institutionnel",
@@ -253,29 +276,29 @@
       "PRACTICAL": "Agences et démarches"
     },
     "Q1": "Quels types de comptes propose FINSTAR-CM S.A. ?",
-    "A1": "Nous proposons une gamme complète : compte épargne classique, compte courant, compte bloqué, épargne journalière (collecte à domicile) et dépôt à terme. Tous nos comptes sont adaptés à vos besoins. L'ouverture est 100% gratuite, seul un premier versement (acompte) est demandé. Le détail est présenté sur la page Services & Produits.",
+    "A1": "Compte épargne, compte courant, compte bloqué, épargne journalière (collecte à domicile), dépôt à terme et compte à terme. L'ouverture est gratuite pour les particuliers ; elle coûte 2 500 FCFA pour les comptes Entreprise et Association. Dans tous les cas, un premier versement est demandé et cet argent reste le vôtre. Le détail figure sur la page Services & Produits.",
     "Q2": "Comment obtenir un crédit ?",
     "A2": "Il faut être titulaire d'un compte FINSTAR-CM S.A., le mouvementer depuis au moins 3 mois, constituer un dossier complet, rédiger une demande manuscrite adressée au Directeur général, disposer d'un apport personnel et proposer une garantie. Toute demande reste soumise à étude.",
     "Q3": "Quelles pièces fournir pour une demande de crédit ?",
     "A3": "La liste complète dépend du type de crédit. Elle comprend notamment une demande manuscrite adressée au Directeur général, une CNI ou un passeport valide, les plans de localisation, le NUI, les relevés bancaires des 3 derniers mois, des photos d'identité, les justificatifs du besoin, les garanties, l'apport personnel et les pièces des cautions. La page Services présente la checklist complète de chaque type.",
     "Q4": "Quels types de crédit sont disponibles ?",
     "A4": "Le crédit classique, le crédit particulier ou salarié et le crédit d'investissement.",
-    "Q5": "Qu'est-ce que la collecte journalière (FINCOLLECT) ?",
-    "A5": "Un service qui vous permet d'épargner chaque jour sans effort : vos dépôts sont récupérés directement auprès de vous, avec une confirmation à chaque collecte.",
+    "Q5": "Qu'est-ce que l'épargne journalière ?",
+    "A5": "Un service qui vous permet d'épargner chaque jour sans effort : une collectrice FINSTAR-CM S.A. passe sur votre lieu d'activité pour récupérer vos dépôts, confirmés à chaque passage. Il correspond au compte épargne journalière, présenté sur la page Services & Produits.",
     "Q6": "Où se trouvent vos agences ?",
-    "A6": "FINSTAR-CM S.A. est présent à Yaoundé (Nkolbisson), Douala (Bessengue), Bafoussam, Bayangam et Bangangté. Les adresses complètes figurent sur la page Contacts.",
+    "A6": "FINSTAR-CM S.A. compte six agences : Yaoundé – Nkolbisson, Yaoundé – Essos, Yaoundé – Etoudi, Douala – Bessengue, Bafoussam et Bangangté. La direction générale se trouve à Yaoundé – Bastos et le siège social à Bayangam. Toutes les adresses figurent sur la page Nos agences.",
     "Q7": "FINSTAR-CM S.A. est-il un établissement agréé ?",
-    "A7": "Oui. FINSTAR-CM S.A. est un établissement de microfinance de 2e catégorie agréé (N° 0000499), immatriculé RC/YAO/2023/B/288. Siège social à Bayangam, direction générale à Bastos, Yaoundé.",
+    "A7": "Oui. FINANCIAL STAR CAMEROON S.A. (FINSTAR-CM S.A.) est une société anonyme immatriculée sous le numéro RC/BJN/2023/B/03 et un établissement de microfinance de deuxième catégorie agréé sous le numéro N° 0000499. Siège social à Bayangam, direction générale à Yaoundé – Bastos. La première agence a ouvert le 26 novembre 2024 à Yaoundé – Nkolbisson.",
     "Q8": "Comment vous contacter ?",
     "A8": "Par e-mail (contact@finstar-cm.com), par téléphone ou WhatsApp (+237 620 724 796), ou via le formulaire de contact.",
-    "Q9": "L'ouverture d'un compte chez FINSTAR-CM est-elle payante ?",
-    "A9": "Non, l'ouverture de tous nos comptes est 100% gratuite ! Seul un premier versement (acompte initial) vous sera demandé selon le type de compte, et cet argent reste le vôtre. Rendez-vous dans l'agence FINSTAR-CM de votre choix avec une pièce d'identité valide et 2 photos 4x4. Un conseiller vous guidera dans la constitution du dossier.",
-    "Q10": "Quels services digitaux propose FINSTAR-CM ?",
-    "A10": "FINSTAR-CM S.A. propose notamment FINCOLLECT pour l’épargne collectée, FINSAVE pour alimenter un compte à distance et FINALERT pour recevoir des notifications SMS sur les opérations.",
+    "Q9": "L'ouverture d'un compte chez FINSTAR-CM S.A. est-elle payante ?",
+    "A9": "L'ouverture est gratuite pour les comptes des particuliers ; elle est facturée 2 500 FCFA pour les comptes Entreprise et Association. Un premier versement est demandé selon le type de compte — 5 000 FCFA pour un compte courant individuel, 10 000 FCFA pour un compte épargne individuel, 15 000 FCFA pour un compte Entreprise ou Association — et cette somme reste la vôtre. Présentez-vous en agence avec une pièce d'identité valide et 4 photos 4×4 (2 pour le compte de collecte journalière).",
+    "Q10": "Quels services digitaux propose FINSTAR-CM S.A. ?",
+    "A10": "FINSTAR-CM S.A. propose FINSAVE pour alimenter un compte à distance et FINALERT pour recevoir des notifications SMS sur les opérations. L'épargne journalière est assurée par le passage d'une collectrice sur votre lieu d'activité.",
     "Q11": "Quels services Mobile Money et transfert sont disponibles ?",
-    "A11": "Les services comprennent notamment Orange Money, MTN Mobile Money, SARA Money, SmobilPay, Western Union, MoneyGram et RIA, selon les opérations disponibles en agence.",
+    "A11": "Orange Money, MTN Mobile Money, SARA Money, SmobilPay, Western Union, MoneyGram et RIA, ainsi que les versements Afriland et Ecobank. FINSTAR-CM S.A. assure également le paiement de factures (SOCADEL, ENEO, CANAL+, impôts et taxes), le paiement de la scolarité et le paiement des salaires.",
     "Q12": "Quels sont les frais et les taux appliqués ?",
-    "A12": "Les frais, taux et conditions varient selon le produit et l’opération. Ils doivent être vérifiés dans la tarification et le contrat applicables au moment de votre demande auprès d’une agence FINSTAR-CM.",
+    "A12": "Les frais et taux dépendent du produit et de l'opération. À l'ouverture, retenez : compte courant individuel 5 000 FCFA de premier versement, compte épargne individuel 10 000 FCFA, compte Entreprise ou Association 15 000 FCFA avec 2 500 FCFA de frais d'ouverture. Les autres conditions sont précisées dans la tarification et le contrat applicables au moment de votre demande.",
     "Q13": "Comment déposer une réclamation ou signaler un problème ?",
     "A13": "Vous pouvez écrire à contact@finstar-cm.com, appeler le +237 620 724 796 ou utiliser le formulaire de contact en décrivant précisément votre demande."
   },
@@ -316,19 +339,19 @@
     "OPEN_ACCOUNT_ARIA_LABEL": "Parcours d’ouverture de compte",
     "OPEN_ACCOUNT_IMAGE_ALT": "Conseiller FINSTAR-CM S.A. accompagnant une ouverture de compte",
     "OPEN_ACCOUNT_TITLE": "Ouvrir le compte adapté à votre besoin",
-    "OPEN_ACCOUNT_INTRO": "Comparez les comptes, préparez les pièces correspondantes, puis finalisez votre ouverture en agence avec un conseiller FINSTAR-CM.",
+    "OPEN_ACCOUNT_INTRO": "Comparez les comptes, préparez les pièces correspondantes, puis finalisez votre ouverture en agence avec un conseiller FINSTAR-CM S.A.",
     "OPEN_ACCOUNT_STEP_1": "Choisissez votre compte",
-    "OPEN_ACCOUNT_STEP_1_TEXT": "Sélectionnez un compte ci-dessous pour consulter le premier versement à prévoir. Rappel : l'ouverture de tout compte est 100% gratuite.",
+    "OPEN_ACCOUNT_STEP_1_TEXT": "Sélectionnez un compte ci-dessous pour consulter les frais et le premier versement à prévoir. L’ouverture est gratuite pour les particuliers ; elle coûte 2 500 FCFA pour les comptes Entreprise et Association.",
     "OPEN_ACCOUNT_STEP_2": "Préparez votre dossier",
     "OPEN_ACCOUNT_STEP_2_TEXT": "Réunissez les justificatifs propres à votre profil. Aucun document supplémentaire n’est supposé ici.",
     "OPEN_ACCOUNT_STEP_3": "Finalisez en agence",
     "OPEN_ACCOUNT_STEP_3_TEXT": "Un conseiller vérifie le dossier et vous accompagne pour la demande, la fiche de signature ou le contrat applicable.",
-    "MINIMUM_LABEL": "Ouverture gratuite - Versement initial",
+    "MINIMUM_LABEL": "Ouverture gratuite - Premier versement",
     "ACCOUNT_FILE_LABEL": "Démarches et pièces à fournir",
     "CHOOSE_BY_NEED": "Choisissez selon votre besoin",
     "ALL_ACCOUNTS_TITLE": "Tous les comptes en un coup d’œil",
     "ALL_ACCOUNTS_TEXT": "Commencez par comparer l'usage et le premier versement. Rappel : l'ouverture est totalement gratuite. Vous pourrez ensuite consulter les détails.",
-    "FROM": "Ouverture : GRATUITE | 1er versement dès",
+    "FROM": "Premier versement dès",
     "SEE_OPENING_DETAILS": "Voir le parcours d’ouverture",
     "VIEW_SAVINGS_JOURNEY": "Voir le parcours du compte épargne",
     "ASK_BRANCH": "Demander les conditions en agence",
@@ -337,7 +360,9 @@
     "USE_CASES": "Il peut vous aider à :",
     "DOCUMENT_CHECKLIST": "Pièces à apporter en agence :",
     "AFTER_OPENING": "Une fois le compte ouvert :",
-    "OPENING_AT": "Ouverture : GRATUITE | Versement :",
+    "OPENING_AT": "Premier versement :",
+    "OPENING_PREFIX": "Ouverture :",
+    "FREE": "GRATUITE",
     "GUIDE_NOTICE": "Les pièces ci-dessous correspondent au profil décrit dans la fiche produit. Un conseiller vérifie votre situation avant l’ouverture.",
     "PRACTICAL_NOTE_LABEL": "À noter :",
     "FIND_AGENCY": "Trouver une agence",
@@ -374,11 +399,9 @@
     "APPLICATION_DOSSIER": "Constitution du dossier",
     "APPLY_NOW": "Postulez maintenant",
     "JOBS_HEADLINE": "Nos opportunités de carrière",
-    "ROLE_FINSTAR_STAFF": "Personnel FINSTAR",
+    "ROLE_FINSTAR_STAFF": "Personnel FINSTAR-CM S.A.",
     "ROLE_COLLECTION_AGENT": "Agent de collecte",
     "ROLE_INTERN": "Stagiaire",
-    "RECRUITMENT_MODE": "Mode de recrutement",
-    "COMPETITION_ONLY": "Sur concours uniquement",
     "LOADING_ERROR_TITLE": "Erreur de chargement",
     "LOADING_ERROR_MESSAGE": "Impossible de charger les données de carrière",
     "RETRY": "Réessayer",
@@ -392,7 +415,6 @@
     "PHONE": "Téléphone",
     "CUSTOMER_SERVICE": "Service client",
     "FOLLOW_US": "Suivez-nous",
-    "OUR_AGENCIES": "Nos Agences",
     "SEND_MESSAGE_TITLE": "Envoyez-nous un message",
     "NAME": "Votre nom",
     "NAME_PLACEHOLDER": "Entrez votre nom",
@@ -413,7 +435,6 @@
     "UPLOADING": "Téléversement en cours...",
     "EMAIL_HINT": "(ou téléphone)",
     "PHONE_HINT": "(ou email)",
-    "AGENCY_TYPE": "Agence",
     "WHATSAPP": "WhatsApp",
     "LOADING": "Chargement...",
     "ERROR_TITLE": "Erreur de chargement",
@@ -470,12 +491,31 @@
     "TITLE": "Succès",
     "MESSAGE": "Votre message a été envoyé avec succès ! Nous vous recontacterons bientôt."
   },
+  "RATING": {
+    "TITLE": "Comment évaluez-vous ce site ?",
+    "SUBTITLE": "Votre avis nous aide à améliorer votre expérience.",
+    "COMMENT": "Commentaire facultatif",
+    "SUBMIT": "Envoyer ma note",
+    "SENDING": "Envoi...",
+    "THANKS": "Merci, votre avis a bien été enregistré.",
+    "ERROR": "Votre note n'a pas pu être envoyée. Veuillez réessayer.",
+    "AGAIN": "Donner un nouvel avis"
+  },
   "METRICS": {
     "BADGE": "Administration · trafic web",
     "TITLE": "Tableau de bord du trafic",
     "SUBTITLE": "Suivez l’audience, les parcours de visite et les conversions du site FINSTAR-CM S.A. depuis un rapport unique.",
     "REFRESH": "Actualiser",
     "EXPORT": "Exporter le Rapport",
+    "RATINGS": {
+      "KICKER": "Satisfaction",
+      "TITLE": "Notes du site",
+      "DESCRIPTION": "Moyenne, répartition des étoiles et derniers commentaires reçus.",
+      "AVERAGE": "Note moyenne",
+      "TOTAL": "Votes reçus",
+      "RECENT": "Derniers commentaires",
+      "UNAVAILABLE": "Les données de satisfaction sont indisponibles."
+    },
     "AUTH": {
       "KICKER": "Espace sécurisé",
       "TITLE": "Connexion administrateur",
@@ -498,7 +538,7 @@
       "KICKER": "Rapport connecté",
       "TITLE": "Vue complète de l’audience",
       "DESCRIPTION": "Le tableau de bord FINSTAR-CM S.A. regroupe les visites du site, les sources de trafic, les appareils et les événements de conversion.",
-      "LAUNCH_DESCRIPTION": "Le tableau de bord sécurisé est hébergé par GoatCounter. Ouvrez-le pour consulter les données réelles du site FINSTAR-CM.",
+      "LAUNCH_DESCRIPTION": "Le tableau de bord sécurisé est hébergé par GoatCounter. Ouvrez-le pour consulter les données réelles du site FINSTAR-CM S.A.",
       "OPEN": "Ouvrir le tableau de bord"
     },
     "TRAFFIC": {
@@ -539,7 +579,7 @@
     "SETUP": {
       "KICKER": "Configuration requise",
       "TITLE": "Connecter le rapport de trafic",
-      "DESCRIPTION": "Le tableau de bord est prêt à accueillir un site GoatCounter dédié à FINSTAR-CM S.A..",
+      "DESCRIPTION": "Le tableau de bord est prêt à accueillir un site GoatCounter dédié à FINSTAR-CM S.A.",
       "STEP_ONE": "Créer un compte gratuit sur GoatCounter et un site pour finstar-cm.com.",
       "STEP_TWO": "Renseigner le code du site GoatCounter dans goatCounterCode.",
       "STEP_THREE": "Déployer, puis vérifier les pages vues et les événements dans le tableau de bord GoatCounter."
@@ -547,7 +587,7 @@
     "CONVERSIONS": {
       "KICKER": "Actions reçues",
       "TITLE": "Conversions enregistrées par le site",
-      "DESCRIPTION": "Ces volumes proviennent des formulaires FINSTAR-CM S.A.. Ils complètent les événements de conversion suivis dans GoatCounter.",
+      "DESCRIPTION": "Ces volumes proviennent des formulaires FINSTAR-CM S.A. Ils complètent les événements de conversion suivis dans GoatCounter.",
       "CANDIDATURES_HELP": "Total enregistré dans la base des candidatures.",
       "CONTACTS_HELP": "Total enregistré dans la base des demandes de contact.",
       "UNAVAILABLE": "Données opérationnelles indisponibles"
@@ -614,7 +654,7 @@
     },
     "CAREER": {
       "TITLE": "Carrière avec FINSTAR-CM S.A. | Rejoignez l'étoile de la microfinance",
-      "DESCRIPTION": "Découvrez les opportunités de carrière chez FINSTAR-CM S.A. et postulez à nos offres d'emploi dans la microfinance, la relation client et les métiers financiers. Construisez votre carrière avec FINSTAR-CM.",
+      "DESCRIPTION": "Découvrez les opportunités de carrière chez FINSTAR-CM S.A. et postulez à nos offres d'emploi dans la microfinance, la relation client et les métiers financiers. Construisez votre carrière avec FINSTAR-CM S.A.",
       "KEYWORDS": "carrière finstar, financial star, carriere avec finstar, emploi finstar cm, recrutement microfinance cameroun, offres d'emploi finstar, travailler chez finstar cm, carrière microfinance"
     },
     "CONTACTS": {
@@ -622,9 +662,14 @@
       "DESCRIPTION": "Contactez FINSTAR-CM S.A. : coordonnées des agences, numéros de téléphone, adresses email et service client WhatsApp. Envoyez-nous un message pour toute question sur nos produits et services.",
       "KEYWORDS": "contact finstar, financial star, agence finstar cm, téléphone finstar, email finstar, service client microfinance, agence microfinance cameroun"
     },
+    "AGENCIES": {
+      "TITLE": "Agences et direction générale FINSTAR-CM S.A. | Adresses et localisation",
+      "DESCRIPTION": "Localisez les agences et la direction générale FINSTAR-CM S.A. au Cameroun, consultez leurs adresses, contacts et accès cartographique.",
+      "KEYWORDS": "agences finstar, direction générale finstar, adresse finstar cameroun, finstar nkolbisson, finstar bessengue, finstar bayangam"
+    },
     "FAQ": {
       "TITLE": "FAQ FINSTAR-CM S.A. | Épargne, crédit et services financiers",
-      "DESCRIPTION": "Consultez les réponses aux questions fréquentes sur les comptes d’épargne, les crédits, les services digitaux, les transferts et les agences FINSTAR-CM S.A..",
+      "DESCRIPTION": "Consultez les réponses aux questions fréquentes sur les comptes d’épargne, les crédits, les services digitaux, les transferts et les agences FINSTAR-CM S.A.",
       "KEYWORDS": "faq finstar, questions microfinance cameroun, crédit finstar, épargne finstar, agence finstar"
     },
     "METRICS": {

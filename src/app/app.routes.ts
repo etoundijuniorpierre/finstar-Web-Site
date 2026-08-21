@@ -25,6 +25,8 @@ export const routes: Routes = [
             { path: 'career', loadComponent: () => import('./pages/career/career').then(m => m.Career) },
             { path: 'career/candidature', loadComponent: () => import('./career-candidature/career-candidature').then(m => m.CareerCandidature) },
             { path: 'contacts', loadComponent: () => import('./pages/contacts/contacts').then(m => m.Contacts) },
+            { path: 'agencies', loadComponent: () => import('./pages/agencies/agencies').then(m => m.Agencies) },
+            { path: 'agences', redirectTo: 'agencies', pathMatch: 'full' },
             { path: 'faq', loadComponent: () => import('./pages/faq/faq').then(m => m.Faq) },
             { path: 'about', loadComponent: () => import('./pages/about/about').then(m => m.About) },
             { path: 'services', loadComponent: () => import('./pages/services/services').then(m => m.Services) },

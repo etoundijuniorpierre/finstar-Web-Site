@@ -23,10 +23,10 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { I18nService } from '../../../services/i18n.service';
 import { Modal, ModalType } from '../../shared/modal/modal';
 import { SeoService } from '../../../services/seo.service';
-import { DirectusSdkService } from '../../../services/directus.sdk.service';
+import { SubmissionsService } from '../../../services/submissions.service';
 import { environment } from '../../../environments/environment';
 import { Subscription } from 'rxjs';
-import { SupabaseContact } from '../../../types/supabase';
+import { ContactSubmission } from '../../../types/submissions';
 import { AnalyticsService } from '../../../services/analytics.service';
 
 // Validateur personnalisé pour vérifier qu'au moins un des deux champs (email ou phone) est rempli
@@ -73,7 +73,7 @@ export class Contacts implements OnDestroy {
   private readonly emailService = inject(EmailService);
   private readonly toastrService = inject(ToastrService);
   private readonly seoService = inject(SeoService);
-  private readonly directusSdk = inject(DirectusSdkService);
+  private readonly submissions = inject(SubmissionsService);
   private readonly analytics = inject(AnalyticsService);
   private readonly ngZone = inject(NgZone);
   private readonly destroyRef = inject(DestroyRef);
@@ -136,7 +136,6 @@ export class Contacts implements OnDestroy {
   readonly phoneLabel = computed(() => this.staticTranslations()['CONTACT.PHONE'] || 'Téléphone');
   readonly customerServiceLabel = computed(() => this.staticTranslations()['CONTACT.CUSTOMER_SERVICE'] || 'Service client');
   readonly followUsLabel = computed(() => this.staticTranslations()['CONTACT.FOLLOW_US'] || 'Suivez-nous');
-  readonly ourAgenciesLabel = computed(() => this.staticTranslations()['CONTACT.OUR_AGENCIES'] || 'Nos Agences');
   readonly whatsappLabel = computed(() => this.staticTranslations()['CONTACT.WHATSAPP'] || 'WhatsApp');
 
   emailHref(email: string): string {
@@ -149,7 +148,7 @@ export class Contacts implements OnDestroy {
 
   whatsappHref(phone: string): string {
     const normalizedPhone = phone.replace(/\D/g, '');
-    const message = encodeURIComponent("Bonjour FINSTAR-CM, j'aimerais avoir plus d'informations sur vos services.");
+    const message = encodeURIComponent("Bonjour FINSTAR-CM S.A., j'aimerais avoir plus d'informations sur vos services.");
     return `https://wa.me/${normalizedPhone}?text=${message}`;
   }
 
@@ -376,11 +375,11 @@ export class Contacts implements OnDestroy {
           subjectColor = '#ff0000';
         }
 
-        let fileUrl = '';
+        let fileId = '';
         if (this.selectedFile) {
           try {
             this.isUploading.set(true);
-            fileUrl = await this.directusSdk.uploadFile(this.selectedFile, formValue.subject);
+            fileId = await this.submissions.uploadFile(this.selectedFile, this.selectedFile.name, 'contacts');
           } catch (fileError) {
             console.error('Erreur lors de l\'upload du fichier:', fileError);
             this.toastrService.error(this.i18nService.translate.instant('ERROR.UPLOAD_FAILED'), this.i18nService.translate.instant('ERROR.TITLE'));
@@ -391,28 +390,34 @@ export class Contacts implements OnDestroy {
           }
         }
 
-        // Sauvegarde dans Supabase table: contacts
+        // Enregistrement du message dans Directus (via le serveur SSR).
         try {
-          const dbDataToSave: SupabaseContact = {
-            Nom: formValue.name,
-            Prenom: formValue.firstname,
-            Email: formValue.email || '',
-            Telephone: formValue.phone || '',
-            Sujet: formValue.subject === 'Autres' && formValue.otherSubject ? `Autres : ${formValue.otherSubject}` : formValue.subject,
-            Message: formValue.message,
-            Fichier_Url: fileUrl || null
+          const dbDataToSave: ContactSubmission = {
+            nom: formValue.name,
+            prenom: formValue.firstname,
+            email: formValue.email || '',
+            telephone: formValue.phone || '',
+            sujet: formValue.subject === 'Autres' && formValue.otherSubject ? `Autres : ${formValue.otherSubject}` : formValue.subject,
+            message: formValue.message,
+            fichier: fileId || null
           };
-          await this.directusSdk.submitContactForm(dbDataToSave);
+          await this.submissions.submitContact(dbDataToSave);
           this.analytics.track('generate_lead', {
             method: 'contact_form',
             subject: formValue.subject || 'unknown'
           });
         } catch (dbError) {
-          console.error('Erreur lors de la sauvegarde dans Supabase:', dbError);
+          console.error("Erreur lors de l'enregistrement du message:", dbError);
           this.toastrService.error(this.i18nService.translate.instant('ERROR.DB_SAVE_FAILED'), this.i18nService.translate.instant('ERROR.TITLE'));
           this.isSubmitting.set(false);
           return; // STOP
         }
+
+        // Le mail transporte un lien public : l'identifiant Directus est résolu
+        // via le proxy `/directus`, qui sert les fichiers sans exposer de jeton.
+        const fileUrl = fileId
+          ? `${environment.siteUrl}${environment.browserApiUrl}/assets/${fileId}`
+          : '';
 
         // Envoi Email
         const emailSuccess = await this.emailService.sendEmail({

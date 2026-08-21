@@ -8,6 +8,7 @@ import express from 'express';
 import { join } from 'node:path';
 import crypto from 'node:crypto';
 import { environment } from './environments/environment';
+import { registerSubmissionRoutes, readOperationalCounts } from './server-submissions';
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
 
@@ -20,9 +21,11 @@ const angularApp = new AngularNodeAppEngine();
  * uniquement cet endpoint (même origine). Réponse mise en cache pour respecter
  * les limites de l'API GoatCounter.
  */
-const GOATCOUNTER_TOKEN = environment.goatCounterToken || '';
+const GOATCOUNTER_TOKEN = process.env['GOATCOUNTER_TOKEN'] || '';
 const GOATCOUNTER_CODE = environment.goatCounterCode || '';
-const DIRECTUS_TOKEN = process.env['DIRECTUS_TOKEN'] || environment.directusToken || '';
+const DIRECTUS_TOKEN = process.env['DIRECTUS_TOKEN'] || '';
+const DIRECTUS_URL = (process.env['DIRECTUS_URL'] || environment.apiUrl).replace(/\/$/, '');
+const RATING_HASH_SALT = process.env['RATING_HASH_SALT'] || crypto.randomBytes(32).toString('hex');
 const MOCK_ANALYTICS = environment.goatCounterMockData === true;
 const TRAFFIC_TTL_MS = 5 * 60 * 1000;
 // Presets alignés sur le tableau de bord GoatCounter : jour, semaine, mois,
@@ -30,6 +33,7 @@ const TRAFFIC_TTL_MS = 5 * 60 * 1000;
 const ALLOWED_DAYS = [1, 7, 30, 90, 180, 365];
 const trafficCache = new Map<string, { at: number; data: unknown }>();
 const activeSessions = new Set<string>();
+const ratingAttempts = new Map<string, number[]>();
 
 const isoDay = (d: Date): string => d.toISOString().slice(0, 10);
 
@@ -42,7 +46,7 @@ app.post('/api/admin/login', express.json({ limit: '8kb' }), async (req, res) =>
   }
 
   try {
-    const directusBase = environment.apiUrl.replace(/\/$/, '');
+    const directusBase = DIRECTUS_URL;
     const query = new URLSearchParams({
       'filter[UserName][_eq]': userName,
       fields: 'id,PassWord',
@@ -84,6 +88,97 @@ app.post('/api/admin/verify', express.json({ limit: '8kb' }), (req, res) => {
     return res.status(200).json({ valid: true });
   }
   return res.status(401).json({ valid: false });
+});
+
+app.post('/api/ratings', express.json({ limit: '16kb' }), async (req, res) => {
+  const score = Number(req.body?.score);
+  const comment = typeof req.body?.comment === 'string' ? req.body.comment.trim().slice(0, 1000) : '';
+  const requestedPage = typeof req.body?.page === 'string' ? req.body.page.trim().slice(0, 180) : '/';
+  const page = requestedPage.startsWith('/') ? requestedPage : '/';
+  const lang = req.body?.lang === 'en-US' ? 'en-US' : 'fr-FR';
+  const honeypot = typeof req.body?.company === 'string' ? req.body.company : '';
+
+  if (honeypot) return res.status(202).json({ accepted: true });
+  if (!Number.isInteger(score) || score < 1 || score > 5) {
+    return res.status(400).json({ accepted: false, error: 'invalid_score' });
+  }
+  if (!DIRECTUS_TOKEN) return res.status(503).json({ accepted: false, error: 'ratings_unavailable' });
+
+  const ip = req.ip || req.socket.remoteAddress || 'unknown';
+  const now = Date.now();
+  const recent = (ratingAttempts.get(ip) || []).filter((timestamp) => now - timestamp < 60 * 60 * 1000);
+  if (recent.length >= 5) return res.status(429).json({ accepted: false, error: 'rate_limited' });
+  recent.push(now);
+  ratingAttempts.set(ip, recent);
+
+  try {
+    const upstream = await fetch(`${DIRECTUS_URL}/items/site_ratings`, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json', 'Content-Type': 'application/json',
+        Authorization: `Bearer ${DIRECTUS_TOKEN}`,
+      },
+      body: JSON.stringify({
+        score,
+        emoji: ['', '😞', '🙁', '😐', '🙂', '⭐'][score],
+        comment: comment || null,
+        page,
+        lang,
+        user_agent: req.get('User-Agent')?.slice(0, 500) || null,
+        ip_hash: crypto.createHash('sha256').update(`${ip}|${RATING_HASH_SALT}`).digest('hex'),
+      }),
+      signal: AbortSignal.timeout(10_000),
+    });
+    if (!upstream.ok) throw new Error(`Directus HTTP ${upstream.status}`);
+    return res.status(201).json({ accepted: true });
+  } catch (error) {
+    console.warn('[ratings] Écriture Directus impossible.', error);
+    return res.status(503).json({ accepted: false, error: 'ratings_unavailable' });
+  }
+});
+
+app.get('/api/admin/ratings', async (req, res) => {
+  const token = (req.get('Authorization') || '').replace(/^Bearer\s+/i, '');
+  if (!activeSessions.has(token)) return res.status(401).json({ error: 'Unauthorized' });
+  if (!DIRECTUS_TOKEN) return res.status(503).json({ error: 'ratings_unavailable' });
+
+  try {
+    const query = new URLSearchParams({
+      fields: 'score,emoji,comment,page,lang,date_created', sort: '-date_created', limit: '-1',
+    });
+
+    // Même découpage temporel que le trafic, pour que les deux sections de la
+    // page admin décrivent toujours la même période.
+    const start = typeof req.query['start'] === 'string' ? req.query['start'] : '';
+    const end = typeof req.query['end'] === 'string' ? req.query['end'] : '';
+    if (start && end) {
+      query.set('filter[date_created][_gte]', `${start}T00:00:00Z`);
+      query.set('filter[date_created][_lte]', `${end}T23:59:59Z`);
+    } else {
+      const days = Math.min(3650, Math.max(1, Number(req.query['days']) || 30));
+      const from = new Date(Date.now() - (days - 1) * 86_400_000);
+      query.set('filter[date_created][_gte]', `${from.toISOString().slice(0, 10)}T00:00:00Z`);
+    }
+    const upstream = await fetch(`${DIRECTUS_URL}/items/site_ratings?${query}`, {
+      headers: { Accept: 'application/json', Authorization: `Bearer ${DIRECTUS_TOKEN}` },
+      signal: AbortSignal.timeout(10_000),
+    });
+    if (!upstream.ok) throw new Error(`Directus HTTP ${upstream.status}`);
+    const body = await upstream.json() as { data?: Array<{ score: number; emoji?: string; comment?: string; page?: string; lang?: string; date_created?: string }> };
+    const rows = body.data || [];
+    const distribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 } as Record<number, number>;
+    for (const row of rows) if (distribution[row.score] !== undefined) distribution[row.score] += 1;
+    const average = rows.length ? rows.reduce((sum, row) => sum + Number(row.score || 0), 0) / rows.length : 0;
+    return res.status(200).json({
+      total: rows.length,
+      average: Number(average.toFixed(2)),
+      distribution,
+      recent: rows.filter((row) => row.comment).slice(0, 10),
+    });
+  } catch (error) {
+    console.warn('[admin-ratings] Lecture Directus impossible.', error);
+    return res.status(503).json({ error: 'ratings_unavailable' });
+  }
 });
 
 /** PRNG déterministe : les données mock sont stables d'un appel à l'autre. */
@@ -176,6 +271,23 @@ function buildMockTraffic(startStr: string, endStr: string, days: number | null)
     ],
   };
 }
+
+registerSubmissionRoutes(app, { directusUrl: DIRECTUS_URL, directusToken: DIRECTUS_TOKEN });
+
+/** Volumes de formulaires reçus, désormais comptés dans Directus. */
+app.get('/api/admin/operational-counts', async (req, res) => {
+  const token = (req.get('Authorization') || '').replace(/^Bearer\s+/i, '');
+  if (!activeSessions.has(token)) return res.status(401).json({ error: 'Unauthorized' });
+  if (!DIRECTUS_TOKEN) return res.status(503).json({ error: 'counts_unavailable' });
+
+  try {
+    const counts = await readOperationalCounts({ directusUrl: DIRECTUS_URL, directusToken: DIRECTUS_TOKEN });
+    return res.status(200).json(counts);
+  } catch (error) {
+    console.warn('[admin-counts] Lecture Directus impossible.', error);
+    return res.status(503).json({ error: 'counts_unavailable' });
+  }
+});
 
 app.get('/api/metrics/traffic', async (req, res) => {
   const authHeader = req.get('Authorization') || '';
@@ -357,13 +469,18 @@ app.get('/api/metrics/traffic', async (req, res) => {
  */
 app.use('/directus', express.raw({ type: '*/*', limit: '12mb' }), async (req, res, next) => {
   try {
-    const target = new URL(req.url, `${environment.apiUrl.replace(/\/$/, '')}/`);
+    const target = new URL(req.url, `${DIRECTUS_URL}/`);
     const headers = new Headers({ accept: req.get('accept') || '*/*' });
     const contentType = req.get('content-type');
     const authorization = req.get('authorization');
 
     if (contentType) headers.set('content-type', contentType);
     if (authorization) headers.set('authorization', authorization);
+    else if (DIRECTUS_TOKEN && /^\/assets\//.test(req.url)) {
+      // Les médias v2 restent privés dans Directus ; seul le proxy même origine
+      // ajoute le jeton serveur pour leur lecture.
+      headers.set('authorization', `Bearer ${DIRECTUS_TOKEN}`);
+    }
 
     const hasBody = req.method !== 'GET' && req.method !== 'HEAD' && Buffer.isBuffer(req.body) && req.body.length > 0;
     const upstream = await fetch(target, {

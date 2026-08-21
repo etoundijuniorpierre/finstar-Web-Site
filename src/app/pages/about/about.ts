@@ -76,6 +76,7 @@ export class About {
   // Données dynamiques
   aboutData = this.aboutService.aboutData;
   partnerImages = this.aboutService.partnerImages;
+  partners = this.aboutService.partners;
   isLoading = this.aboutService.isLoading;
   aboutPage = this.aboutService.aboutPage;
 
@@ -109,33 +110,16 @@ export class About {
     });
   }
 
-  // Partenaires statiques avec leurs informations
   private getPartnerInfo(name: string): Partner {
-    const partners: Record<string, Omit<Partner, 'name'>> = {
-      'Afriland First Bank': {
-        url: 'https://www.afrilandfirstbank.com/',
-        image: '/assets/partner/afriland-picture.png',
-        alt: 'Afriland First Bank'
-      },
-      'Ecobank': {
-        url: 'https://www.ecobank.com/',
-        image: '/assets/partner/Ecobank-Logo.png',
-        alt: 'Ecobank'
-      },
-      'Saar Assurance': {
-        url: 'https://www.saar-assurances.com/fr/group',
-        image: '/assets/partner/saar-insurance.png',
-        alt: 'Saar Insurance'
-      }
-    };
-
-    const partnerInfo = partners[name];
+    const partnerInfo = this.partners().find(
+      (partner) => this.normalizeKey(partner.name) === this.normalizeKey(name),
+    );
 
     return {
       name,
       url: partnerInfo?.url || '#',
       image: partnerInfo?.image || '/assets/placeholder-partner.png',
-      alt: partnerInfo?.alt || `${name} logo`
+      alt: `${name} logo`,
     };
   }
 

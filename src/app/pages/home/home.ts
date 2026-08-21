@@ -23,6 +23,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { I18nService } from '../../../services/i18n.service';
 import { SeoService } from '../../../services/seo.service';
+import { DirectusV2Service } from '../../../services/directus-v2.service';
 
 @Component({
   selector: 'app-home',
@@ -40,6 +41,7 @@ export class Home implements AfterViewInit, OnDestroy {
   private readonly seoService = inject(SeoService);
   private readonly ngZone = inject(NgZone);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly directusV2 = inject(DirectusV2Service);
   homePage = this.homeService.homePage;
   visionsData = computed(() => this.homePage()?.visions || []);
 
@@ -56,7 +58,7 @@ export class Home implements AfterViewInit, OnDestroy {
   heroBannerData = this.homeService.heroBannerData;
   animatedStats = this.homeService.animatedStats;
   testimonialsData = this.homeService.testimonialsData;
-  statsSection = this.homeService.statsSection;
+  statsHeadline = this.homeService.statsHeadline;
   infiniteScrollItems = this.homeService.infiniteScrollItems;
   isLoading = this.homeService.isLoading;
 
@@ -81,6 +83,14 @@ export class Home implements AfterViewInit, OnDestroy {
   readonly retryButton = computed(() => this.translations()['ERROR.RETRY'] || '');
   readonly usTitle = computed(() => this.translations()['HOME.US'] || '');
   readonly aboutLink = computed(() => this.i18nService.createLocalizedLink('/about'));
+  readonly agenciesLink = computed(() => this.i18nService.createLocalizedLink('/agencies'));
+  /**
+   * Aperçu réservé aux agences : la direction générale n'accueille pas les
+   * opérations courantes, la mettre ici induirait le visiteur en erreur.
+   */
+  readonly agenciesPreview = computed(() =>
+    this.directusV2.agencies().filter((agency) => agency.type !== 'direction_generale').slice(0, 3),
+  );
 
   displayedStats = computed(() => {
     const stats = this.animatedStats();
@@ -89,8 +99,8 @@ export class Home implements AfterViewInit, OnDestroy {
       ? 'fr-FR'
       : 'en-US';
 
-    return stats.map((stat, index) => {
-      const hasPlus = [9, 10, 11].includes(Number(stat.statistics_id));
+    return stats.map((stat: any, index: number) => {
+      const hasPlus = Boolean(stat.show_plus);
       
       return {
         ...stat,
@@ -208,7 +218,7 @@ export class Home implements AfterViewInit, OnDestroy {
       this.animatedValues.set(
         isPlatformBrowser(this.platformId)
           ? stats.map(() => 0)
-          : stats.map(stat => stat.target)
+          : stats.map((stat: any) => stat.target)
       );
 
       // Si on est dans le navigateur et qu'on a tout ce qu'il faut
@@ -267,7 +277,7 @@ export class Home implements AfterViewInit, OnDestroy {
     this.animatedValues.set(stats.map(() => 0));
 
     if (prefersReducedMotion) {
-      this.animatedValues.set(stats.map(s => s.target));
+      this.animatedValues.set(stats.map((s: any) => s.target));
       return;
     }
 
@@ -277,13 +287,13 @@ export class Home implements AfterViewInit, OnDestroy {
       if (this.destroyRef.destroyed) return;
 
       const elapsed = now - start;
-      const isFinished = stats.every((stat) => {
+      const isFinished = stats.every((stat: any) => {
         const isSpecial = (stat.label || '').toLowerCase().match(/client|customer|agenc|agency/);
         const DURATION = isSpecial ? 2500 : 1000;
         return elapsed >= DURATION;
       });
 
-      this.animatedValues.set(stats.map((stat) => {
+      this.animatedValues.set(stats.map((stat: any) => {
         const isSpecial = (stat.label || '').toLowerCase().match(/client|customer|agenc|agency/);
         const DURATION = isSpecial ? 2500 : 1000;
         
@@ -295,7 +305,7 @@ export class Home implements AfterViewInit, OnDestroy {
       if (!isFinished) {
         this.statsAnimationFrame = requestAnimationFrame(tick);
       } else {
-        this.animatedValues.set(stats.map(s => s.target));
+        this.animatedValues.set(stats.map((s: any) => s.target));
         this.statsAnimationFrame = undefined;
       }
     };

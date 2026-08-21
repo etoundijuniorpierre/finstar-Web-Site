@@ -1,0 +1,114 @@
+<div class="agencies-page fade-in-on-load">
+  <header class="agencies-hero">
+    <div class="agencies-hero-content">
+      <span class="trust-kicker">{{ 'AGENCIES.KICKER' | translate }}</span>
+      <h1>{{ 'AGENCIES.TITLE' | translate }}</h1>
+      <p>{{ 'AGENCIES.SUBTITLE' | translate }}</p>
+      <ul class="agencies-highlights">
+        <li><strong>{{ branchCount() }}</strong><span>{{ 'AGENCIES.BRANCHES_TITLE' | translate }}</span></li>
+        <li><strong>{{ regionCount() }}</strong><span>{{ 'AGENCIES.REGIONS' | translate }}</span></li>
+        <li><strong>1</strong><span>{{ 'AGENCIES.HEAD_OFFICE' | translate }}</span></li>
+      </ul>
+    </div>
+  </header>
+
+  @if (headOffice(); as office) {
+    <section class="agency-flagship" aria-labelledby="head-office-title">
+      <div class="agency-flagship-media">
+        <img [src]="photoOf(office)" [class.is-logo]="usesLogo(office)"
+             [alt]="office.name || office.city" loading="eager" decoding="async">
+      </div>
+      <div class="agency-flagship-body">
+        <span class="agency-badge is-head-office">{{ 'AGENCIES.HEAD_OFFICE' | translate }}</span>
+        <h2 id="head-office-title">{{ office.name || office.city }}</h2>
+        <p class="agency-flagship-role">{{ 'AGENCIES.HEAD_OFFICE_ROLE' | translate }}</p>
+        <button type="button" class="agency-action" (click)="open(office)">
+          {{ 'AGENCIES.DETAILS' | translate }}
+        </button>
+      </div>
+    </section>
+  }
+
+  <section class="agencies-branches" aria-labelledby="branches-title">
+    <header class="agencies-branches-header">
+      <h2 id="branches-title">{{ 'AGENCIES.BRANCHES_TITLE' | translate }}</h2>
+      <p>{{ 'AGENCIES.BRANCHES_TEXT' | translate }}</p>
+    </header>
+
+    <div class="agencies-grid">
+      @for (agency of branches(); track agency.key) {
+        <button type="button" class="agency-card" (click)="open(agency)">
+          <span class="agency-media">
+            <img [src]="photoOf(agency)" [class.is-logo]="usesLogo(agency)"
+                 [alt]="agency.name || agency.city" loading="lazy" decoding="async">
+          </span>
+          <span class="agency-card-name">
+            <strong>{{ agency.name || agency.city }}</strong>
+            <span class="agency-card-more">{{ 'AGENCIES.DETAILS' | translate }} <span aria-hidden="true">→</span></span>
+          </span>
+        </button>
+      } @empty {
+        <p class="agencies-empty">{{ 'AGENCIES.EMPTY' | translate }}</p>
+      }
+    </div>
+  </section>
+
+  <section class="agencies-note" aria-labelledby="agencies-note-title">
+    <span class="agencies-note-mark" aria-hidden="true">✦</span>
+    <div>
+      <h2 id="agencies-note-title">{{ 'AGENCIES.NEED_HELP' | translate }}</h2>
+      <p>{{ 'AGENCIES.NEED_HELP_TEXT' | translate }}</p>
+    </div>
+    <a class="agencies-note-action" [routerLink]="contactLink()">{{ 'NAV.CONTACT_US' | translate }}</a>
+  </section>
+</div>
+
+@if (selected(); as agency) {
+  <div class="agency-dialog" role="dialog" aria-modal="true" aria-labelledby="agency-dialog-title">
+    <div class="agency-dialog-backdrop" (click)="close()" aria-hidden="true"></div>
+    <div class="agency-dialog-panel">
+      <button type="button" class="agency-dialog-close" (click)="close()"
+              [attr.aria-label]="'COMMON.CLOSE' | translate">×</button>
+
+      <div class="agency-dialog-media">
+        <img [src]="photoOf(agency)" [class.is-logo]="usesLogo(agency)"
+             [alt]="agency.name || agency.city" decoding="async">
+      </div>
+
+      <div class="agency-dialog-body">
+        <span class="agency-badge" [class.is-head-office]="isHeadOffice(agency)">
+          {{ (isHeadOffice(agency) ? 'AGENCIES.HEAD_OFFICE' : 'AGENCIES.BRANCH') | translate }}
+        </span>
+        <h2 id="agency-dialog-title">{{ agency.name || agency.city }}</h2>
+
+        <dl class="agency-facts">
+          <div>
+            <dt>{{ 'AGENCIES.ADDRESS' | translate }}</dt>
+            <dd>{{ agency.address || agency.city }}</dd>
+          </div>
+          @if (agency.region) {
+            <div>
+              <dt>{{ 'AGENCIES.REGION' | translate }}</dt>
+              <dd>{{ agency.region }}</dd>
+            </div>
+          }
+          @if (agency.hours) {
+            <div>
+              <dt>{{ 'AGENCIES.HOURS' | translate }}</dt>
+              <dd>{{ agency.hours }}</dd>
+            </div>
+          }
+          @if (agency.phone) {
+            <div>
+              <dt>{{ 'AGENCIES.PHONE' | translate }}</dt>
+              <dd><a [href]="telHref(agency.phone)">{{ agency.phone }}</a></dd>
+            </div>
+          }
+        </dl>
+
+      </div>
+    </div>
+  </div>
+}
+
+<app-join-us pageSlug="agencies"></app-join-us>

@@ -157,3 +157,11 @@ tmp/
 image-download.service.ts
 supabase/finstar_schema.sql
 .scripts/
+docs/AUDIT-frontend-vers-directus.md
+docs/directus-schema-v2.md
+docs/DIRECTUS-v2-runbook.md
+docs/PLAN-taches-migration-directus-2026-08.md
+docs/REVUE-corrective-migration-directus-2026-08-20.md
+docs/directus-schema-v2.md
+docs/directus-schema-v2.md
+docs/directus-schema-v2.md

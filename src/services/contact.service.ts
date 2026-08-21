@@ -1,95 +1,60 @@
-import { inject, Injectable, computed, signal, effect } from '@angular/core';
-import { DirectusSdkService } from './directus.sdk.service';
+import { inject, Injectable, computed } from '@angular/core';
 import { I18nService } from './i18n.service';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { EnrichedPageSection } from '../types/directus';
+import { DirectusV2Service } from './directus-v2.service';
+
+export interface ContactInfo {
+  contact_info: {
+    emails: string[];
+    phone_numbers: string[];
+    customer_service: { whatsapp: string };
+  };
+  social_media: { platforms: string[] };
+}
 
 @Injectable({ providedIn: 'root' })
 export class ContactService {
-  private readonly directus = inject(DirectusSdkService);
+  private readonly directusV2 = inject(DirectusV2Service);
   private readonly i18nService = inject(I18nService);
 
   // État de chargement
-  isLoading = computed(() => this.directus.isLoading());
+  isLoading = computed(() => !this.directusV2.ready());
 
-  // Signal pour la page de contact
-  contactPage = computed(() => {
-    const pages = this.directus.pagesWithSections();
-    return pages.find(page => page.Slug === 'contact');
-  });
+  /** Présence des réglages de contact (garde d'affichage côté template). */
+  contactPage = computed(() => this.directusV2.contactSettings());
 
-  // Signal pour les sections de la page
-  contactSections = computed<EnrichedPageSection[]>(() => {
-    const page = this.contactPage();
-    return (page?.sections as EnrichedPageSection[]) || [];
-  });
+  // En-têtes de la page contact (singleton `contact_settings`).
+  contactInfoSection = computed(() => {
+    const settings = this.directusV2.contactSettings();
+    if (!settings) return null;
 
-  // Section d'informations de contact
-  contactInfoSection = computed<EnrichedPageSection | null>(() => {
-    const sections = this.contactSections();
-    return sections.find(section => section.Type === 'text_block') ?? null;
+    return {
+      headline: String(settings['headline'] || ''),
+      headlines2: String(settings['headline_2'] || ''),
+    };
   });
 
   backgroundImages = computed<string[]>(() => {
-    const relations = this.directus.sectionFilesRels();
-    const sectionId = 15; 
-    const sectionFiles = relations
-      .filter(rel => rel.Pages_sections_Pages_sections_id === sectionId)
-      .map(rel => {
-        return `${this.directus.apiUrl}/assets/${rel.directus_files_id}?format=webp&quality=80&width=1920`;
-      });
-    
-    if (sectionFiles.length > 0) {
-      return sectionFiles;
-    }
-
-    return [];
+    const settings = this.directusV2.contactSettings();
+    if (!settings || !Array.isArray(settings['backgrounds'])) return [];
+    return settings['backgrounds'].filter((url): url is string => typeof url === 'string');
   });
 
-  // Données de contact parsées
-  contactData = computed(() => {
-    const section = this.contactInfoSection();
+  // Coordonnées et agences, issues de vraies colonnes (plus de blob JSON).
+  contactData = computed<ContactInfo | null>(() => {
+    const settings = this.directusV2.contactSettings();
+    if (!settings) return null;
 
-    if (!section?.table_data) {
-      return null;
-    }
-
-    try {
-      let parsedData;
-
-      if (typeof section.table_data === 'string') {
-        parsedData = JSON.parse(section.table_data);
-      } else if (typeof section.table_data === 'object') {
-        parsedData = section.table_data;
-      } else {
-        console.error('[ContactService] Type de données table_data non supporté:', typeof section.table_data);
-        return null;
-      }
-
-      if (!parsedData || typeof parsedData !== 'object') {
-        console.error('[ContactService] Données parsées invalides:', parsedData);
-        return null;
-      }
-
-      return parsedData as {
-        contact_info: {
-          emails: string[];
-          phone_numbers: string[];
-          customer_service: {
-            whatsapp: string;
-          };
-        };
-        social_media: {
-          platforms: string[];
-        };
-        agencies: {
-          locations: string[];
-        };
-      };
-    } catch (e) {
-      console.error('[ContactService] Erreur lors du parsing des données de contact:', e);
-      return null;
-    }
+    return {
+      contact_info: {
+        emails: Array.isArray(settings['emails']) ? settings['emails'].map(String) : [],
+        phone_numbers: Array.isArray(settings['phone_numbers'])
+          ? settings['phone_numbers'].map(String)
+          : [],
+        customer_service: { whatsapp: String(settings['whatsapp'] || '') },
+      },
+      social_media: { platforms: [] },
+    };
   });
 
   private readonly staticTranslationsStream = this.i18nService.translate.stream([
@@ -97,7 +62,6 @@ export class ContactService {
     'CONTACT.PHONE',
     'CONTACT.CUSTOMER_SERVICE',
     'CONTACT.FOLLOW_US',
-    'CONTACT.OUR_AGENCIES',
     'CONTACT.SEND_MESSAGE_TITLE',
     'CONTACT.FULL_NAME',
     'CONTACT.EMAIL',
@@ -114,9 +78,4 @@ export class ContactService {
 
   // Signaux pour les traductions statiques
   staticTranslations = toSignal(this.staticTranslationsStream, { initialValue: {} });
-
-  // Méthode pour forcer le rechargement des données
-  async refreshData(): Promise<void> {
-    await this.directus.loadAllDataExternal();
-  }
 }

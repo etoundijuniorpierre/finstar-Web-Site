@@ -27,6 +27,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
       <li class="nav-indicator" [style]="indicatorStyle()" aria-hidden="true"></li>
       <li routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}"><a [routerLink]="homeLink()">{{ 'NAV.HOME' | translate }}</a></li>
       <li routerLinkActive="active"><a [routerLink]="servicesLink()">{{ 'NAV.SERVICES' | translate }}</a></li>
+      <li routerLinkActive="active"><a [routerLink]="agenciesLink()">{{ 'NAV.AGENCIES' | translate }}</a></li>
       <li routerLinkActive="active"><a [routerLink]="careerLink()">{{ 'NAV.CAREER' | translate }}</a></li>
       <li routerLinkActive="active"><a [routerLink]="aboutLink()">{{ 'NAV.ABOUT' | translate }}</a></li>
       <li routerLinkActive="active"><a [routerLink]="contactsLink()">{{ 'NAV.CONTACTS' | translate }}</a></li>
@@ -79,6 +80,7 @@ export class Footer {
     // ✅ Computed pour générer les liens localisés
   homeLink = computed(() => this.i18nService.createLocalizedLink('/home'));
   servicesLink = computed(() => this.i18nService.createLocalizedLink('/services'));
+  agenciesLink = computed(() => this.i18nService.createLocalizedLink('/agencies'));
   careerLink = computed(() => this.i18nService.createLocalizedLink('/career'));
   aboutLink = computed(() => this.i18nService.createLocalizedLink('/about'));
   contactsLink = computed(() => this.i18nService.createLocalizedLink('/contacts'));
@@ -88,7 +90,7 @@ export class Footer {
     const contacts = this.contactService.contactData();
     const wa = contacts?.contact_info?.customer_service?.whatsapp || '';
     const number = wa.replace(/[^0-9]/g, '');
-    return `https://wa.me/${number}?text=Bonjour%20FINSTAR-CM%2C%20j'aimerais%20avoir%20plus%20d'informations%20sur%20vos%20services.`;
+    return `https://wa.me/${number}?text=Bonjour%20FINSTAR-CM%20S.A.%2C%20j'aimerais%20avoir%20plus%20d'informations%20sur%20vos%20services.`;
   });
 
   constructor() {

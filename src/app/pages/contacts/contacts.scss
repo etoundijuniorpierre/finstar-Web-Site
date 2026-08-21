@@ -318,67 +318,6 @@
   }
 }
 
-/* Nouvelles cartes d'agences Premium */
-.agency-card-modern {
-  background: #ffffff !important;
-  border-radius: 16px !important;
-  padding: 1.25rem !important;
-  border: 1px solid rgba(0, 0, 0, 0.05) !important;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03) !important;
-  display: flex !important;
-  align-items: center !important;
-  gap: 1.25rem !important;
-  transition: all 0.3s ease !important;
-  opacity: 1 !important;
-  transform: none !important;
-  animation: none !important;
-
-  .pin-icon {
-    width: 48px;
-    height: 48px;
-    background: #f8f8f8;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #FF6CAB;
-    flex-shrink: 0;
-    transition: all 0.3s ease;
-  }
-
-  .agency-info {
-    text-align: left !important;
-    
-    .agency-name {
-      display: block;
-      font-weight: 800;
-      color: #111;
-      font-size: 1rem;
-      margin-bottom: 2px;
-    }
-    
-    .agency-sub {
-      display: block;
-      font-size: 0.75rem;
-      color: #6b7280;
-      font-weight: 500;
-    }
-  }
-
-  &:hover {
-    background: #fff !important;
-    border-color: #FFD600 !important;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08) !important;
-    transform: translateX(5px) !important;
-
-    .pin-icon {
-      background: #FF6CAB;
-      color: #fff;
-      transform: rotate(-10deg);
-    }
-  }
-}
-
 @media (max-width: 640px) {
   .contact-trust-panel {
     border-radius: var(--radius-md);
@@ -389,13 +328,6 @@
     justify-content: center;
   }
 
-  .agency-card-modern {
-    flex-direction: column;
-    text-align: center !important;
-    padding: 1.5rem !important;
-    
-    .agency-info { text-align: center !important; }
-  }
 }
 
 
@@ -408,8 +340,7 @@
 
 /* Ensure all contact content sections are above background and fully opaque */
 .contacts-header-title,
-.contacts-content-details,
-.contacts-content-agencies {
+.contacts-content-details {
   position: relative;
   z-index: 10;
   opacity: 1 !important;
@@ -548,13 +479,6 @@ button[type="submit"] {
   }
 }
 
-/* Section agences optimisée pour thème moderne */
-.contacts-content-agencies {
-  width: 100%;
-  margin-top: 3rem;
-}
-
-
 /* États de chargement et d'erreur pour thème sombre */
 .loading-indicator,
 .error-message {
@@ -596,8 +520,7 @@ button[type="submit"] {
 @media (prefers-reduced-motion: reduce) {
 
   .fade-in-on-load,
-  .contacts-content-details>div>div,
-  .contacts-content-agencies .grid>div {
+  .contacts-content-details>div>div {
     animation: none !important;
     opacity: 1 !important;
     transform: none !important;
@@ -678,25 +601,6 @@ button[type="submit"] {
       &:has(+ textarea:focus) {
         color: #bfa93c !important;
       }
-    }
-  }
-
-  .contacts-content-agencies {
-    .grid>div {
-      background-color: #f9fafb !important;
-      border-color: #e5e7eb !important;
-
-      &:hover {
-        background-color: #f3f4f6 !important;
-      }
-
-      span {
-        color: #111827 !important;
-      }
-    }
-
-    p {
-      color: #6b7280 !important;
     }
   }
 
@@ -872,28 +776,6 @@ button[type="submit"] {
 #contact-form select option {
   color: var(--ink-950);
   background: var(--surface);
-}
-
-.agency-card-modern {
-  border-color: var(--line) !important;
-  border-radius: var(--radius-md) !important;
-  box-shadow: var(--shadow-sm) !important;
-
-  .pin-icon {
-    background: var(--surface-warm);
-    color: var(--brand-gold-strong);
-  }
-
-  &:hover {
-    transform: translateY(-3px) !important;
-    border-color: rgba(183, 155, 46, 0.45) !important;
-
-    .pin-icon {
-      background: var(--brand-gradient);
-      color: #111;
-      transform: none;
-    }
-  }
 }
 
 @media (max-width: 640px) {

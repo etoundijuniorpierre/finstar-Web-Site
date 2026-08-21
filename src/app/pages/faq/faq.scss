@@ -152,12 +152,13 @@
   gap: 1.5rem;
   margin-top: clamp(3rem, 7vw, 5rem);
   padding: clamp(1.5rem, 4vw, 2.5rem);
-  color: #fff;
-  background: var(--ink-950);
+  border: 1px solid var(--line);
+  background: var(--surface-warm);
+  color: var(--ink-950);
   border-radius: var(--radius-md);
 
   .eyebrow {
-    color: var(--brand-gold);
+    color: var(--brand-gold-strong);
     font-size: 0.75rem;
     font-weight: 800;
     letter-spacing: 0.12em;
@@ -172,7 +173,7 @@
   p {
     max-width: 36rem;
     margin: 0;
-    color: #dbe4ef;
+    color: var(--ink-700);
     line-height: 1.6;
   }
 }
@@ -180,8 +181,8 @@
 .faq-cta-link {
   flex: 0 0 auto;
   padding: 0.8rem 1.1rem;
-  color: var(--ink-950);
-  background: var(--brand-gold);
+  color: var(--surface);
+  background: var(--ink-950);
   border-radius: 999px;
   font-weight: 800;
   text-decoration: none;

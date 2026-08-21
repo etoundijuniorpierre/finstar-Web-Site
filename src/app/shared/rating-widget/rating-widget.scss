@@ -1,0 +1,40 @@
+:host { display: block; }
+.rating-widget { display: grid; justify-items: center; gap: .8rem; padding: 2rem 1rem; text-align: center; background: #f7f5ef; border-top: 1px solid var(--line, #e5e2d8); }
+.rating-widget p { margin: .25rem 0 0; color: var(--ink-600, #5b5b5b); }
+.rating-stars { display: flex; gap: .25rem; }
+.rating-stars button { border: 0; padding: .15rem; background: transparent; color: #cbc7b8; cursor: pointer; font-size: 2rem; transition: color .15s ease, transform .15s ease; }
+.rating-stars button.active { color: #d3a91b; transform: translateY(-2px); }
+.rating-widget label { display: grid; gap: .35rem; width: min(520px, 100%); text-align: left; font-size: .85rem; font-weight: 700; }
+.rating-widget textarea { width: 100%; resize: vertical; padding: .7rem; border: 1px solid #d8d2c4; border-radius: .65rem; font: inherit; background: #fff; }
+.rating-submit { border: 0; border-radius: 999px; padding: .7rem 1.25rem; background: #171717; color: #fff; font-weight: 700; cursor: pointer; }
+.rating-submit:disabled { opacity: .6; cursor: wait; }
+.rating-again {
+  position: relative;
+  padding: .75rem 1.35rem;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  color: var(--ink-950, #111);
+  background:
+    linear-gradient(var(--surface, #fff), var(--surface, #fff)) padding-box,
+    var(--brand-gradient, linear-gradient(135deg, #ffe542, #e74c9e)) border-box;
+  box-shadow: var(--shadow-sm, 0 8px 24px rgba(17, 17, 17, .06));
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform var(--motion-fast, 180ms) ease, box-shadow var(--motion-fast, 180ms) ease, background-color var(--motion-fast, 180ms) ease;
+}
+.rating-again:hover {
+  transform: translateY(-2px);
+  background:
+    linear-gradient(var(--brand-yellow, #ffe542), var(--brand-yellow, #ffe542)) padding-box,
+    var(--brand-gradient, linear-gradient(135deg, #ffe542, #e74c9e)) border-box;
+  box-shadow: var(--shadow-md, 0 20px 55px rgba(17, 17, 17, .1));
+}
+.rating-again:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--brand-pink, #e74c9e) 45%, transparent);
+  outline-offset: 3px;
+}
+.rating-again:active { transform: translateY(0); }
+.rating-honeypot { position: absolute; left: -10000px; width: 1px; height: 1px; }
+.rating-thanks { color: #356c3c !important; font-weight: 700; }
+.rating-error { color: #a32929 !important; }

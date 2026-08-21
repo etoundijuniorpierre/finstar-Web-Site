@@ -1,0 +1,34 @@
+<aside class="rating-widget" [attr.aria-label]="'RATING.TITLE' | translate">
+  @if (state() === 'sent') {
+    <p class="rating-thanks" role="status">{{ 'RATING.THANKS' | translate }}</p>
+    <button class="rating-again" type="button" (click)="rateAgain()">
+      {{ 'RATING.AGAIN' | translate }}
+    </button>
+  } @else {
+    <div>
+      <strong>{{ 'RATING.TITLE' | translate }}</strong>
+      <p>{{ 'RATING.SUBTITLE' | translate }}</p>
+    </div>
+    <div class="rating-stars" role="radiogroup" [attr.aria-label]="'RATING.TITLE' | translate">
+      @for (value of [1, 2, 3, 4, 5]; track value) {
+        <button type="button" role="radio" [attr.aria-checked]="score() === value"
+          [class.active]="value <= (hoverScore() || score())"
+          (mouseenter)="hoverScore.set(value)" (mouseleave)="hoverScore.set(0)"
+          (focus)="hoverScore.set(value)" (blur)="hoverScore.set(0)"
+          (click)="selectScore(value)" [attr.aria-label]="value + '/5'">★</button>
+      }
+    </div>
+    @if (score() > 0) {
+      <label>
+        <span>{{ 'RATING.COMMENT' | translate }}</span>
+        <textarea rows="2" maxlength="1000" [value]="comment()" (input)="updateComment($event)"></textarea>
+      </label>
+      <input class="rating-honeypot" tabindex="-1" autocomplete="off" aria-hidden="true" #company>
+      <button class="rating-submit" type="button" (click)="submit(company.value)" [disabled]="state() === 'sending'">
+        {{ (state() === 'sending' ? 'RATING.SENDING' : 'RATING.SUBMIT') | translate }}
+      </button>
+    }
+    @if (state() === 'error') { <p class="rating-error" role="alert">{{ 'RATING.ERROR' | translate }}</p> }
+  }
+</aside>
+

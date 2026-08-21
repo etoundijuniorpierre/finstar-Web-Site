@@ -57,6 +57,11 @@ import { fromEvent } from 'rxjs';
     </a>
   </li>
   <li>
+    <a [routerLink]="agenciesLink()" routerLinkActive="active" (click)="closeMenu()">
+      {{ 'NAV.AGENCIES' | translate }}
+    </a>
+  </li>
+  <li>
     <a [routerLink]="careerLink()" routerLinkActive="active" (click)="closeMenu()">
       {{ 'NAV.CAREER' | translate }}
     </a>
@@ -521,6 +526,7 @@ export class Navbar {
   // ✅ Computed pour générer les liens localisés
   homeLink = computed(() => this.i18nService.createLocalizedLink('/home'));
   servicesLink = computed(() => this.i18nService.createLocalizedLink('/services'));
+  agenciesLink = computed(() => this.i18nService.createLocalizedLink('/agencies'));
   careerLink = computed(() => this.i18nService.createLocalizedLink('/career'));
   aboutLink = computed(() => this.i18nService.createLocalizedLink('/about'));
   contactsLink = computed(() => this.i18nService.createLocalizedLink('/contacts'));

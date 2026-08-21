@@ -1,4 +1,4 @@
-import { ApplicationConfig, importProvidersFrom, inject, provideAppInitializer, provideBrowserGlobalErrorListeners, provideZoneChangeDetection } from '@angular/core';
+import { APP_ID, ApplicationConfig, importProvidersFrom, inject, provideAppInitializer, provideBrowserGlobalErrorListeners, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter, withInMemoryScrolling, withRouterConfig } from '@angular/router';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideHttpClient, withFetch } from '@angular/common/http';
@@ -44,6 +44,12 @@ const optimizedImageLoader = (config: ImageLoaderConfig): string => {
 
 export const appConfig: ApplicationConfig = {
   providers: [
+    // Angular mémorise, au niveau de la plateforme, les APP_ID dont l'état
+    // serveur a déjà été sérialisé. Le prerender enchaîne plusieurs rendus dans
+    // un même processus : avec l'identifiant par défaut, le second rendu est
+    // signalé comme une « duplicate serialization ». Un APP_ID propre à
+    // l'application lève l'ambiguïté et fiabilise l'hydratation.
+    { provide: APP_ID, useValue: 'finstar-cm' },
     // ✅ Configuration simplifiée de ngx-translate
     importProvidersFrom(
       TranslateModule.forRoot({

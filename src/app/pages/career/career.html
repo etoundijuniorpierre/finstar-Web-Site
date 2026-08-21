@@ -83,12 +83,6 @@
         <h3 class="career-details-title text-lg sm:text-xl md:text-2xl font-bold mb-2 sm:mb-4">
           {{ jobDisplayTitle(jobsData()[selectedJobIndex]) }}
         </h3>
-        @if (isSupervisionJob(jobsData()[selectedJobIndex])) {
-        <div class="recruitment-mode" role="note">
-          <span>{{ 'CAREER.RECRUITMENT_MODE' | translate }}</span>
-          <strong>{{ 'CAREER.COMPETITION_ONLY' | translate }}</strong>
-        </div>
-        }
         <div class="career-details-section mb-2 sm:mb-3">
           <span class="font-semibold">{{ 'CAREER.JOB_DESCRIPTION' | translate }}</span>
           <div class="text-xs sm:text-sm text-black/80" [innerHTML]="jobsData()[selectedJobIndex].description_poste"></div>

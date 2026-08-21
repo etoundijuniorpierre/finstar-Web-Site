@@ -10,7 +10,7 @@
         <span aria-hidden="true">↗</span>
         <span>{{ 'METRICS.EXPORT' | translate }}</span>
       </button>
-      <button class="btn btn-primary" type="button" (click)="refreshOperationalStats(); refreshTraffic()"
+      <button class="btn btn-primary" type="button" (click)="refreshOperationalStats(); refreshTraffic(); refreshRatings()"
         [disabled]="operationalDataState() === 'loading'">
         <span aria-hidden="true" [class.spin]="operationalDataState() === 'loading'">↻</span>
         <span>{{ 'METRICS.REFRESH' | translate }}</span>
@@ -263,6 +263,39 @@
       </div>
     </section>
   }
+
+  <section class="ratings-section" aria-labelledby="ratings-title">
+    <div class="section-heading compact">
+      <div>
+        <span class="eyebrow">{{ 'METRICS.RATINGS.KICKER' | translate }}</span>
+        <h2 id="ratings-title">{{ 'METRICS.RATINGS.TITLE' | translate }}</h2>
+        <p>{{ 'METRICS.RATINGS.DESCRIPTION' | translate }}</p>
+      </div>
+    </div>
+    @if (ratingsState() === 'ready' && ratings(); as data) {
+      <div class="ratings-summary">
+        <article><strong>{{ data.average | number:'1.1-2' }}/5</strong><span>{{ 'METRICS.RATINGS.AVERAGE' | translate }}</span></article>
+        <article><strong>{{ data.total }}</strong><span>{{ 'METRICS.RATINGS.TOTAL' | translate }}</span></article>
+      </div>
+      <div class="ratings-distribution">
+        @for (score of [5, 4, 3, 2, 1]; track score) {
+          <div><span>{{ score }} ★</span><meter min="0" [max]="data.total || 1" [value]="data.distribution[score] || 0"></meter><strong>{{ data.distribution[score] || 0 }}</strong></div>
+        }
+      </div>
+      @if (data.recent.length) {
+        <div class="ratings-comments">
+          <h3>{{ 'METRICS.RATINGS.RECENT' | translate }}</h3>
+          @for (rating of data.recent; track $index) {
+            <blockquote><strong>{{ rating.score }} ★</strong><p>{{ rating.comment }}</p><small>{{ rating.page }}</small></blockquote>
+          }
+        </div>
+      }
+    } @else if (ratingsState() === 'loading') {
+      <p>{{ 'COMMON.LOADING' | translate }}</p>
+    } @else {
+      <p class="data-note">{{ 'METRICS.RATINGS.UNAVAILABLE' | translate }}</p>
+    }
+  </section>
 
   <section class="conversion-section" aria-labelledby="conversion-title">
     <div class="section-heading compact">

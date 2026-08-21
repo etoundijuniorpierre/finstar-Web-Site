@@ -1,87 +1,63 @@
 import { inject, Injectable, computed, signal, effect } from '@angular/core';
-import { DirectusSdkService } from './directus.sdk.service';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { I18nService } from './i18n.service';
+import { DirectusV2Service } from './directus-v2.service';
 
 
 @Injectable({ providedIn: 'root' })
 export class HomeService {
-  private readonly directus = inject(DirectusSdkService);
+  private readonly directusV2 = inject(DirectusV2Service);
   private readonly i18nService = inject(I18nService);
 
 
-  isLoading = computed(() => this.directus.isLoading());
-  // Signal pour la page d'accueil
+  isLoading = computed(() => !this.directusV2.ready());
+
+  // Page d'accueil : singleton `home_page` + collections dédiées.
   homePage = computed(() => {
-    const pages = this.directus.pagesWithSections();
-    return pages.find(page => page.Slug === 'homepage');
-  });
+    const page = this.directusV2.homePage();
+    if (!page) return null;
 
-  // Sections spécifiques
-  heroBannerSection = computed(() => {
-    const sections = this.homePage()?.sections || [];
-    return sections.find(section => section.Type === 'hero_banner') ?? null;
-  });
-
-  accountsSection = computed(() => {
-    const sections = this.homePage()?.sections || [];
-    return sections.find(section => section.Type === 'differents accounts type') ?? null;
-  });
-
-  statsSection = computed(() => {
-    const sections = this.homePage()?.sections || [];
-    return sections.find(section => section.Type === 'statistics informations') ?? null;
-  });
-
-  testimonialsSection = computed(() => {
-    const sections = this.homePage()?.sections || [];
-    return sections.find(section => section.Type === 'testimonials') ?? null;
-  });
-
-  // Données pour chaque section
-  heroBannerData = computed(() => {
-    const section = this.heroBannerSection();
-    if (!section) return null;
     return {
-      image: this.directus.getFileUrl(section.image),
-      callToAction: section.call_to_action,
-      callToActionLink: section.call_to_action_link,
-      headline: section.headline,
-      subheadline: section.subheadline
+      Slug: 'homepage',
+      visions: this.directusV2.visions().map((vision) => ({
+        id: vision['id'], image: vision['image'], vision: vision['text'],
+      })),
+    } as any;
+  });
+
+  heroBannerData = computed(() => {
+    const page = this.directusV2.homePage();
+    if (!page) return null;
+
+    return {
+      image: page['hero_image'] as string | null,
+      callToAction: page['hero_cta_label'] as string | null,
+      callToActionLink: page['hero_cta_link'] as string | null,
+      headline: page['hero_headline'] as string | null,
+      subheadline: page['hero_subheadline'] as string | null,
     };
   });
 
-  accountsData = computed(() => {
-    const section = this.accountsSection();
-    return section?.account_types || [];
-  });
+  statsData = computed(() => this.directusV2.stats().map((stat) => ({
+    statistics_id: Number(stat['id']),
+    value: Number(stat['value'] || 0),
+    label: String(stat['label'] || ''),
+    show_plus: Boolean(stat['show_plus']),
+  })) as any[]);
 
-  statsData = computed(() => {
-    const section = this.statsSection();
-    const linkedStatistics = section?.statistics || [];
-    const dailySavers = this.directus.stats().find((stat) =>
-      /épargnant|daily saver/i.test(stat.label || ''),
-    );
+  testimonialsData = computed(() => this.directusV2.testimonials().map((testimonial) => ({
+    testimonials_id: Number(testimonial['id']),
+    Quote: String(testimonial['quote'] || ''),
+    author_name: String(testimonial['author_name'] || ''),
+    author_title: String(testimonial['author_title'] || ''),
+    author_image: testimonial['author_image'] as string | null,
+  })) as any[]);
 
-    if (
-      dailySavers &&
-      !linkedStatistics.some((stat) => stat.statistics_id === dailySavers.statistics_id)
-    ) {
-      const translatedDailySavers = this.directus.getStatisticById(dailySavers.statistics_id);
-      return translatedDailySavers ? [...linkedStatistics, translatedDailySavers] : linkedStatistics;
-    }
-
-    return linkedStatistics;
-  });
-
-  testimonialsData = computed(() => {
-    const section = this.testimonialsSection();
-    return section?.testimonials || [];
-  });
+  statsHeadline = computed(() => String(this.directusV2.homePage()?.['stats_headline'] || ''));
 
   // Pour l'animation des statistiques
   animatedStats = computed(() => {
-    return this.statsData().map(stat => ({
+    return this.statsData().map((stat: any) => ({
       ...stat,
       target: stat.value
         ? parseInt(stat.value.toString().replace(/[^\d-]/g, ''), 10)

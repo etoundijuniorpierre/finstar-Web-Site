@@ -5,7 +5,7 @@ import { ServicesService } from '../../../services/services.service';
 import { JoinUsComponent } from "../../shared/join-us/join-us";
 import { MarkdownRenderer } from "../../shared/markdown-renderer/markdown-renderer";
 import { DomSanitizer } from '@angular/platform-browser';
-import { LoanProcess, LoanProcessStep } from '../../../types/directus';
+import { LoanProcess, LoanProcessStep } from '../../../services/services.service';
 import { TranslateModule } from '@ngx-translate/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { I18nService } from '../../../services/i18n.service';
@@ -89,7 +89,7 @@ export class Services implements OnDestroy {
   activeProduct = computed(() => {
     const products = this.productsData();
     const id = this.activeProductId();
-    return products?.find(p => p.id === id) ?? null;
+    return products?.find((p: any) => p.id === id) ?? null;
   });
 
   // Items du produit actif
@@ -148,7 +148,7 @@ export class Services implements OnDestroy {
   }
 
   goToSavingsJourney(): void {
-    const savingsAccount = this.accountsData().find(account => {
+    const savingsAccount = this.accountsData().find((account: any) => {
       const label = this.normalizeLabel(account.account_name);
       return Number(account.account_id) === 7 ||
         label.includes('epargne') ||
@@ -194,7 +194,7 @@ export class Services implements OnDestroy {
   selectedAccount = computed(() => {
     const accounts = this.accountsData();
     const id = this.selectedAccountId();
-    return accounts?.find(acc => acc.account_id === id) || accounts?.[0] || null;
+    return accounts?.find((acc: any) => acc.account_id === id) || accounts?.[0] || null;
   });
 
   selectedAccountGuide = computed(() => {
@@ -202,6 +202,11 @@ export class Services implements OnDestroy {
     const guides = this.accountOpeningGuides();
     return guides.find(guide => selectedId !== null && guide.account_ids.includes(selectedId)) ?? guides[0] ?? null;
   });
+
+  accountOpeningFee(accountId: number): string | null {
+    const guide = this.accountOpeningGuides().find(g => g.account_ids?.includes(accountId));
+    return guide?.opening_fee ?? null;
+  }
 
   constructor() {
     // Initialiser avec le premier compte
@@ -260,7 +265,7 @@ export class Services implements OnDestroy {
 
   onTabKeydown(event: KeyboardEvent, productId: number): void {
     const products = this.productsData();
-    const currentIndex = products.findIndex(product => product.id === productId);
+    const currentIndex = products.findIndex((product: any) => product.id === productId);
     if (currentIndex < 0) return;
 
     let nextIndex = currentIndex;

@@ -411,7 +411,7 @@ async function generateFallbackImage() {
     <body>
         <div class="background-pattern"></div>
         <div class="hero-container">
-            <div class="company-name">FINSTAR-CM SA</div>
+            <div class="company-name">FINSTAR-CM S.A.</div>
             <div class="tagline">Institution de Microfinance au Cameroun</div>
             <div class="headline">Solutions d'épargne et de crédit sécurisées</div>
             <div class="subheadline">

@@ -5,7 +5,6 @@ import { firstValueFrom } from 'rxjs';
 import { RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { DirectusSdkService } from '../../../services/directus.sdk.service';
 import { SeoService } from '../../../services/seo.service';
 import { environment } from '../../../environments/environment';
 
@@ -42,6 +41,13 @@ interface TrafficResponse {
   sizes?: TrafficRow[];
 }
 
+interface RatingsResponse {
+  total: number;
+  average: number;
+  distribution: Record<string, number>;
+  recent: Array<{ score: number; emoji?: string; comment?: string; page?: string; lang?: string; date_created?: string }>;
+}
+
 @Component({
   selector: 'app-metrics',
   standalone: true,
@@ -51,7 +57,6 @@ interface TrafficResponse {
   styleUrl: './metrics.scss'
 })
 export class Metrics implements OnInit {
-  private readonly directusSdk = inject(DirectusSdkService);
   private readonly seoService = inject(SeoService);
   private readonly http = inject(HttpClient);
   private readonly platformId = inject(PLATFORM_ID);
@@ -84,6 +89,8 @@ export class Metrics implements OnInit {
   // Trafic GoatCounter, servi par le proxy SSR /api/metrics/traffic (token côté serveur).
   readonly traffic = signal<TrafficResponse | null>(null);
   readonly trafficState = signal<TrafficState>('loading');
+  readonly ratings = signal<RatingsResponse | null>(null);
+  readonly ratingsState = signal<OperationalDataState>('loading');
 
   // Presets alignés sur le tableau de bord GoatCounter : jour, semaine, mois,
   // trimestre, semestre, année — complétés par une plage personnalisée libre.
@@ -272,6 +279,7 @@ export class Metrics implements OnInit {
               this.isAuthenticated.set(true);
               void this.refreshOperationalStats();
               void this.refreshTraffic();
+              void this.refreshRatings();
             } else {
               window.sessionStorage.removeItem(this.authStorageKey);
               this.isAuthenticated.set(false);
@@ -323,6 +331,7 @@ export class Metrics implements OnInit {
       // On lance les requêtes en asynchrone sans bloquer l'UI
       void this.refreshOperationalStats();
       void this.refreshTraffic();
+      void this.refreshRatings();
     } catch (error) {
       console.warn('[Metrics] Connexion admin refusée.', error);
       this.loginState.set('error');
@@ -339,12 +348,14 @@ export class Metrics implements OnInit {
     this.customRange.set(null);
     this.selectedDays.set(days);
     void this.refreshTraffic();
+    void this.refreshRatings();
   }
 
   applyCustomRange(start: string, end: string): void {
     if (!start || !end || start > end) return;
     this.customRange.set({ start, end });
     void this.refreshTraffic();
+    void this.refreshRatings();
   }
 
   async refreshTraffic(): Promise<void> {
@@ -399,7 +410,12 @@ export class Metrics implements OnInit {
     this.operationalDataState.set('loading');
 
     try {
-      const counts = await this.directusSdk.getOperationalCounts();
+      const token = window.sessionStorage.getItem(this.authStorageKey) || '';
+      const counts = await firstValueFrom(
+        this.http.get<{ contacts: number; candidatures: number }>('/api/admin/operational-counts', {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+      );
 
       this.candidaturesCount.set(counts.candidatures);
       this.contactsCount.set(counts.contacts);
@@ -409,6 +425,29 @@ export class Metrics implements OnInit {
       this.candidaturesCount.set(null);
       this.contactsCount.set(null);
       this.operationalDataState.set('unavailable');
+    }
+  }
+
+  async refreshRatings(): Promise<void> {
+    if (!this.isAuthenticated()) return;
+    this.ratingsState.set('loading');
+    try {
+      const token = window.sessionStorage.getItem(this.authStorageKey) || '';
+      // Les avis suivent la période choisie pour le trafic : les deux sections
+      // de la page décrivent ainsi toujours le même intervalle.
+      const range = this.customRange();
+      const query = range
+        ? `start=${range.start}&end=${range.end}`
+        : `days=${this.selectedDays()}`;
+      const data = await firstValueFrom(this.http.get<RatingsResponse>(`/api/admin/ratings?${query}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      }));
+      this.ratings.set(data);
+      this.ratingsState.set('ready');
+    } catch (error) {
+      console.warn('[Metrics] Notes du site indisponibles.', error);
+      this.ratings.set(null);
+      this.ratingsState.set('unavailable');
     }
   }
 

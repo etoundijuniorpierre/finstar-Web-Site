@@ -2,7 +2,7 @@
  * Contrat unique partagé par environment.ts (dev) et environment.prod.ts (prod).
  * Toute clé ajoutée ici doit être renseignée dans LES DEUX fichiers, sinon
  * la compilation échoue — ce qui évite les divergences silencieuses entre
- * les environnements (ex. bloc `supabase` absent en dev, clés emailjs mal nommées).
+ * les environnements (ex. clés emailjs mal nommées ou URL Directus oubliée).
  */
 export interface EmailJsConfig {
   publicKey: string;
@@ -15,13 +15,6 @@ export interface EmailJsConfig {
   careerEmail: string;
 }
 
-export interface SupabaseConfig {
-  url: string;
-  anonKey: string;
-  contactsBucket: string;
-  candidaturesBucket: string;
-}
-
 export interface Environment {
   production: boolean;
   /** URL Directus utilisée côté serveur. */
@@ -31,22 +24,8 @@ export interface Environment {
   siteUrl: string;
   cloudinaryCloudName: string;
   emailjs: EmailJsConfig;
-  supabase: SupabaseConfig;
   googleAnalyticsId?: string;
   lookerStudioEmbedUrl?: string;
-  /** Code public du site GoatCounter, sans la partie .goatcounter.com. */
   goatCounterCode?: string;
-  /**
-   * Token API GoatCounter. ⚠️ Présent dans le bundle navigateur (environment.ts
-   * est bundlé côté client) : ne l'utiliser QUE pour des appels effectués via le
-   * serveur SSR, et le régénérer s'il fuite.
-   */
-  goatCounterToken?: string;
-  directusToken?: string;
-  /**
-   * Si vrai, /api/metrics/traffic sert des données de démonstration réalistes
-   * (le site n'a pas encore de trafic réel). À passer à false au lancement :
-   * l'endpoint basculera alors sur les vraies données GoatCounter.
-   */
   goatCounterMockData?: boolean;
 }

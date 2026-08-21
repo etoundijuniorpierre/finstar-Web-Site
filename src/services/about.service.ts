@@ -1,70 +1,81 @@
 import { inject, Injectable, computed } from '@angular/core';
-import { DirectusSdkService } from './directus.sdk.service';
+import { DirectusV2Service } from './directus-v2.service';
+
+
+function toBlockContent(values: unknown, body: string): unknown {
+  const entries = Array.isArray(values)
+    ? values
+    : (values as { items?: unknown[] } | null)?.items;
+
+  if (!Array.isArray(entries) || entries.length === 0) return body;
+
+  // Une liste de chaînes désigne des noms (les partenaires) : elle doit rester
+  // un tableau, que la page transforme en cartes de logos.
+  if (Array.isArray(values) && entries.every((entry) => typeof entry === 'string')) {
+    return values;
+  }
+
+  const header = Array.isArray(values)
+    ? undefined
+    : (values as { header?: string } | null)?.header;
+
+  const content: Record<string, unknown> = header ? { header } : {};
+  entries.forEach((entry, index) => {
+    if (entry && typeof entry === 'object') {
+      const { title, content: text } = entry as { title?: string; content?: string };
+      content[title || `Point ${index + 1}`] = text ?? '';
+      return;
+    }
+    const raw = String(entry ?? '').trim();
+    const split = raw.match(/^(.+?[.:])\s+(.*)$/s);
+    content[split ? split[1].trim() : raw] = split ? split[2].trim() : '';
+  });
+  return content;
+}
 
 @Injectable({ providedIn: 'root' })
 export class AboutService {
-  private readonly directus = inject(DirectusSdkService);
+  private readonly directusV2 = inject(DirectusV2Service);
 
-  isLoading = computed(() => this.directus.isLoading());
+  isLoading = computed(() => !this.directusV2.ready());
 
-  // Page "À propos"
-  aboutPage = computed(() => {
-    const pages = this.directus.pagesWithSections();
-    return pages.find(page => page.Slug === 'about');
-  });
+  /** Présence de la page (le template s'en sert comme garde d'affichage). */
+  aboutPage = computed(() => this.directusV2.aboutPage());
 
-  // Récupération des sections par ID
-  sectionById = (id: number) => computed(() => {
-    const sections = this.aboutPage()?.sections || [];
-    return sections.find(s => s.Pages_sections_id === id) ?? null;
-  });
-
-  // Section 17 (Qui Sommes Nous)
-  section17 = this.sectionById(17);
-
-  // Section 18 (Galerie de partenaires)
-  section18 = this.sectionById(18);
-
-  // Données de la section 17 avec parsing robuste
+  // Données de la page « À propos » (singleton + blocs typés).
   aboutData = computed(() => {
-    const section = this.section17();
-    
-    if (!section) return null;
+    const page = this.directusV2.aboutPage();
+    if (!page) return null;
 
-    let tableData = null;
-
-    if (section.table_data) {
-      try {
-        let parsedData;
-
-        if (typeof section.table_data === 'string') {
-          parsedData = JSON.parse(section.table_data);
-        } else if (typeof section.table_data === 'object') {
-          parsedData = section.table_data;
-        }
-
-        if (parsedData && typeof parsedData === 'object') {
-          tableData = parsedData;
-        }
-      } catch (e) {
-        console.error('[AboutService] Erreur lors du parsing des données de tableau:', e);
-      }
-    }
+    const rows = this.directusV2.aboutBlocks().map((block) => {
+      const body = String(block['body'] || '');
+      const content = toBlockContent(block['values'], body);
+      // Un bloc sans liste n'affiche que son texte : le répéter en description
+      // le ferait apparaître deux fois dans la carte.
+      const hasList = content !== body;
+      return {
+        Catégorie: String(block['title'] || block['kind'] || ''),
+        ...(hasList ? { Description: body } : {}),
+        Contenu: content,
+      };
+    });
 
     return {
-      headline: section.headline,
-      subheadline: section.subheadline,
-      image: this.directus.getFileUrl(section.image),
-      tableData: tableData
+      headline: String(page['headline'] || ''),
+      subheadline: String(page['subheadline'] || ''),
+      image: page['image'] as string | null,
+      tableData: { data: rows },
     };
   });
 
-  // Images des partenaires
-  partnerImages = computed(() => {
-    const section = this.section18();
-    if (!section?.images) return [];
-    return section.images
-      .map(img => this.directus.getFileUrl(img))
-      .filter((url): url is string => !!url);
-  });
+  // Logos des partenaires
+  partnerImages = computed(() => this.directusV2.partners()
+    .map((partner) => partner['logo'])
+    .filter((url): url is string => typeof url === 'string' && !!url));
+
+  partners = computed(() => this.directusV2.partners().map((partner) => ({
+    name: String(partner['name'] || ''),
+    url: String(partner['url'] || '#'),
+    image: String(partner['logo'] || '/assets/placeholder-partner.png'),
+  })));
 }

@@ -776,49 +776,7 @@
     </div>
   </div>
 
-  <!-- Section Agences Moderne -->
-  <div class="w-full max-w-5xl contacts-content-agencies mb-12 sm:mb-16">
-    <div class="section-header-modern">
-      <span class="section-label">FINSTAR-CM S.A.</span>
-      <h3>{{ ourAgenciesLabel() }}</h3>
-    </div>
-
-    <div
-      class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full mt-8"
-    >
-      @for (location of data.agencies.locations; track location) {
-      <div class="agency-card-modern">
-        <div class="pin-icon">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="lucide lucide-map-pin"
-          >
-            <path
-              d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"
-            />
-            <circle cx="12" cy="10" r="3" />
-          </svg>
-        </div>
-        <div class="agency-info">
-          <span class="agency-name">{{ location }}</span>
-          <span class="agency-sub"
-            >{{ 'CONTACT.AGENCY_TYPE' | translate }}</span
-          >
-        </div>
-      </div>
-      }
-    </div>
-  </div>
-
-  <!-- FAQ : après les agences, pour prolonger naturellement l'information locale. -->
+  <!-- FAQ : aperçu court avant le lien vers la page dédiée. -->
   <section class="faq-section faq-preview" aria-labelledby="faq-title">
     <div class="section-header-modern">
       <span class="section-label">FAQ</span>

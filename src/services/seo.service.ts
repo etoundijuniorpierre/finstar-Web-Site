@@ -6,6 +6,7 @@ import { I18nService } from './i18n.service';
 import { TranslateService } from '@ngx-translate/core';
 import { SocialPreviewService } from './social-preview.service';
 import { environment } from '../environments/environment';
+import { DirectusV2Service } from './directus-v2.service';
 
 export interface SeoConfig {
   readonly title: string;
@@ -24,6 +25,7 @@ export type SeoPageKey =
   | 'SERVICES'
   | 'CAREER'
   | 'CONTACTS'
+  | 'AGENCIES'
   | 'FAQ'
   | 'METRICS';
 
@@ -36,6 +38,7 @@ export class SeoService {
   private readonly document = inject(DOCUMENT);
   private readonly translate = inject(TranslateService);
   private readonly socialPreview = inject(SocialPreviewService);
+  private readonly directusV2 = inject(DirectusV2Service);
   private readonly request = inject(REQUEST, { optional: true });
 
   private readonly defaultRobots = 'index,follow';
@@ -44,8 +47,13 @@ export class SeoService {
   updatePageSeo(pageKey: SeoPageKey): void {
     const baseKey = `SEO.${pageKey}` as const;
 
-    const title = this.translate.instant(`${baseKey}.TITLE`);
-    const description = this.translate.instant(`${baseKey}.DESCRIPTION`);
+    const cmsPage = this.cmsPageForSeo(pageKey);
+    const title = typeof cmsPage?.['seo_title'] === 'string' && cmsPage['seo_title'].trim()
+      ? cmsPage['seo_title']
+      : this.translate.instant(`${baseKey}.TITLE`);
+    const description = typeof cmsPage?.['seo_description'] === 'string' && cmsPage['seo_description'].trim()
+      ? cmsPage['seo_description']
+      : this.translate.instant(`${baseKey}.DESCRIPTION`);
     const rawKeywords = this.translate.instant(`${baseKey}.KEYWORDS`);
 
     const hasValidTitle =
@@ -83,6 +91,52 @@ export class SeoService {
     if (pageKey === 'FAQ') {
       this.ensureFaqJsonLd();
     }
+  }
+
+  private cmsPageForSeo(pageKey: SeoPageKey): Record<string, unknown> | null {
+    switch (pageKey) {
+      case 'HOME': return this.directusV2.homePage();
+      case 'ABOUT': return this.directusV2.aboutPage();
+      case 'SERVICES': return this.directusV2.servicesPage();
+      case 'CAREER': return this.directusV2.careersPage();
+      case 'CONTACTS': return this.directusV2.contactSettings();
+      default: return null;
+    }
+  }
+
+  updateAgenciesSeo(agencies: ReadonlyArray<Record<string, unknown>>): void {
+    this.updatePageSeo('AGENCIES');
+    const head = this.document.head;
+    if (!head) return;
+    const scriptId = 'seo-agencies-jsonld';
+    let script = this.document.getElementById(scriptId) as HTMLScriptElement | null;
+    if (!script) {
+      script = this.document.createElement('script');
+      script.type = 'application/ld+json';
+      script.id = scriptId;
+      head.appendChild(script);
+    }
+    script.textContent = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@graph': agencies.map((agency) => ({
+        '@type': 'FinancialService',
+        name: agency['name'] || agency['city'],
+        image: agency['photo'] || undefined,
+        telephone: agency['phone'] || undefined,
+        email: agency['email'] || undefined,
+        address: {
+          '@type': 'PostalAddress',
+          streetAddress: agency['address'] || undefined,
+          addressLocality: agency['city'] || undefined,
+          addressRegion: agency['region'] || undefined,
+          addressCountry: 'CM',
+        },
+        geo: typeof agency['latitude'] === 'number' && typeof agency['longitude'] === 'number'
+          ? { '@type': 'GeoCoordinates', latitude: agency['latitude'], longitude: agency['longitude'] }
+          : undefined,
+        hasMap: agency['map_link'] || undefined,
+      })),
+    });
   }
 
   private ensureAbsoluteUrl(url: string): string {
@@ -393,7 +447,7 @@ export class SeoService {
           {
             '@type': 'PropertyValue',
             name: 'Registre du commerce',
-            value: 'RC/YAO/2023/B/288',
+            value: 'RC/BJN/2023/B/03',
           },
         ],
         sameAs: [

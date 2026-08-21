@@ -1,6 +1,5 @@
 import { inject, computed, Injectable } from '@angular/core';
-import { DirectusSdkService } from './directus.sdk.service';
-import { PageSection } from '../types/directus';
+import { DirectusV2Service } from './directus-v2.service';
 
 export interface JoinUsData {
   headline: string;
@@ -12,50 +11,37 @@ export interface JoinUsData {
 
 @Injectable({ providedIn: 'root' })
 export class JoinUsService {
-  private readonly directus = inject(DirectusSdkService);
+  private readonly directusV2 = inject(DirectusV2Service);
 
-  // Signal pour toutes les sections call_to_action disponibles
+  /**
+   * Le bandeau est unique pour tout le site (singleton `cta_banner`). L'ancien
+   * schéma le dupliquait par page, ce qui laissait certaines pages sans bandeau.
+   */
   callToActionSections = computed<JoinUsData[]>(() => {
-    const pages = this.directus.pagesWithSections();
-    const sections: JoinUsData[] = [];
+    const banner = this.directusV2.ctaBanner();
+    if (!banner) return [];
 
-    pages.forEach(page => {
-      const callToActionSections = page.sections.filter(
-        section => section.Type === 'call_to_action'
-      );
-
-      callToActionSections.forEach(section => {
-        sections.push({
-          headline: section.headline || 'Rejoignez plus de 1 500 clients accompagnés',
-          call_to_action_link: section.call_to_action_link || 'Prenez rendez-vous dès maintenant',
-          subheadline: section.subheadline || undefined,
-          page_slug: page.Slug,
-          section_id: section.Pages_sections_id
-        });
-      });
-    });
-
-    return sections;
+    return [{
+      headline: String(banner['headline'] || ''),
+      call_to_action_link: String(banner['cta_label'] || ''),
+      subheadline: banner['subheadline'] ? String(banner['subheadline']) : undefined,
+      page_slug: '*',
+      section_id: 0,
+    }];
   });
 
-  // Méthode pour récupérer une section call_to_action spécifique par page
   getCallToActionByPage(pageSlug: string): JoinUsData | null {
     const sections = this.callToActionSections();
-    return sections.find(section => section.page_slug === pageSlug) || null;
+    return sections.find(section => section.page_slug === pageSlug || section.page_slug === '*') || null;
   }
 
-  // Méthode pour récupérer une section call_to_action par ID
   getCallToActionById(sectionId: number): JoinUsData | null {
-    const sections = this.callToActionSections();
-    return sections.find(section => section.section_id === sectionId) || null;
+    return this.callToActionSections().find(section => section.section_id === sectionId) || null;
   }
 
-  // Méthode pour récupérer la première section call_to_action disponible
   getDefaultCallToAction(): JoinUsData | null {
-    const sections = this.callToActionSections();
-    return sections[0] || null;
+    return this.callToActionSections()[0] || null;
   }
 
-  // État de chargement
-  isLoading = computed(() => this.directus.isLoading());
+  isLoading = computed(() => !this.directusV2.ready());
 }

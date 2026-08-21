@@ -3,8 +3,8 @@
   "short_name": "FINSTAR-CM",
   "description": "Solutions d'épargne et de crédit sécurisées au Cameroun",
   "display": "standalone",
-  "scope": "./",
-  "start_url": "./",
+  "scope": "/",
+  "start_url": "/",
   "theme_color": "#1a365d",
   "background_color": "#ffffff",
   "icons": [

@@ -1,80 +1,38 @@
 import { inject, Injectable, computed } from '@angular/core';
-import { DirectusSdkService } from './directus.sdk.service';
+import { DirectusV2Service } from './directus-v2.service';
 
 @Injectable({ providedIn: 'root' })
 export class CareerService {
-  private readonly directus = inject(DirectusSdkService);
+  private readonly directusV2 = inject(DirectusV2Service);
 
-  isLoading = computed(() => this.directus.isLoading());
+  isLoading = computed(() => !this.directusV2.ready());
 
-  // Page de carrière
-  careerPage = computed(() => {
-    const pages = this.directus.pagesWithSections();
-    return pages.find(page => page.Slug === 'careers');
-  });
+  careerPage = computed(() => this.directusV2.careersPage());
 
-  // Récupérer les sections par leur ID
-  sectionById = (id: number) => computed(() => {
-    const sections = this.careerPage()?.sections || [];
-    return sections.find(s => s.Pages_sections_id === id) ?? null;
-  });
-
-  // Section d'introduction (ID 12)
-  introSection = this.sectionById(12);
-
-  // Section des emplois (ID 13)
-  jobsSection = this.sectionById(13);
-
-  // Données formatées
+  // Introduction de la page carrières (singleton `careers_page`).
   introData = computed(() => {
-    const section = this.introSection();
-    if (!section) return null;
+    const page = this.directusV2.careersPage();
+    if (!page) return null;
+
     return {
-      headline: section.headline,
-      subheadline: section.subheadline,
-      headlines2: section.headlines2,
-      body_content: section.body_content,
-      image: section.image
+      headline: String(page['intro_headline'] || ''),
+      subheadline: String(page['intro_subheadline'] || ''),
+      headlines2: String(page['intro_headline_2'] || ''),
+      body_content: String(page['intro_body'] || ''),
+      image: page['intro_image'] as string | null,
     };
   });
 
-  jobsData = computed(() => {
-    const section = this.jobsSection();
-
-    if (!section?.table_data) {
-      return [];
-    }
-
-    try {
-      let parsedData;
-
-      // ✅ Même logique robuste que ContactService
-      if (typeof section.table_data === 'string') {
-        parsedData = JSON.parse(section.table_data);
-      } else if (typeof section.table_data === 'object') {
-        parsedData = section.table_data;
-      } else {
-        console.error('[CareerService] Type de données table_data non supporté:', typeof section.table_data);
-        return [];
-      }
-
-      // ✅ Validation de la structure
-      if (!parsedData || typeof parsedData !== 'object') {
-        console.error('[CareerService] Données parsées invalides:', parsedData);
-        return [];
-      }
-
-      return parsedData;
-    } catch (e) {
-      console.error('[CareerService] Erreur lors du parsing des données des emplois:', e);
-      console.error('[CareerService] Données reçues:', section.table_data);
-      console.error('[CareerService] Type des données:', typeof section.table_data);
-
-      if (typeof section.table_data === 'string') {
-        console.error('[CareerService] Contenu de la chaîne:', section.table_data.substring(0, 100) + '...');
-      }
-
-      return [];
-    }
-  });
+  // Offres d'emploi : vraies lignes typées (`job_offers`) au lieu d'un blob JSON.
+  jobsData = computed(() => this.directusV2.jobOffers().map((job) => ({
+    title: String(job['title'] || ''),
+    description_poste: String(job['description'] || ''),
+    missions_poste: Array.isArray(job['tasks']) ? job['tasks'] : [],
+    description: {
+      diplomes_requis: Array.isArray(job['diplomas']) ? job['diplomas'].join(' · ') : '',
+      aptitudes_personnelles: Array.isArray(job['skills']) ? job['skills'].join(' · ') : '',
+      constitution_du_dossier: Array.isArray(job['dossier']) ? job['dossier'] : [],
+    },
+    remuneration: job['remuneration'],
+  })));
 }

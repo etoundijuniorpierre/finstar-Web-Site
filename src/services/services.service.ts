@@ -1,7 +1,16 @@
 // services.service.ts
 import { inject, Injectable, computed } from '@angular/core';
-import { DirectusSdkService } from './directus.sdk.service';
-import { LoanProcess } from '../types/directus';
+import { DirectusV2Service } from './directus-v2.service';
+
+export interface LoanProcessStep {
+  step: string;
+  details?: string[];
+}
+
+export interface LoanProcess {
+  title: string;
+  steps: LoanProcessStep[];
+}
 
 export interface AccountOpeningGuide {
   key: string;
@@ -11,6 +20,8 @@ export interface AccountOpeningGuide {
   best_for: string;
   use_cases: string[];
   opening_minimum: string;
+  /** Frais d'ouverture par compte, géré dans Directus (ex. « GRATUITE », « 2 500 FCFA »). */
+  opening_fee?: string;
   documents: string[];
   benefits: string[];
   practical_note?: string;
@@ -18,135 +29,113 @@ export interface AccountOpeningGuide {
 
 @Injectable({ providedIn: 'root' })
 export class ServicesService {
-  private readonly directus = inject(DirectusSdkService);
-  isLoading = computed(() => this.directus.isLoading());
+  private readonly directusV2 = inject(DirectusV2Service);
 
-  // Page de services
-  servicesPage = computed(() => {
-    const pages = this.directus.pagesWithSections();
-    return pages.find(page => page.Slug === 'services');
-  });
+  isLoading = computed(() => !this.directusV2.ready());
 
-  // Récupérer les sections par leur ID
-  sectionById = (id: number) => computed(() => {
-    const sections = this.servicesPage()?.sections || [];
-    return sections.find(s => s.Pages_sections_id === id) ?? null;
-  });
+  /** Présence de la page (garde d'affichage côté template). */
+  servicesPage = computed(() => this.directusV2.servicesPage());
 
-  // Données pour chaque section
-  accountsSection = this.sectionById(9);
-  introSection = this.sectionById(8);
-  openAccountSection = this.sectionById(10);
-  
-  // ✅ Correction du parsing de subheadline2
+  // Bloc « crédit » : titres du singleton + étapes typées de `loan_process`.
   creditRequirementsSection = computed(() => {
-    const section = this.sectionById(11)();
-    if (!section) return null;
-
-    // Parser subheadline2 selon le nouveau format
-    let loanProcess: LoanProcess[] | null = null;
-    
-    try {
-      if (section.subheadline2) {
-        // ✅ Vérification du type AVANT de parser
-        if (typeof section.subheadline2 === 'string') {
-          // Si c'est une chaîne, parser comme JSON
-          loanProcess = JSON.parse(section.subheadline2);
-        } else if (Array.isArray(section.subheadline2)) {
-          // Si c'est déjà un tableau, utiliser directement
-          loanProcess = section.subheadline2;
-        } else if (typeof section.subheadline2 === 'object' && section.subheadline2 !== null) {
-          // Si c'est un objet mais pas un tableau
-          console.warn('[ServicesService] subheadline2 est un objet, pas un tableau:', section.subheadline2);
-          loanProcess = null;
-        }
-      }
-    } catch (e) {
-      console.error('[ServicesService] Erreur lors du parsing de subheadline2:', e);
-      console.error('[ServicesService] Données reçues:', section.subheadline2);
-      console.error('[ServicesService] Type des données:', typeof section.subheadline2);
-      loanProcess = null;
-    }
+    const page = this.directusV2.servicesPage();
+    if (!page) return null;
 
     return {
-      ...section,
-      loanProcess // Nouvelle propriété structurée
-    };
+      headline: String(page['credit_headline'] || ''),
+      headlines2: String(page['credit_headline_2'] || ''),
+      loanProcess: this.directusV2.loanProcess().map((process) => ({
+        title: String(process['title'] || ''),
+        steps: Array.isArray(process['steps']) ? process['steps'] : [],
+      })),
+    } as any;
   });
 
-  // Données formatées
   introData = computed(() => {
-    const section = this.introSection();
-    if (!section) return null;
+    const page = this.directusV2.servicesPage();
+    if (!page) return null;
+
     return {
-      headline: section.headline,
-      subheadline: section.subheadline,
-      image: section.image
+      headline: String(page['intro_headline'] || ''),
+      subheadline: String(page['intro_subheadline'] || ''),
+      image: page['intro_image'] as string | null,
     };
   });
-  
-  // Produits de la page services
+
+  // Familles de produits et leurs offres (relation M2O, plus de table de jonction).
   productsData = computed(() => {
-    const page = this.servicesPage();
-    return page?.products || [];
+    const items = this.directusV2.productItems();
+    return this.directusV2.creditProducts().map((product) => {
+      const productId = Number(product['id']);
+      const facts = items
+        .filter((item) => Number(item['product']) === productId)
+        .map((item) => ({
+          item_id: Number(item['id']),
+          opening_minimum: item['opening_minimum'],
+          eligibility: item['eligibility'],
+          documents: item['documents'],
+          benefits: item['benefits'],
+        }));
+      return {
+        id: productId,
+        Name: String(product['name'] || ''),
+        headlines: String(product['headline'] || ''),
+        product_image: product['image'] as string | null,
+        Table_data: { details: facts },
+      };
+    }) as any[];
   });
-  
-  // Méthode pour récupérer les items d'un produit
+
   getProductItems(productId: number) {
-    return this.directus.getProductItems(productId);
+    return this.directusV2.productItems()
+      .filter((item) => Number(item['product']) === productId)
+      .map((item) => ({
+        id: Number(item['id']),
+        name: String(item['name'] || ''),
+        description: String(item['description'] || ''),
+        image: item['image'] as string | null,
+      })) as any[];
   }
 
-  accountsData = computed(() => {
-    const section = this.accountsSection();
-    return section?.account_types || [];
-  });
+  accountsData = computed(() => this.directusV2.accountTypes().map((account) => ({
+    account_id: Number(account['legacy_id']),
+    account_name: String(account['account_name'] || ''),
+    Description: String(account['description'] || ''),
+    full_description: String(account['full_description'] || ''),
+    min_amount: String(account['min_amount'] || ''),
+  })) as any[]);
 
-  accountOpeningGuides = computed<AccountOpeningGuide[]>(() => {
-    const raw = this.accountsSection()?.table_data;
-    if (!raw) return [];
-
-    try {
-      const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
-      return Array.isArray(parsed) ? parsed : [];
-    } catch (error) {
-      console.error('[ServicesService] Invalid account-opening guide data:', error);
-      return [];
-    }
-  });
+  accountOpeningGuides = computed<AccountOpeningGuide[]>(() =>
+    this.directusV2.accountOpeningGuides().map((guide) => ({
+      key: String(guide['key'] || ''),
+      account_ids: Array.isArray(guide['account_ids']) ? guide['account_ids'].map(Number) : [],
+      label: String(guide['label'] || ''),
+      tagline: String(guide['tagline'] || ''),
+      best_for: String(guide['best_for'] || ''),
+      use_cases: Array.isArray(guide['use_cases']) ? guide['use_cases'].map(String) : [],
+      opening_minimum: String(guide['opening_minimum'] || ''),
+      opening_fee: guide['opening_fee'] ? String(guide['opening_fee']) : undefined,
+      documents: Array.isArray(guide['documents']) ? guide['documents'].map(String) : [],
+      benefits: Array.isArray(guide['benefits']) ? guide['benefits'].map(String) : [],
+      practical_note: guide['practical_note'] ? String(guide['practical_note']) : undefined,
+    })));
 
   openAccountData = computed(() => {
-    const section = this.openAccountSection();
-    if (!section) return null;
+    const page = this.directusV2.servicesPage();
+    if (!page) return null;
+
     return {
-      headline: section.headline,
-      subheadline: section.subheadline,
-      image: section.image
+      headline: '',
+      subheadline: String(page['opening_intro'] || ''),
+      image: null,
     };
   });
 
-  // ✅ Correction du parsing de table_data (qui est une CHAÎNE selon vos logs)
-  creditRequirementsData = computed(() => {
-    const section = this.creditRequirementsSection();
-    if (!section?.table_data) return null;
-
-    try {
-      // table_data est une chaîne JSON, on doit la parser
-      const tableData = typeof section.table_data === 'string' 
-        ? JSON.parse(section.table_data)
-        : section.table_data;
-
-      return tableData.map((item: any) => ({
-        category: item.category,
-        interestRate: Array.isArray(item['interest rate']) 
-          ? item['interest rate']
-          : [item['interest rate'] || ''],
-        requirements: Array.isArray(item.requirements)
-          ? item.requirements
-          : [item.requirements || '']
-      }));
-    } catch (e) {
-      console.error('Erreur parsing credit requirements:', e);
-      return null;
-    }
-  });
+  // Catégories de crédit : vraies lignes (`credit_categories`), plus de blob JSON
+  // dont la clé « interest rate » contenait un espace.
+  creditRequirementsData = computed(() => this.directusV2.creditCategories().map((item) => ({
+    category: String(item['category'] || ''),
+    interestRate: Array.isArray(item['interest_rates']) ? item['interest_rates'] : [],
+    requirements: Array.isArray(item['requirements']) ? item['requirements'] : [],
+  })));
 }

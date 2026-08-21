@@ -171,7 +171,7 @@
             <p>{{ account.Description }}</p>
           </div>
           <div class="account-overview-footer">
-            <span><small>{{ 'SERVICES.FROM' | translate }}</small><strong>{{ account.min_amount }} {{ 'COMMON.CURRENCY' | translate }}</strong></span>
+            <span><small>{{ 'SERVICES.OPENING_PREFIX' | translate }} {{ accountOpeningFee(account.account_id) || ('SERVICES.FREE' | translate) }} | {{ 'SERVICES.FROM' | translate }}</small><strong>{{ account.min_amount }} {{ 'COMMON.CURRENCY' | translate }}</strong></span>
             @if (isTermAccount(account)) {
             <button type="button" (click)="goToSavingsJourney()">{{ 'SERVICES.VIEW_SAVINGS_JOURNEY' | translate }}</button>
             } @else if (accountGuideFor(account.account_id)) {
@@ -205,7 +205,7 @@
       <article class="account-file" id="account-guide-detail" aria-live="polite">
         <div class="account-file-title">
           <div><span>{{ 'SERVICES.ACCOUNT_FILE_LABEL' | translate }}</span><h3>{{ guide.label }}</h3></div>
-          <div class="minimum-chip"><small>{{ 'SERVICES.OPENING_AT' | translate }}</small><strong>{{ guide.opening_minimum }}</strong></div>
+          <div class="minimum-chip"><small>{{ 'SERVICES.OPENING_PREFIX' | translate }} {{ guide.opening_fee || ('SERVICES.FREE' | translate) }} | {{ 'SERVICES.OPENING_AT' | translate }}</small><strong>{{ guide.opening_minimum }}</strong></div>
         </div>
         <p class="account-description">{{ guide.tagline }}</p>
 

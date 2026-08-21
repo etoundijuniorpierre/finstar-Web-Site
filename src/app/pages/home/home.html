@@ -107,7 +107,7 @@
 @if (displayedStats(); as stats) {
 <section #performanceSection class="performance">
   <div class="performance-headline">
-    <h2>{{ statsSection()?.headline }}</h2>
+    <h2>{{ statsHeadline() }}</h2>
   </div>
   
   <div class="performance-stats">
@@ -174,6 +174,31 @@
         <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
       </svg>
     </button>
+  </div>
+</section>
+}
+@if (agenciesPreview().length) {
+<section class="home-agencies" aria-labelledby="home-agencies-title">
+  <div class="home-agencies-heading">
+    <div>
+      <span>{{ 'AGENCIES.KICKER' | translate }}</span>
+      <h2 id="home-agencies-title">{{ 'AGENCIES.HOME_TITLE' | translate }}</h2>
+      <p>{{ 'AGENCIES.HOME_TEXT' | translate }}</p>
+    </div>
+    <a [routerLink]="agenciesLink()">{{ 'AGENCIES.VIEW_ALL' | translate }} →</a>
+  </div>
+  <div class="home-agencies-grid">
+    @for (agency of agenciesPreview(); track agency.key) {
+      <a class="home-agency-card" [routerLink]="agenciesLink()">
+        @if (agency.photo) {
+          <img [src]="agency.photo" [alt]="agency.name || agency.city" loading="lazy" decoding="async">
+        }
+        <span class="home-agency-content">
+          <span>{{ 'AGENCIES.BRANCH' | translate }}</span>
+          <strong>{{ agency.name || agency.city }}</strong>
+        </span>
+      </a>
+    }
   </div>
 </section>
 }
