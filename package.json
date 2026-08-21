@@ -12,7 +12,7 @@
     "audit:directus": "node scripts/directus-audit.mjs",
     "backup:directus": "node scripts/directus-backup.mjs",
     "verify:directus-backup": "node scripts/verify-directus-backup.mjs",
-    "serve:ssr:FINSTAR-CM": "node --env-file-if-exists=.env dist/finstar-cm/server/server.mjs",
+    "serve:ssr:FINSTAR-CM": "node --env-file-if-exists=.env scripts/serve-local.mjs",
     "generate:social-image": "node scripts/generate-social-image.js",
     "generate:social-image:dev": "node scripts/generate-social-image.js http://localhost:4200",
     "generate:social-image:prod": "node scripts/generate-social-image.js https://your-domain.com",
