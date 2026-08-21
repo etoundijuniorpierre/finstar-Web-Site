@@ -22,11 +22,8 @@
   status = 200
   force = true
 
-# Les pages publiques sont pré-rendues : Netlify sert d'abord le fichier
-# correspondant. Cette règle ne s'applique donc qu'aux routes rendues côté
-# client (l'administration) et aux URL inconnues, qui reçoivent l'index racine
-# — le routeur Angular prend alors le relais.
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
+# Aucune règle générique ici : le plugin @netlify/angular-runtime publie la
+# sortie du build et route les requêtes restantes vers la fonction SSR, qui
+# exécute `src/server.ts`. Cette application Express porte les routes /api/*
+# (formulaires, dépôt de fichiers, avis, administration) ; une redirection
+# fourre-tout les intercepterait avant qu'elles ne l'atteignent.
