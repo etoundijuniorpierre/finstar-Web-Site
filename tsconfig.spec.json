@@ -5,10 +5,19 @@
   "compilerOptions": {
     "outDir": "./out-tsc/spec",
     "types": [
-      "jasmine"
+      "jasmine",
+      // `include` ramasse aussi les fichiers du rendu serveur, qui utilisent
+      // `process` et `node:crypto` : sans ces types, la compilation des tests
+      // echoue avant meme d'en executer un seul.
+      "node"
     ]
   },
   "include": [
     "src/**/*.ts"
+  ],
+  "exclude": [
+    // Meme garde que dans tsconfig.app.json : un `environment.prod.ts` oublie
+    // dans l'arbre ne doit pas casser la compilation des tests non plus.
+    "src/environments/environment.prod.ts"
   ]
 }

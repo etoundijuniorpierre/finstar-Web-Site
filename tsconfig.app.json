@@ -12,6 +12,11 @@
     "src/**/*.ts"
   ],
   "exclude": [
-    "src/**/*.spec.ts"
+    "src/**/*.spec.ts",
+    // Vestige d'avant la fusion des environnements : plus personne ne l'importe
+    // et `angular.json` ne le substitue plus. Mais `include` ramasse tout
+    // `src/**/*.ts`, si bien qu'une copie oubliee dans l'arbre deploye suffisait
+    // a faire echouer la compilation sur un champ retire du modele.
+    "src/environments/environment.prod.ts"
   ]
 }
