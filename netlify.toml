@@ -8,7 +8,10 @@
   publish = "dist/finstar-cm/browser"
 
 [build.environment]
-  NODE_VERSION = "20"
+  # L'hébergeur exécute déjà son greffon Angular sous Node 22 et refuse de le
+  # faire tourner sous 20 : garder « 20 » ici, c'était compiler et exécuter le
+  # rendu sur deux versions différentes. Angular 20 accepte ^22.12.
+  NODE_VERSION = "22"
 
 # Les pages référencent leurs médias via `/directus/...`, chemin servi par le
 # serveur Express en local. En publication statique, ce serveur n'existe pas :
