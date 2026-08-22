@@ -210,7 +210,8 @@ export class SeoService {
       this.meta.updateTag({ property: 'og:image:alt', content: imageAlt });
       this.meta.updateTag({ property: 'og:image:width', content: '1200' });
       this.meta.updateTag({ property: 'og:image:height', content: '630' });
-      this.meta.updateTag({ property: 'og:image:type', content: 'image/png' });
+      const imageType = this.imageTypeFor(Boolean(config.imageUrl));
+      if (imageType) this.meta.updateTag({ property: 'og:image:type', content: imageType });
     }
 
     // Twitter Card meta tags
@@ -281,7 +282,8 @@ export class SeoService {
       this.meta.updateTag({ property: 'og:image:alt', content: imageAlt });
       this.meta.updateTag({ property: 'og:image:width', content: '1200' });
       this.meta.updateTag({ property: 'og:image:height', content: '630' });
-      this.meta.updateTag({ property: 'og:image:type', content: 'image/png' });
+      const imageType = this.imageTypeFor(Boolean(config.imageUrl));
+      if (imageType) this.meta.updateTag({ property: 'og:image:type', content: imageType });
     }
 
     // Twitter Card meta tags
@@ -310,14 +312,18 @@ export class SeoService {
   }
 
   private getDefaultImageUrl(): string | null {
-    // First try to use a dynamically generated image with the Directus favicon
-    const directusFavicon = this.socialPreview.getDirectusFaviconUrl();
-    if (directusFavicon) {
-      // In the future, this could generate a social image using the Directus favicon
-      // For now, fall back to the static image
-    }
-
     return this.socialPreview.getDefaultImageUrl();
+  }
+
+  /**
+   * Type MIME annoncé pour l'aperçu. Il doit suivre l'image réellement servie :
+   * celle de Directus est recompressée en JPEG, le repli statique est un PNG.
+   * Une image fournie explicitement par l'appelant n'est pas devinable, on ne
+   * déclare alors rien plutôt que de mentir.
+   */
+  private imageTypeFor(fourniParAppelant: boolean): string | null {
+    if (fourniParAppelant) return null;
+    return this.socialPreview.getDefaultImageType();
   }
 
   private getCanonicalUrl(): string | null {

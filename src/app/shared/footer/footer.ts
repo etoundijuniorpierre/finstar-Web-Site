@@ -7,6 +7,12 @@ import { ContactService } from '../../../services/contact.service';
 import { filter } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
+interface SocialLink {
+  key: string;
+  label: string;
+  url: string;
+}
+
 @Component({
   selector: 'app-footer',
   imports: [RouterModule, TranslateModule],
@@ -34,16 +40,32 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
       <li routerLinkActive="active"><a [routerLink]="faqLink()">{{ 'NAV.FAQ' | translate }}</a></li>
     </ul>
     
-    <!-- Réseaux sociaux -->
+    <!-- Réseaux sociaux : les adresses viennent de site_settings.social_links ;
+         seules les icônes restent dans le code, ce sont du balisage. -->
     <div class="footer-socials">
-      <a href="https://facebook.com/finstarcm" target="_blank" rel="noopener" aria-label="Facebook" class="social-link fb">
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
-        Facebook
-      </a>
-      <a href="https://linkedin.com/company/finstarcm" target="_blank" rel="noopener" aria-label="LinkedIn" class="social-link linkedin">
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg>
-        LinkedIn
-      </a>
+      @for (link of socialLinks(); track link.url) {
+        <a [href]="link.url" target="_blank" rel="noopener" [attr.aria-label]="link.label" class="social-link" [class]="'social-link ' + link.key">
+          @switch (link.key) {
+            @case ('facebook') {
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+            }
+            @case ('linkedin') {
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg>
+            }
+            @case ('instagram') {
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="20" x="2" y="2" rx="5"/><circle cx="12" cy="12" r="4"/><line x1="17.5" x2="17.5" y1="6.5" y2="6.5"/></svg>
+            }
+            @case ('youtube') {
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 8a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v8a4 4 0 0 0 4 4h12a4 4 0 0 0 4-4z"/><path d="m10 9 5 3-5 3z"/></svg>
+            }
+            @default {
+              <!-- Réseau ajouté dans Directus sans icône dédiée : le libellé suffit. -->
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 0 20a15.3 15.3 0 0 1 0-20"/></svg>
+            }
+          }
+          {{ link.label }}
+        </a>
+      }
       <a [href]="whatsappLink()" target="_blank" rel="noopener" aria-label="WhatsApp" class="social-link whatsapp">
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
         WhatsApp
@@ -72,6 +94,27 @@ export class Footer {
 
   navbarData = this.layoutService.navbarData;
   footerData = this.layoutService.footerData;
+
+  /**
+   * Réseaux sociaux publiés, tels que saisis dans `site_settings.social_links`.
+   *
+   * Les adresses étaient écrites en dur dans ce gabarit : changer une page
+   * Facebook imposait un déploiement. Les entrées incomplètes sont ignorées
+   * plutôt que rendues en liens morts.
+   */
+  socialLinks = computed<SocialLink[]>(() => {
+    const brut = this.footerData()?.socialLinks;
+    if (!Array.isArray(brut)) return [];
+    return brut
+      .map((entree) => (entree ?? {}) as Record<string, unknown>)
+      .map((entree) => ({
+        key: String(entree['key'] ?? '').trim().toLowerCase(),
+        label: String(entree['label'] ?? '').trim(),
+        url: String(entree['url'] ?? '').trim(),
+      }))
+      .filter((lien) => Boolean(lien.url) && /^https?:\/\//i.test(lien.url))
+      .map((lien) => ({ ...lien, label: lien.label || lien.key || lien.url }));
+  });
 
   // Reference to the footer menu for indicator calculation
   footerMenu = viewChild<ElementRef<HTMLUListElement>>('footerMenu');

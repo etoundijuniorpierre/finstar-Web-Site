@@ -250,7 +250,11 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   width: min(100%, 72rem);
-  max-height: min(92vh, 52rem);
+  // Hauteur pilotée par le contenu entre un plancher et un plafond : une hauteur
+  // fixe laissait la moitié basse du panneau vide (une agence n'affiche que
+  // trois informations) tout en écrasant le cas où elles sont toutes remplies.
+  min-height: min(26rem, 70vh);
+  max-height: min(92vh, 44rem);
   overflow: hidden;
   border-radius: var(--radius-lg);
   background: var(--surface);
@@ -276,10 +280,25 @@
 
 .agency-dialog-close:hover { background: var(--surface-soft); }
 
-.agency-dialog-media { background: var(--surface-soft); }
+.agency-dialog-media {
+  display: grid;
+  // Centre le logo de repli, qui n'occupe pas toute la colonne ; la photo, elle,
+  // garde ses dimensions explicites et remplit la surface.
+  place-items: center;
+  background: var(--surface-soft);
+  overflow: hidden;
+}
 .agency-dialog-media img { display: block; width: 100%; height: 100%; object-fit: cover; }
 .agency-dialog-media img.is-logo {
-  width: min(70%, 16rem); height: auto; margin: auto; padding: 2rem 0; object-fit: contain;
+  // Le logo de repli doit tenir dans sa bande, y compris sur les écrans courts
+  // où celle-ci descend sous sa hauteur naturelle : sans plafond il débordait
+  // sur le texte et se faisait rogner.
+  box-sizing: border-box;
+  width: min(70%, 16rem);
+  height: auto;
+  max-height: 100%;
+  padding: clamp(1rem, 4vw, 2rem);
+  object-fit: contain;
 }
 
 .agency-dialog-body {
@@ -315,8 +334,15 @@
 @media (max-width: 860px) {
   .agency-flagship { grid-template-columns: 1fr; }
   .agency-flagship-media { min-height: 240px; }
-  .agency-dialog-panel { grid-template-columns: 1fr; }
-  .agency-dialog-media { max-height: 14rem; }
+  .agency-dialog-panel {
+    grid-template-columns: 1fr;
+    // L'image garde une bande lisible sans confisquer la place du texte, qui
+    // occupe le reste et défile seul si nécessaire.
+    grid-template-rows: clamp(11rem, 28vh, 16rem) minmax(0, 1fr);
+    min-height: 0;
+    max-height: 90vh;
+  }
+  .agency-dialog-media { max-height: none; }
 }
 
 .agencies-note {

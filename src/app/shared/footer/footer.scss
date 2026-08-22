@@ -113,10 +113,16 @@
     transition: all 0.2s;
     cursor: pointer;
 
-    &.fb { color: #1877f2; border-color: #1877f2;
+    // La classe vient de la clé saisie dans Directus (`facebook`, `linkedin`…).
+    // `.fb` reste accepté pour ne pas dépendre d'une clé précise côté contenu.
+    &.fb, &.facebook { color: #1877f2; border-color: #1877f2;
       &:hover { background: #1877f2; color: #fff; } }
     &.linkedin { color: #c20a75ff; border-color: #c20a75ff;
       &:hover { background: #c20a75ff; color: #fff; } }
+    &.instagram { color: #d62976; border-color: #d62976;
+      &:hover { background: #d62976; color: #fff; } }
+    &.youtube { color: #ff0000; border-color: #ff0000;
+      &:hover { background: #ff0000; color: #fff; } }
     &.whatsapp { color: #25d366; border-color: #25d366;
       &:hover { background: #25d366; color: #fff; } }
   }
@@ -138,7 +144,7 @@
     margin: 1.5rem auto;
 
     li {
-      width: 30%; // 3 per line (30% x 3 = 90% + gaps)
+      width: 30%;
       text-align: center;
       
       a {

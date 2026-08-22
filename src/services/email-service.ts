@@ -108,10 +108,10 @@ export class EmailService {
         subject: formData.subjectDisplay || formData.subject.trim(),
         subject_color: formData.subjectColor || '#1f2937',
         message: formData.message.trim(),
-        file_url: formData.fileUrl ? `${formData.fileUrl}?download=` : '',
+        file_url: formData.fileUrl || '',
         file_block:
           formData.fileUrl && !formData.hideFileBlock
-            ? `Pour télécharger la pièce jointe, cliquez ici : ${formData.fileUrl}?download=`
+            ? `Pour télécharger la pièce jointe, cliquez ici : ${formData.fileUrl}`
             : '',
         date: new Date().toLocaleString('fr-FR', {
           timeZone: 'Africa/Douala',
@@ -316,6 +316,11 @@ export class EmailService {
     return this.sendEmail(contactData);
   }
 
+  /**
+   * Les liens reçus ici sont des liens de téléchargement **signés par le
+   * serveur**, valides tels quels. Ils portaient auparavant un suffixe
+   * `?download=` accolé à un simple identifiant Directus : rien d'ouvrable.
+   */
   private formatCandidatureForEmail(data: any): string {
     const candidateName = `${data.nom?.toUpperCase()} ${data.prenom}`;
     const dateStr = new Date().toLocaleDateString('fr-FR');
@@ -333,7 +338,7 @@ export class EmailService {
     const documentLinks = Object.entries(data.documents || {})
       .map(
         ([key, url], index) =>
-          `${index + 2}. ${documentLabels[key] || key} :\n${String(url)}?download=`,
+          `${index + 2}. ${documentLabels[key] || key} :\n${String(url)}`,
       )
       .join('\n\n');
     const internshipDetails = data.typeCandidature?.startsWith('stage_')
@@ -355,9 +360,9 @@ ${internshipDetails}${collectorDetails}
 Vous trouverez ci-dessous les liens pour télécharger les documents :
 
 1. FICHE RÉCAPITULATIVE (PDF) : 
-${data.candidaturePdfUrl ? `${data.candidaturePdfUrl}?download=` : 'Non générée'}
+${data.candidaturePdfUrl || 'Non générée'}
 
-${documentLinks || `2. CURRICULUM VITAE (CV) :\n${data.cvUrl ? `${data.cvUrl}?download=` : 'Aucun CV fourni'}`}
+${documentLinks || `2. CURRICULUM VITAE (CV) :\n${data.cvUrl || 'Aucun CV fourni'}`}
 
 Veuillez cliquer sur les liens ci-dessus pour ouvrir les documents.
     `.trim();
@@ -491,7 +496,7 @@ Veuillez cliquer sur les liens ci-dessus pour ouvrir les documents.
         '❌ ERREUR CRITIQUE: contactEmail ou careerEmail manquant dans environment !',
       );
       console.error(
-        '📝 Action requise: Mettez à jour vos fichiers environment.ts et environment.prod.ts',
+        "📝 Action requise: mettez à jour les variables EMAILJS_* dans .env ou chez l'hébergeur",
       );
 
       this.toastr.error(

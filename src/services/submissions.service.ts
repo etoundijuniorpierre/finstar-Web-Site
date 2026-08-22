@@ -3,6 +3,12 @@ import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { ContactSubmission, JobApplication } from '../types/submissions';
 
+/** Fichier déposé : l'identifiant va dans Directus, le lien part dans l'e-mail. */
+export interface UploadedFile {
+  id: string;
+  url: string;
+}
+
 /**
  * Envoi des formulaires publics et de leurs pièces jointes.
  *
@@ -14,14 +20,20 @@ import { ContactSubmission, JobApplication } from '../types/submissions';
 export class SubmissionsService {
   private readonly http = inject(HttpClient);
 
-  /** Dépose un fichier et renvoie son identifiant Directus. */
+  /**
+   * Dépose un fichier et renvoie son identifiant Directus **et** son lien de
+   * téléchargement signé.
+   *
+   * Le lien est produit par le serveur au moment du dépôt : le navigateur ne
+   * peut pas le signer, et le fichier reste privé dans Directus.
+   */
   async uploadFile(
     file: File | Blob,
     fileName: string,
     scope: 'contacts' | 'candidatures' = 'contacts',
-  ): Promise<string> {
+  ): Promise<UploadedFile> {
     const response = await firstValueFrom(
-      this.http.post<{ id: string }>('/api/uploads', file, {
+      this.http.post<UploadedFile>('/api/uploads', file, {
         headers: {
           'Content-Type': (file as File).type || 'application/octet-stream',
           'X-File-Name': encodeSafeHeader(fileName),
@@ -29,8 +41,8 @@ export class SubmissionsService {
         },
       }),
     );
-    if (!response?.id) throw new Error("Le dépôt du fichier n'a pas abouti.");
-    return response.id;
+    if (!response?.id || !response?.url) throw new Error("Le dépôt du fichier n'a pas abouti.");
+    return response;
   }
 
   async submitContact(payload: ContactSubmission): Promise<void> {

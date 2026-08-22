@@ -334,8 +334,17 @@ export class CareerCandidature implements OnInit {
     return missing.length === 0;
   }
 
-  private async uploadAttachments(namePart: string, jobPart: string, uniqueId: number): Promise<Record<string, string>> {
-    const urls: Record<string, string> = {};
+  /**
+   * Dépose les pièces jointes et renvoie, pour chacune, l'identifiant Directus
+   * (enregistré dans la candidature) et le lien signé (envoyé dans l'e-mail).
+   */
+  private async uploadAttachments(
+    namePart: string,
+    jobPart: string,
+    uniqueId: number,
+  ): Promise<{ ids: Record<string, string>; links: Record<string, string> }> {
+    const ids: Record<string, string> = {};
+    const links: Record<string, string> = {};
     this.isUploading.set(true);
     try {
       for (const key of Object.keys(this.selectedFiles) as AttachmentKey[]) {
@@ -343,9 +352,11 @@ export class CareerCandidature implements OnInit {
         if (!file) continue;
         const extension = file.name.includes('.') ? `.${file.name.split('.').pop()}` : '';
         const fileName = `candidature-${namePart}-${jobPart}-${key}-${uniqueId}${extension}`;
-        urls[key] = await this.submissions.uploadFile(file, fileName, 'candidatures');
+        const uploaded = await this.submissions.uploadFile(file, fileName, 'candidatures');
+        ids[key] = uploaded.id;
+        links[key] = uploaded.url;
       }
-      return urls;
+      return { ids, links };
     } finally {
       this.isUploading.set(false);
     }
@@ -386,10 +397,10 @@ export class CareerCandidature implements OnInit {
             : (this.isSupervisionApplication() ? 'fiche-candidature-agent-encadrement' : 'fiche-candidature'));
         const recapFileName = `${recapPrefix}-${namePart}-${jobPart}-${uniqueId}.pdf`;
 
-        // `uploadAttachments` renvoie désormais des identifiants de fichiers
-        // Directus, et non plus des URL de stockage externes.
-        const documentUrls = await this.uploadAttachments(namePart, jobPart, uniqueId);
-        const cvFileId = documentUrls['cv'] ?? '';
+        // Deux vues du même dépôt : les identifiants Directus sont enregistrés
+        // avec la candidature, les liens signés partent dans la notification.
+        const { ids: documentIds, links: documentLinks } = await this.uploadAttachments(namePart, jobPart, uniqueId);
+        const cvFileId = documentIds['cv'] ?? '';
 
         const formDataFull = { 
           ...formDataRaw,
@@ -401,14 +412,17 @@ export class CareerCandidature implements OnInit {
             : (this.isCollectorApplication()
               ? 'collectrice'
               : (this.isSupervisionApplication() ? 'agent_encadrement' : undefined)),
-          documents: documentUrls
+          documents: documentIds
         };
 
         // Génération du PDF récapitulatif
-        let candidaturePdfUrl = '';
+        let recapFileId = '';
+        let recapLink = '';
         try {
           const pdfBlob = await this.pdfService.generateCandidaturePdf(formDataFull as any);
-          candidaturePdfUrl = await this.submissions.uploadFile(pdfBlob, recapFileName, 'candidatures');
+          const uploaded = await this.submissions.uploadFile(pdfBlob, recapFileName, 'candidatures');
+          recapFileId = uploaded.id;
+          recapLink = uploaded.url;
         } catch (pdfError) {
           console.error('Erreur lors de la génération/upload du PDF:', pdfError);
           this.toastr.error(this.translate.instant('ERROR.UPLOAD_FAILED'), this.translate.instant('ERROR.TITLE'));
@@ -417,10 +431,10 @@ export class CareerCandidature implements OnInit {
         }
 
         // Enregistrement de la candidature dans Directus (via le serveur SSR).
-        const dbDataToSave = this.buildApplicationPayload(formDataFull, candidaturePdfUrl);
+        const dbDataToSave = this.buildApplicationPayload(formDataFull, recapFileId);
         
         try {
-          await this.submissions.submitApplication({ ...dbDataToSave, documents: documentUrls });
+          await this.submissions.submitApplication({ ...dbDataToSave, documents: documentIds });
         } catch (dbError) {
           console.error('Erreur lors de la sauvegarde DB:', dbError);
           this.toastr.error(this.translate.instant('ERROR.DB_SAVE_FAILED'), this.translate.instant('ERROR.TITLE'));
@@ -430,7 +444,14 @@ export class CareerCandidature implements OnInit {
 
         // Envoi Email EmailJS
         try {
-          const resultEmailData = { ...formDataFull, candidaturePdfUrl } as any;
+          // L'e-mail ne transporte que des liens signés : jamais d'identifiant nu,
+          // qui n'était de toute façon pas cliquable.
+          const resultEmailData = {
+            ...formDataFull,
+            documents: documentLinks,
+            candidaturePdfUrl: recapLink,
+            cvUrl: documentLinks['cv'] || '',
+          } as any;
           const emailSuccess = await this.emailService.sendCandidatureEmail(resultEmailData);
           if (!emailSuccess) throw new Error('Email sending failed');
         } catch (emailError) {

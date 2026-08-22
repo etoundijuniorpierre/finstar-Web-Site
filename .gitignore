@@ -165,3 +165,7 @@ docs/REVUE-corrective-migration-directus-2026-08-20.md
 docs/directus-schema-v2.md
 docs/directus-schema-v2.md
 docs/directus-schema-v2.md
+
+# Configuration de build générée depuis .env (scripts/generate-environment.mjs).
+src/environments/environment.build.ts
+.claude/launch.json

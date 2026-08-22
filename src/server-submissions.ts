@@ -11,9 +11,86 @@
  * de soumissions restent donc sans permission publique.
  */
 
+import crypto from 'node:crypto';
+
 export interface SubmissionsOptions {
   directusUrl: string;
   directusToken: string;
+}
+
+/* -------------------------------------------------- liens de pièce jointe */
+
+/**
+ * Les pièces jointes (CV, CNI, diplômes) ne sont pas publiques dans Directus, et
+ * elles ne doivent pas l'être : une adresse devinable exposerait les dossiers de
+ * tous les candidats. Le destinataire de la notification doit pourtant pouvoir
+ * les télécharger sans compte.
+ *
+ * Le serveur signe donc un lien par fichier — identifiant + échéance, scellés
+ * par un HMAC. Lui seul peut en produire un, lui seul peut le vérifier, et c'est
+ * lui qui va chercher le fichier dans Directus avec son jeton. Le lien voyage
+ * dans l'e-mail ; le jeton, jamais.
+ */
+const ID_FICHIER = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * Clé de signature. `ATTACHMENT_LINK_SECRET` est le réglage propre ; à défaut on
+ * dérive du jeton Directus, déjà requis et strictement serveur, pour que les
+ * liens restent valides d'un déploiement à l'autre sans variable supplémentaire.
+ * Une rotation du jeton invalide les anciens liens : c'est documenté.
+ */
+function attachmentSecret(options: SubmissionsOptions): string {
+  return process.env['ATTACHMENT_LINK_SECRET'] || options.directusToken;
+}
+
+function attachmentTtlMs(): number {
+  const jours = Number(process.env['ATTACHMENT_LINK_TTL_DAYS']);
+  return (Number.isFinite(jours) && jours > 0 ? jours : 365) * 24 * 60 * 60 * 1000;
+}
+
+function signAttachment(id: string, expires: number, secret: string): string {
+  return crypto.createHmac('sha256', secret).update(`${id}|${expires}`).digest('hex');
+}
+
+/** Lien absolu de téléchargement, tel qu'il part dans l'e-mail. */
+export function buildAttachmentUrl(id: string, origin: string, options: SubmissionsOptions): string {
+  const expires = Date.now() + attachmentTtlMs();
+  const signature = signAttachment(id, expires, attachmentSecret(options));
+  return `${origin}/api/attachment/${id}?exp=${expires}&sig=${signature}`;
+}
+
+function attachmentSignatureValid(id: string, exp: string, sig: string, options: SubmissionsOptions): boolean {
+  const expires = Number(exp);
+  if (!Number.isFinite(expires) || expires < Date.now()) return false;
+  const attendue = signAttachment(id, expires, attachmentSecret(options));
+  // Comparaison à durée constante : une comparaison `===` laisserait deviner la
+  // signature octet par octet.
+  if (sig.length !== attendue.length) return false;
+  return crypto.timingSafeEqual(Buffer.from(sig, 'utf8'), Buffer.from(attendue, 'utf8'));
+}
+
+const CODES_REJOUABLES = new Set([429, 502, 503, 504]);
+
+async function fetchDirectus(
+  construire: () => { url: string; init: RequestInit },
+  options: { essais?: number; rejouerErreursReseau?: boolean } = {},
+): Promise<Response> {
+  const essais = options.essais ?? 3;
+  let derniere: unknown;
+  for (let tentative = 1; tentative <= essais; tentative += 1) {
+    const { url, init } = construire();
+    try {
+      const reponse = await fetch(url, init);
+      if (!CODES_REJOUABLES.has(reponse.status) || tentative === essais) return reponse;
+      derniere = `HTTP ${reponse.status}`;
+    } catch (error) {
+      if (!options.rejouerErreursReseau || tentative === essais) throw error;
+      derniere = error;
+    }
+    await new Promise((resoudre) => setTimeout(resoudre, 400 * 2 ** (tentative - 1)));
+    console.warn(`[directus] Tentative ${tentative}/${essais} rejouée (${derniere}).`);
+  }
+  throw new Error('Directus indisponible après plusieurs tentatives.');
 }
 
 /** Fenêtre glissante par IP, pour absorber les envois automatisés. */
@@ -29,9 +106,43 @@ function createRateLimiter(maxPerHour: number) {
   };
 }
 
+/**
+ * Dossier Directus où ranger une pièce jointe, résolu par son nom.
+ *
+ * Le rangement n'est pas cosmétique : la lecture publique de `directus_files`
+ * est filtrée sur le dossier. Un fichier déposé hors dossier resterait lisible
+ * par n'importe qui. En cache, car l'identifiant ne change pas.
+ */
+const folderIds = new Map<string, string>();
+
+async function resolveFolderId(name: string, options: SubmissionsOptions): Promise<string | null> {
+  const connu = folderIds.get(name);
+  if (connu) return connu;
+  try {
+    const query = new URLSearchParams({ 'filter[name][_eq]': name, fields: 'id', limit: '1' });
+    const upstream = await fetch(`${options.directusUrl}/folders?${query}`, {
+      headers: { Accept: 'application/json', Authorization: `Bearer ${options.directusToken}` },
+      signal: AbortSignal.timeout(10_000),
+    });
+    if (!upstream.ok) throw new Error(`Directus HTTP ${upstream.status}`);
+    const payload = await upstream.json() as { data?: Array<{ id?: string }> };
+    const id = payload.data?.[0]?.id;
+    // On ne mémorise QUE les succès : mettre un échec en cache condamnerait le
+    // processus à déposer toutes les pièces jointes à la racine — donc en accès
+    // public — après une seule indisponibilité passagère.
+    if (id) { folderIds.set(name, id); return id; }
+    console.warn(`[uploads] Dossier Directus « ${name} » introuvable.`);
+    return null;
+  } catch (error) {
+    console.warn(`[uploads] Résolution du dossier « ${name} » impossible.`, error);
+    return null;
+  }
+}
+
 const allowContact = createRateLimiter(10);
 const allowApplication = createRateLimiter(5);
 const allowUpload = createRateLimiter(30);
+const allowDownload = createRateLimiter(120);
 
 const text = (value: unknown, max = 500): string =>
   typeof value === 'string' ? value.trim().slice(0, max) : '';
@@ -63,16 +174,19 @@ async function createItem(
   collection: string,
   payload: Record<string, unknown>,
 ): Promise<void> {
-  const upstream = await fetch(`${options.directusUrl}/items/${collection}`, {
-    method: 'POST',
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${options.directusToken}`,
+  const upstream = await fetchDirectus(() => ({
+    url: `${options.directusUrl}/items/${collection}`,
+    init: {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${options.directusToken}`,
+      },
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(15_000),
     },
-    body: JSON.stringify(payload),
-    signal: AbortSignal.timeout(15_000),
-  });
+  }));
   if (!upstream.ok) {
     throw new Error(`Directus HTTP ${upstream.status}: ${(await upstream.text()).slice(0, 300)}`);
   }
@@ -92,22 +206,32 @@ async function handleUpload(request: Request, options: SubmissionsOptions): Prom
   const folder = text(request.headers.get('X-File-Scope'), 40) === 'candidatures' ? 'candidatures' : 'contacts';
 
   try {
-    const form = new FormData();
-    form.append('title', `${folder} — ${fileName}`);
-    form.append('file', new Blob([bytes], { type: contentType }), fileName);
+    const folderId = await resolveFolderId(folder, options);
 
-    const upstream = await fetch(`${options.directusUrl}/files`, {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${options.directusToken}` },
-      body: form,
-      signal: AbortSignal.timeout(30_000),
+    const upstream = await fetchDirectus(() => {
+      const form = new FormData();
+      form.append('title', `${folder} — ${fileName}`);
+      if (folderId) form.append('folder', folderId);
+      form.append('file', new Blob([bytes], { type: contentType }), fileName);
+      return {
+        url: `${options.directusUrl}/files`,
+        init: {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${options.directusToken}` },
+          body: form,
+          signal: AbortSignal.timeout(30_000),
+        },
+      };
     });
     if (!upstream.ok) throw new Error(`Directus HTTP ${upstream.status}`);
 
     const payload = await upstream.json() as { data?: { id?: string } };
     const id = payload.data?.id;
     if (!id) throw new Error('Identifiant de fichier absent.');
-    return Response.json({ id }, { status: 201 });
+    // Le navigateur ne peut pas signer lui-même : le lien de téléchargement est
+    // produit ici, en même temps que le dépôt, et repart tel quel dans l'e-mail.
+    const url = buildAttachmentUrl(id, new URL(request.url).origin, options);
+    return Response.json({ id, url }, { status: 201 });
   } catch (error) {
     console.warn('[uploads] Dépôt Directus impossible.', error);
     return Response.json({ error: 'uploads_unavailable' }, { status: 503 });
@@ -209,6 +333,73 @@ async function handleApplication(request: Request, options: SubmissionsOptions):
   }
 }
 
+/**
+ * Sert une pièce jointe à qui présente un lien signé valide.
+ *
+ * Le fichier reste privé dans Directus : c'est ce relais qui l'ouvre, avec le
+ * jeton serveur, et force le téléchargement.
+ */
+async function handleAttachment(request: Request, url: URL, options: SubmissionsOptions): Promise<Response> {
+  if (!options.directusToken) return new Response('Service indisponible', { status: 503 });
+  if (!allowDownload(clientIp(request))) return new Response('Trop de requêtes', { status: 429 });
+
+  const id = decodeURIComponent(url.pathname.slice('/api/attachment/'.length));
+  const exp = url.searchParams.get('exp') || '';
+  const sig = url.searchParams.get('sig') || '';
+
+  if (!ID_FICHIER.test(id) || !attachmentSignatureValid(id, exp, sig, options)) {
+    // Même réponse pour un lien inconnu, mal signé ou périmé : rien à apprendre
+    // en tâtonnant.
+    return new Response('Lien de téléchargement invalide ou expiré.', {
+      status: 404,
+      headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+    });
+  }
+
+  try {
+    const upstream = await fetchDirectus(() => ({
+      url: `${options.directusUrl}/assets/${id}?download`,
+      init: {
+        headers: { Accept: '*/*', Authorization: `Bearer ${options.directusToken}` },
+        signal: AbortSignal.timeout(30_000),
+      },
+    }), { rejouerErreursReseau: true });
+    if (!upstream.ok) throw new Error(`Directus HTTP ${upstream.status}`);
+
+    const headers = new Headers();
+    for (const nom of ['content-type', 'content-length', 'content-disposition']) {
+      const valeur = upstream.headers.get(nom);
+      if (valeur) headers.set(nom, valeur);
+    }
+    // Directus pose déjà l'en-tête avec `?download`; on garantit le repli.
+    if (!headers.has('content-disposition')) {
+      headers.set('content-disposition', `attachment; filename="${id}"`);
+    }
+    // Le lien est signé et nominatif : aucun cache partagé ne doit le retenir.
+    headers.set('cache-control', 'private, no-store');
+    return new Response(await upstream.arrayBuffer(), { status: 200, headers });
+  } catch (error) {
+    console.warn('[attachment] Lecture Directus impossible.', error);
+    return new Response('Pièce jointe momentanément indisponible.', {
+      status: 503,
+      headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+    });
+  }
+}
+
+export { fetchDirectus };
+
+/** Téléchargement d'une pièce jointe ; `null` si la requête ne le concerne pas. */
+export function handleAttachmentRequest(
+  request: Request,
+  url: URL,
+  options: SubmissionsOptions,
+): Promise<Response> | null {
+  if (request.method !== 'GET' && request.method !== 'HEAD') return null;
+  if (!url.pathname.startsWith('/api/attachment/')) return null;
+  return handleAttachment(request, url, options);
+}
+
 /** Aiguille les envois de formulaires ; `null` si la requête ne les concerne pas. */
 export function handleSubmissionRequest(
   request: Request,
@@ -227,13 +418,13 @@ export async function readOperationalCounts(
   options: SubmissionsOptions,
 ): Promise<{ contacts: number; candidatures: number }> {
   const count = async (collection: string): Promise<number> => {
-    const upstream = await fetch(
-      `${options.directusUrl}/items/${collection}?aggregate[count]=id`,
-      {
+    const upstream = await fetchDirectus(() => ({
+      url: `${options.directusUrl}/items/${collection}?aggregate[count]=id`,
+      init: {
         headers: { Accept: 'application/json', Authorization: `Bearer ${options.directusToken}` },
         signal: AbortSignal.timeout(10_000),
       },
-    );
+    }), { rejouerErreursReseau: true });
     if (!upstream.ok) throw new Error(`Directus HTTP ${upstream.status}`);
     const body = await upstream.json() as { data?: Array<{ count?: { id?: number | string } | number | string }> };
     const raw = body.data?.[0]?.count;

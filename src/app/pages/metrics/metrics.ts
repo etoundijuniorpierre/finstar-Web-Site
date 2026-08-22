@@ -320,7 +320,7 @@ export class Metrics implements OnInit {
       );
 
       if (!response.authenticated || !response.token) {
-        throw new Error('Invalid AdminConnexion credentials');
+        throw new Error('Invalid admin_accounts credentials');
       }
 
       window.sessionStorage.setItem(this.authStorageKey, response.token);

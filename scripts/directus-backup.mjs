@@ -20,7 +20,20 @@ const DIRECTUS_URL = (process.env.DIRECTUS_URL || 'http://84.247.169.140:8056').
 const DIRECTUS_TOKEN = process.env.DIRECTUS_TOKEN || '';
 const PII_KEY = process.env.DIRECTUS_PII_BACKUP_KEY || '';
 const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME || 'dfzilcxk8';
-const PII_COLLECTIONS = new Set(['Contact_form_data', 'JobDemandForm']);
+// Collections porteuses de données personnelles : elles nommaient encore les
+// tables v1 supprimées, si bien que les candidatures et messages v2 partaient
+// en clair dans chaque sauvegarde.
+const PII_COLLECTIONS = new Set(['job_applications', 'contact_messages']);
+// Médias déjà cassés côté serveur (binaire perdu chez l'hébergeur de fichiers) et
+// référencés nulle part. Sans cette liste explicite, la sauvegarde s'interromprait
+// indéfiniment sur des fichiers qu'aucune restauration ne pourra jamais rendre.
+// Toute autre défaillance reste bloquante.
+const KNOWN_MISSING = new Set(
+  (process.env.DIRECTUS_BACKUP_KNOWN_MISSING || '')
+    .split(',')
+    .map((id) => id.trim())
+    .filter(Boolean),
+);
 
 if (!DIRECTUS_TOKEN) {
   throw new Error('DIRECTUS_TOKEN est requis pour une sauvegarde complète.');
@@ -165,7 +178,7 @@ async function main() {
     format: 2,
     pii_exported: Boolean(PII_KEY),
     collections: {},
-    uploads: { expected: 0, downloaded: 0, sources: {}, recovered: [], failed: [] },
+    uploads: { expected: 0, downloaded: 0, sources: {}, recovered: [], known_missing: [], failed: [] },
     files: [],
   };
 
@@ -232,7 +245,9 @@ async function main() {
         });
       }
     } catch (error) {
-      manifest.uploads.failed.push({ id: file.id, name: file.filename_download, error: error.message });
+      const entry = { id: file.id, name: file.filename_download, error: error.message };
+      if (KNOWN_MISSING.has(file.id)) manifest.uploads.known_missing.push(entry);
+      else manifest.uploads.failed.push(entry);
     }
   }
 
@@ -246,6 +261,10 @@ async function main() {
 
   if (manifest.uploads.failed.length) {
     throw new Error(`${manifest.uploads.failed.length} média(s) n'ont pas pu être sauvegardés. Aucune migration ne doit être appliquée.`);
+  }
+
+  if (manifest.uploads.known_missing.length) {
+    console.warn(`Médias irrécupérables déclarés : ${manifest.uploads.known_missing.length} (voir manifest.uploads.known_missing).`);
   }
 
   console.log(`Collections sauvegardées : ${Object.keys(manifest.collections).length}`);

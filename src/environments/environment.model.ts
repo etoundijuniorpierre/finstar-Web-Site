@@ -1,8 +1,9 @@
 /**
- * Contrat unique partagé par environment.ts (dev) et environment.prod.ts (prod).
- * Toute clé ajoutée ici doit être renseignée dans LES DEUX fichiers, sinon
- * la compilation échoue — ce qui évite les divergences silencieuses entre
- * les environnements (ex. clés emailjs mal nommées ou URL Directus oubliée).
+ * Contrat du fichier `environment.ts`, désormais unique pour tous les
+ * déploiements. Ce qui doit varier d'un environnement à l'autre n'a pas sa
+ * place ici : les réglages EmailJS viennent de `.env` via
+ * `environment.build.ts`, et les secrets serveur ne quittent jamais le
+ * processus Node.
  */
 export interface EmailJsConfig {
   publicKey: string;
@@ -16,7 +17,6 @@ export interface EmailJsConfig {
 }
 
 export interface Environment {
-  production: boolean;
   /** URL Directus utilisée côté serveur. */
   apiUrl: string;
   /** URL publique utilisée par le navigateur, généralement un proxy même origine. */
@@ -27,5 +27,4 @@ export interface Environment {
   googleAnalyticsId?: string;
   lookerStudioEmbedUrl?: string;
   goatCounterCode?: string;
-  goatCounterMockData?: boolean;
 }

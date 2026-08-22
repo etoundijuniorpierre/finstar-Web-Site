@@ -11,6 +11,8 @@ import crypto from 'node:crypto';
 import { environment } from './environments/environment';
 import {
   clientIp,
+  fetchDirectus,
+  handleAttachmentRequest,
   handleSubmissionRequest,
   readOperationalCounts,
   type SubmissionsOptions,
@@ -21,7 +23,9 @@ const GOATCOUNTER_CODE = environment.goatCounterCode || '';
 const DIRECTUS_TOKEN = process.env['DIRECTUS_TOKEN'] || '';
 const DIRECTUS_URL = (process.env['DIRECTUS_URL'] || environment.apiUrl).replace(/\/$/, '');
 const RATING_HASH_SALT = process.env['RATING_HASH_SALT'] || crypto.randomBytes(32).toString('hex');
-const MOCK_ANALYTICS = environment.goatCounterMockData === true;
+// Purement serveur : ce drapeau n'a jamais à traverser le bundle navigateur,
+// et c'était la seule différence entre environment.ts et environment.prod.ts.
+const MOCK_ANALYTICS = process.env['GOATCOUNTER_MOCK_DATA'] === 'true';
 const TRAFFIC_TTL_MS = 5 * 60 * 1000;
 // Presets alignés sur le tableau de bord GoatCounter : jour, semaine, mois,
 // trimestre, semestre, année. Les plages personnalisées passent par ?start&end.
@@ -33,6 +37,17 @@ const submissionsOptions: SubmissionsOptions = {
 };
 
 const trafficCache = new Map<string, { at: number; data: unknown }>();
+/**
+ * ⚠️ État en mémoire du processus. Chez un hébergeur sans serveur, les requêtes
+ * ne retombent pas forcément sur la même instance et celles-ci sont recyclées :
+ * un jeton émis ici peut être inconnu de l'instance suivante, et la session
+ * admin saute sans raison apparente. À remplacer par un jeton signé (sans état)
+ * ou par un stockage partagé.
+ *
+ * Même réserve pour les compteurs anti-abus ci-dessous et pour ceux de
+ * `server-submissions.ts` : la limitation est par instance, donc plus permissive
+ * que ne le laissent croire les seuils.
+ */
 const activeSessions = new Set<string>();
 const ratingAttempts = new Map<string, number[]>();
 
@@ -51,6 +66,25 @@ async function readJson(request: Request): Promise<Record<string, unknown>> {
 
 /* ------------------------------------------------------------------ admin */
 
+/**
+ * Comparaison sans arrêt anticipé sur le contenu — mais **pas** à durée
+ * constante au sens strict : le test de longueur qui précède révèle la taille du
+ * mot de passe enregistré. C'est mieux qu'un `===`, qui laissait le deviner
+ * caractère par caractère ; ce n'est pas une protection complète.
+ *
+ * La vraie correction est en amont : le mot de passe est encore stocké **en
+ * clair** dans Directus, héritage de la collection v1. Une empreinte Argon2 ou
+ * bcrypt rendrait cette comparaison inutile, la longueur du condensat étant
+ * alors fixe.
+ */
+function matchesPassword(stored: string | undefined, submitted: string): boolean {
+  if (!stored) return false;
+  const a = Buffer.from(stored, 'utf8');
+  const b = Buffer.from(submitted, 'utf8');
+  if (a.length !== b.length) return false;
+  return crypto.timingSafeEqual(a, b);
+}
+
 async function adminLogin(request: Request): Promise<Response> {
   const body = await readJson(request);
   const userName = typeof body['userName'] === 'string' ? body['userName'].trim() : '';
@@ -60,27 +94,28 @@ async function adminLogin(request: Request): Promise<Response> {
 
   try {
     const query = new URLSearchParams({
-      'filter[UserName][_eq]': userName,
-      fields: 'id,PassWord',
+      'filter[username][_eq]': userName,
+      'filter[status][_eq]': 'published',
+      fields: 'id,password',
       limit: '1',
     });
 
     const headers: Record<string, string> = { Accept: 'application/json' };
     if (DIRECTUS_TOKEN) headers['Authorization'] = `Bearer ${DIRECTUS_TOKEN}`;
 
-    const upstream = await fetch(`${DIRECTUS_URL}/items/AdminConnexion?${query}`, {
+    const upstream = await fetch(`${DIRECTUS_URL}/items/admin_accounts?${query}`, {
       headers,
       signal: AbortSignal.timeout(10_000),
     });
 
     if (!upstream.ok) {
-      console.warn(`[admin-login] Directus AdminConnexion inaccessible: HTTP ${upstream.status}`);
+      console.warn(`[admin-login] Directus admin_accounts inaccessible: HTTP ${upstream.status}`);
       return Response.json({ authenticated: false }, { status: 401 });
     }
 
-    const payload = await upstream.json() as { data?: Array<{ PassWord?: string }> };
+    const payload = await upstream.json() as { data?: Array<{ password?: string }> };
     const authenticated = Array.isArray(payload.data)
-      && payload.data.some((entry) => entry.PassWord === password);
+      && payload.data.some((entry) => matchesPassword(entry.password, password));
 
     if (authenticated) {
       const token = crypto.randomUUID();
@@ -90,7 +125,7 @@ async function adminLogin(request: Request): Promise<Response> {
 
     return Response.json({ authenticated: false }, { status: 401 });
   } catch (error) {
-    console.warn('[admin-login] Verification AdminConnexion impossible.', error);
+    console.warn('[admin-login] Verification admin_accounts impossible.', error);
     return Response.json({ authenticated: false }, { status: 401 });
   }
 }
@@ -132,7 +167,9 @@ async function postRating(request: Request): Promise<Response> {
   ratingAttempts.set(ip, recent);
 
   try {
-    const upstream = await fetch(`${DIRECTUS_URL}/items/site_ratings`, {
+    const upstream = await fetchDirectus(() => ({
+      url: `${DIRECTUS_URL}/items/site_ratings`,
+      init: {
       method: 'POST',
       headers: {
         Accept: 'application/json',
@@ -149,7 +186,8 @@ async function postRating(request: Request): Promise<Response> {
         ip_hash: crypto.createHash('sha256').update(`${ip}|${RATING_HASH_SALT}`).digest('hex'),
       }),
       signal: AbortSignal.timeout(10_000),
-    });
+      },
+    }));
     if (!upstream.ok) throw new Error(`Directus HTTP ${upstream.status}`);
     return Response.json({ accepted: true }, { status: 201 });
   } catch (error) {
@@ -182,10 +220,13 @@ async function adminRatings(request: Request, url: URL): Promise<Response> {
       query.set('filter[date_created][_gte]', `${from.toISOString().slice(0, 10)}T00:00:00Z`);
     }
 
-    const upstream = await fetch(`${DIRECTUS_URL}/items/site_ratings?${query}`, {
-      headers: { Accept: 'application/json', Authorization: `Bearer ${DIRECTUS_TOKEN}` },
-      signal: AbortSignal.timeout(10_000),
-    });
+    const upstream = await fetchDirectus(() => ({
+      url: `${DIRECTUS_URL}/items/site_ratings?${query}`,
+      init: {
+        headers: { Accept: 'application/json', Authorization: `Bearer ${DIRECTUS_TOKEN}` },
+        signal: AbortSignal.timeout(10_000),
+      },
+    }), { rejouerErreursReseau: true });
     if (!upstream.ok) throw new Error(`Directus HTTP ${upstream.status}`);
 
     const payload = await upstream.json() as {
@@ -547,6 +588,10 @@ export async function handleServerRoutes(request: Request): Promise<Response | n
     const submission = handleSubmissionRequest(request, path, submissionsOptions);
     if (submission) return submission;
   }
+
+  // Avant les routes nommées : le chemin porte l'identifiant du fichier.
+  const attachment = handleAttachmentRequest(request, url, submissionsOptions);
+  if (attachment) return attachment;
 
   if (request.method === 'GET') {
     if (path === '/api/admin/ratings') return adminRatings(request, url);

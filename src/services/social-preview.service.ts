@@ -35,14 +35,27 @@ export class SocialPreviewService {
   }
 
   /**
-   * Get the default social preview image URL
+   * Image d'aperçu par défaut : celle publiée dans Directus si elle existe,
+   * sinon le fichier statique.
+   *
+   * L'ordre compte. Le repli statique n'est pas décoratif : les robots sociaux
+   * ne récupèrent l'image qu'une fois et gardent l'échec en mémoire longtemps.
+   * Une indisponibilité du CMS ne doit donc pas pouvoir casser durablement les
+   * aperçus de lien.
    */
   getDefaultImageUrl(): string {
+    const depuisDirectus = this.layoutService.socialImageData();
+    if (depuisDirectus) return depuisDirectus;
     try {
       return new URL('/assets/seo/og-image.png', this.siteOrigin).toString();
     } catch {
       return '/assets/seo/og-image.png';
     }
+  }
+
+  /** Type MIME réellement servi pour l'URL ci-dessus, pour `og:image:type`. */
+  getDefaultImageType(): string {
+    return this.layoutService.socialImageData() ? 'image/jpeg' : 'image/png';
   }
 
   /**

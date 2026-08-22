@@ -376,10 +376,13 @@ export class Contacts implements OnDestroy {
         }
 
         let fileId = '';
+        let fileUrl = '';
         if (this.selectedFile) {
           try {
             this.isUploading.set(true);
-            fileId = await this.submissions.uploadFile(this.selectedFile, this.selectedFile.name, 'contacts');
+            const uploaded = await this.submissions.uploadFile(this.selectedFile, this.selectedFile.name, 'contacts');
+            fileId = uploaded.id;
+            fileUrl = uploaded.url;
           } catch (fileError) {
             console.error('Erreur lors de l\'upload du fichier:', fileError);
             this.toastrService.error(this.i18nService.translate.instant('ERROR.UPLOAD_FAILED'), this.i18nService.translate.instant('ERROR.TITLE'));
@@ -412,12 +415,6 @@ export class Contacts implements OnDestroy {
           this.isSubmitting.set(false);
           return; // STOP
         }
-
-        // Le mail transporte un lien public : l'identifiant Directus est résolu
-        // via le proxy `/directus`, qui sert les fichiers sans exposer de jeton.
-        const fileUrl = fileId
-          ? `${environment.siteUrl}${environment.browserApiUrl}/assets/${fileId}`
-          : '';
 
         // Envoi Email
         const emailSuccess = await this.emailService.sendEmail({

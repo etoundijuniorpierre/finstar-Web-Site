@@ -8,7 +8,23 @@
  * bruyamment, plutôt que de livrer un site muet.
  */
 const REQUISES = ['DIRECTUS_URL', 'DIRECTUS_TOKEN'];
-const CONSEILLEES = ['GOATCOUNTER_TOKEN', 'RATING_HASH_SALT'];
+const CONSEILLEES = [
+  'GOATCOUNTER_TOKEN',
+  // À défaut, les liens de pièce jointe sont signés avec DIRECTUS_TOKEN : une
+  // rotation du jeton invaliderait les liens déjà partis par e-mail.
+  'ATTACHMENT_LINK_SECRET',
+  'RATING_HASH_SALT',
+  // Absentes, les valeurs de repli de scripts/generate-environment.mjs
+  // s'appliquent : le build passe, mais le destinataire des formulaires n'est
+  // plus celui du site — d'où l'affichage systématique.
+  'EMAILJS_PUBLIC_KEY',
+  'EMAILJS_SERVICE_ID',
+  'EMAILJS_TEMPLATE_ID_EMAIL',
+  'EMAILJS_TEMPLATE_ID_REPLY',
+  'EMAILJS_CONTACT_EMAIL',
+  'EMAILJS_CAREER_EMAIL',
+  'GOATCOUNTER_MOCK_DATA',
+];
 
 const masque = (v) => (v.length <= 8 ? '***' : `${v.slice(0, 4)}…${v.slice(-2)} (${v.length} car.)`);
 

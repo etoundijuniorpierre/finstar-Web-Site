@@ -75,8 +75,7 @@ export class Agencies {
     return agency.photo || this.siteLogo();
   }
 
-
-  telHref(phone: string): string {
-    return `tel:${phone.replace(/[^+\d]/g, '')}`;
+  mailHref(email: string): string {
+    return `mailto:${email.trim()}`;
   }
 }

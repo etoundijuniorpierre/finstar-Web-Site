@@ -101,7 +101,13 @@
           @if (agency.phone) {
             <div>
               <dt>{{ 'AGENCIES.PHONE' | translate }}</dt>
-              <dd><a [href]="telHref(agency.phone)">{{ agency.phone }}</a></dd>
+              <dd>{{ agency.phone }}</dd>
+            </div>
+          }
+          @if (agency.email) {
+            <div>
+              <dt>{{ 'AGENCIES.EMAIL' | translate }}</dt>
+              <dd><a [href]="mailHref(agency.email)">{{ agency.email }}</a></dd>
             </div>
           }
         </dl>

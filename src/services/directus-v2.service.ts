@@ -121,6 +121,22 @@ const EMPTY_STATE: DirectusV2State = {
   accountOpeningGuides: [],
 };
 
+/**
+ * Contenu Directus partagé par tous les rendus d'un même processus serveur.
+ *
+ * Angular reconstruit un injecteur par rendu : sans ce cache, chaque page
+ * pré-rendue relançait les 22 requêtes de contenu. Mesuré sur ce projet : 18
+ * chargements complets par build, soit près de 400 requêtes strictement
+ * identiques. C'est cette rafale — et non un manque de capacité de l'instance —
+ * qui faisait échouer un build sur cinq.
+ *
+ * La péremption garde le cache honnête sur un serveur qui vit longtemps : un
+ * build dure moins d'une minute et n'en voit jamais l'effet, tandis qu'un rendu
+ * à la demande ne servira jamais un contenu vieux de plus d'une minute.
+ */
+const PEREMPTION_CACHE_MS = Number(process.env?.['DIRECTUS_CACHE_TTL_MS'] ?? 60_000);
+let contenuPartage: { promesse: Promise<DirectusV2State>; expire: number } | null = null;
+
 @Injectable({ providedIn: 'root' })
 export class DirectusV2Service {
   private readonly platformId = inject(PLATFORM_ID);
@@ -180,7 +196,7 @@ export class DirectusV2Service {
       }
 
       if (!isPlatformServer(this.platformId)) return;
-      const loaded = await this.loadFromDirectus();
+      const loaded = await this.chargerAvecCache();
       this.state.set(loaded);
       this.transferState.set(DIRECTUS_V2_STATE, loaded);
       await this.applyEditorialTranslations(loaded);
@@ -210,6 +226,29 @@ export class DirectusV2Service {
 
   private hasContent(state: DirectusV2State): boolean {
     return Boolean(state.homePage || state.siteSettings || state.snippets.length || state.faq.length);
+  }
+
+  /**
+   * Renvoie le contenu du cache de processus, ou lance un unique chargement que
+   * les rendus concurrents partagent.
+   */
+  private async chargerAvecCache(): Promise<DirectusV2State> {
+    const maintenant = Date.now();
+    if (contenuPartage && contenuPartage.expire > maintenant) {
+      return contenuPartage.promesse;
+    }
+    const promesse = this.loadFromDirectus();
+    contenuPartage = { promesse, expire: maintenant + PEREMPTION_CACHE_MS };
+    try {
+      // Chaque rendu reçoit sa propre copie : un état partagé par référence
+      // ferait fuir la moindre mutation d'une page vers les suivantes.
+      return structuredClone(await promesse);
+    } catch (error) {
+      // Un échec ne doit pas être mémorisé : la page suivante doit pouvoir
+      // retenter, sinon une seule panne passagère condamne tout le build.
+      contenuPartage = null;
+      throw error;
+    }
   }
 
   private async loadFromDirectus(): Promise<DirectusV2State> {
@@ -266,9 +305,10 @@ export class DirectusV2Service {
     const baseUrl = (runtimeUrl || environment.apiUrl).replace(/\/$/, '');
     const url = `${baseUrl}/items/${collection}?${params}`;
 
-    // Directus renvoie 503/429 quand plusieurs workers de prerender le sollicitent
-    // en rafale. Sans réessai, une seule réponse en erreur suffisait à faire
-    // basculer toute la page sur l'ancien schéma.
+    // Directus renvoie 502/503/504/429 quand plusieurs workers de prerender le
+    // sollicitent en rafale. Sans réessai, une seule réponse en erreur suffisait
+    // à faire échouer le build entier — et donc le déploiement.
+    const REJOUABLES = new Set([429, 502, 503, 504]);
     let lastError: unknown;
     for (let attempt = 0; attempt < 4; attempt += 1) {
       try {
@@ -280,7 +320,7 @@ export class DirectusV2Service {
           const body = await response.json() as { data?: unknown };
           return body.data ?? null;
         }
-        if (response.status !== 503 && response.status !== 429) {
+        if (!REJOUABLES.has(response.status)) {
           throw new Error(`${collection}: HTTP ${response.status}`);
         }
         lastError = new Error(`${collection}: HTTP ${response.status}`);
