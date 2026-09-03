@@ -10,6 +10,7 @@
     "test": "node --env-file-if-exists=.env scripts/generate-environment.mjs && ng test",
     "lint:styles": "stylelint \"src/**/*.scss\"",
     "backup:directus": "node scripts/directus-backup.mjs",
+    "schema:candidatures": "node --env-file-if-exists=.env scripts/directus-ensure-candidature-schema.mjs",
     "verify:directus-backup": "node scripts/verify-directus-backup.mjs",
     "serve:ssr:FINSTAR-CM": "node --env-file-if-exists=.env scripts/serve-local.mjs",
     "check:env": "node scripts/check-build-env.mjs",

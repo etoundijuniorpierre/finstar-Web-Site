@@ -7,6 +7,13 @@
   command = "npm run build:deploy"
   publish = "dist/finstar-cm/browser"
 
+# Sans cette déclaration, le greffon n'est jamais exécuté : le build produit bien
+# `index.csr.html` et les paquets serveur, mais aucune fonction SSR n'est publiée.
+# Le site répond alors 404 sur toutes ses routes, et les routes /api/* — dépôt de
+# pièces jointes, candidatures, liens de téléchargement — n'existent pas.
+[[plugins]]
+  package = "@netlify/angular-runtime"
+
 [build.environment]
   # L'hébergeur exécute déjà son greffon Angular sous Node 22 et refuse de le
   # faire tourner sous 20 : garder « 20 » ici, c'était compiler et exécuter le

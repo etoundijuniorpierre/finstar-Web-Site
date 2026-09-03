@@ -139,6 +139,52 @@ async function resolveFolderId(name: string, options: SubmissionsOptions): Promi
   }
 }
 
+/* ----------------------------------------------- noms de fichiers déposés */
+
+/**
+ * Extension à donner à un fichier selon son type MIME.
+ *
+ * Les sélecteurs de fichiers mobiles livrent régulièrement des noms nus
+ * (« image », « document ») : sans extension, le poste qui télécharge la pièce
+ * ne sait plus l'ouvrir. Le type MIME, lui, est toujours transmis.
+ */
+const EXTENSIONS_PAR_TYPE: Record<string, string> = {
+  'application/pdf': '.pdf',
+  'application/msword': '.doc',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '.docx',
+  'application/vnd.ms-excel': '.xls',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': '.xlsx',
+  'image/jpeg': '.jpg',
+  'image/png': '.png',
+  'image/webp': '.webp',
+  'image/heic': '.heic',
+  'image/heif': '.heif',
+  'image/gif': '.gif',
+  'image/tiff': '.tif',
+  'text/plain': '.txt',
+};
+
+/** Vrai quand le nom porte déjà une extension exploitable (2 à 5 lettres). */
+function aUneExtension(nom: string): boolean {
+  return /\.[a-z0-9]{2,5}$/i.test(nom);
+}
+
+/** Complète le nom d'un fichier qui n'a pas d'extension, d'après son type MIME. */
+export function withExtension(nom: string, contentType: string): string {
+  if (aUneExtension(nom)) return nom;
+  const extension = EXTENSIONS_PAR_TYPE[contentType.split(';')[0].trim().toLowerCase()];
+  return extension ? `${nom}${extension}` : nom;
+}
+
+/**
+ * En-tête `Content-Disposition` complet : variante ASCII pour les clients
+ * anciens, variante RFC 5987 pour les noms accentués.
+ */
+function dispositionAttachment(nom: string): string {
+  const ascii = nom.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\x20-\x7E]/g, '_').replace(/["\\]/g, '_');
+  return `attachment; filename="${ascii}"; filename*=UTF-8''${encodeURIComponent(nom)}`;
+}
+
 const allowContact = createRateLimiter(10);
 const allowApplication = createRateLimiter(5);
 const allowUpload = createRateLimiter(30);
@@ -169,11 +215,58 @@ async function readJson(request: Request, maxBytes: number): Promise<Record<stri
   }
 }
 
+/**
+ * Champs réellement définis sur une collection, en cache.
+ *
+ * Directus rejette l'enregistrement entier dès qu'un champ inconnu figure dans
+ * la charge utile : une candidature complète serait perdue parce qu'une colonne
+ * manque. On compare donc au schéma avant d'écrire. `null` quand le schéma est
+ * illisible : on envoie alors la charge telle quelle, comme auparavant.
+ */
+const champsParCollection = new Map<string, Set<string>>();
+
+async function collectionFields(
+  collection: string,
+  options: SubmissionsOptions,
+): Promise<Set<string> | null> {
+  const connu = champsParCollection.get(collection);
+  if (connu) return connu;
+  try {
+    const upstream = await fetch(`${options.directusUrl}/fields/${collection}?fields=field`, {
+      headers: { Accept: 'application/json', Authorization: `Bearer ${options.directusToken}` },
+      signal: AbortSignal.timeout(10_000),
+    });
+    if (!upstream.ok) throw new Error(`Directus HTTP ${upstream.status}`);
+    const payload = await upstream.json() as { data?: Array<{ field?: string }> };
+    const champs = new Set((payload.data || []).map((f) => f.field).filter((f): f is string => !!f));
+    if (!champs.size) return null;
+    champsParCollection.set(collection, champs);
+    return champs;
+  } catch (error) {
+    console.warn(`[${collection}] Lecture du schéma impossible ; charge utile envoyée telle quelle.`, error);
+    return null;
+  }
+}
+
 async function createItem(
   options: SubmissionsOptions,
   collection: string,
   payload: Record<string, unknown>,
-): Promise<void> {
+): Promise<Record<string, unknown>> {
+  const champs = await collectionFields(collection, options);
+  const absents = champs ? Object.keys(payload).filter((cle) => !champs.has(cle)) : [];
+  if (absents.length) {
+    // Message explicite : c'est la seule trace qui dira pourquoi une pièce
+    // jointe n'apparaît pas sur la fiche côté Directus.
+    console.warn(
+      `[${collection}] Champs absents de la collection Directus, donc NON enregistrés : ${absents.join(', ')}.`
+      + ' Créer ces champs (npm run schema:candidatures) pour cesser de perdre ces données.',
+    );
+  }
+  const retenu = absents.length
+    ? Object.fromEntries(Object.entries(payload).filter(([cle]) => !absents.includes(cle)))
+    : payload;
+
   const upstream = await fetchDirectus(() => ({
     url: `${options.directusUrl}/items/${collection}`,
     init: {
@@ -183,12 +276,34 @@ async function createItem(
         'Content-Type': 'application/json',
         Authorization: `Bearer ${options.directusToken}`,
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(retenu),
       signal: AbortSignal.timeout(15_000),
     },
   }));
   if (!upstream.ok) {
     throw new Error(`Directus HTTP ${upstream.status}: ${(await upstream.text()).slice(0, 300)}`);
+  }
+  const cree = await upstream.json().catch(() => ({})) as { data?: Record<string, unknown> };
+  return cree.data || {};
+}
+
+/** Fiche d'un fichier Directus : nom de téléchargement et type déclarés. */
+async function fileMetadata(
+  id: string,
+  options: SubmissionsOptions,
+): Promise<{ filename_download?: string; title?: string; type?: string }> {
+  try {
+    const upstream = await fetch(`${options.directusUrl}/files/${id}?fields=filename_download,title,type`, {
+      headers: { Accept: 'application/json', Authorization: `Bearer ${options.directusToken}` },
+      signal: AbortSignal.timeout(10_000),
+    });
+    if (!upstream.ok) return {};
+    const payload = await upstream.json() as { data?: { filename_download?: string; title?: string; type?: string } };
+    return payload.data || {};
+  } catch {
+    // Le téléchargement ne doit pas échouer parce que la fiche est illisible :
+    // on repart alors sur les en-têtes du fichier lui-même.
+    return {};
   }
 }
 
@@ -201,8 +316,10 @@ async function handleUpload(request: Request, options: SubmissionsOptions): Prom
   if (!bytes.length) return Response.json({ error: 'empty_file' }, { status: 400 });
   if (bytes.length > 12 * 1024 * 1024) return Response.json({ error: 'file_too_large' }, { status: 413 });
 
-  const fileName = text(request.headers.get('X-File-Name'), 180) || 'document';
   const contentType = request.headers.get('Content-Type') || 'application/octet-stream';
+  // Un nom sans extension revient à livrer un fichier que le destinataire ne
+  // peut plus ouvrir : on la rétablit ici d'après le type MIME.
+  const fileName = withExtension(text(request.headers.get('X-File-Name'), 180) || 'document', contentType);
   const folder = text(request.headers.get('X-File-Scope'), 40) === 'candidatures' ? 'candidatures' : 'contacts';
 
   try {
@@ -212,6 +329,9 @@ async function handleUpload(request: Request, options: SubmissionsOptions): Prom
       const form = new FormData();
       form.append('title', `${folder} — ${fileName}`);
       if (folderId) form.append('folder', folderId);
+      // Nom rendu au téléchargement : posé explicitement plutôt que déduit du
+      // dépôt, pour qu'il ne dépende pas du comportement de l'hébergeur amont.
+      form.append('filename_download', fileName);
       form.append('file', new Blob([bytes], { type: contentType }), fileName);
       return {
         url: `${options.directusUrl}/files`,
@@ -290,7 +410,7 @@ async function handleApplication(request: Request, options: SubmissionsOptions):
   const documents = body['documents'];
 
   try {
-    await createItem(options, 'job_applications', {
+    const cree = await createItem(options, 'job_applications', {
       nom,
       prenom,
       poste_souhaite: text(body['poste_souhaite'], 200) || null,
@@ -326,6 +446,21 @@ async function handleApplication(request: Request, options: SubmissionsOptions):
       avaliste_relation: text(body['avaliste_relation'], 120) || null,
       caution_acceptee: typeof body['caution_acceptee'] === 'boolean' ? body['caution_acceptee'] : null,
     });
+
+    // Contrôle après écriture : une candidature de stage porte jusqu'à cinq
+    // pièces, plus la fiche récapitulative. Si Directus n'en a retenu qu'une
+    // partie, la trace le dit au lieu de laisser croire à un dépôt complet.
+    const attendus = documents && typeof documents === 'object' ? Object.keys(documents).length : 0;
+    const enregistres = cree['documents'] && typeof cree['documents'] === 'object'
+      ? Object.keys(cree['documents'] as Record<string, unknown>).length
+      : 0;
+    // `cree` vide signifie que Directus n'a rien renvoyé : rien à conclure.
+    if (attendus && Object.keys(cree).length && enregistres < attendus) {
+      console.warn(
+        `[candidature] ${enregistres}/${attendus} pièces jointes rattachées à la fiche Directus`
+        + ` (champ « documents »). Les fichiers restent déposés dans la médiathèque.`,
+      );
+    }
     return Response.json({ accepted: true }, { status: 201 });
   } catch (error) {
     console.warn('[candidature] Écriture Directus impossible.', error);
@@ -367,14 +502,19 @@ async function handleAttachment(request: Request, url: URL, options: Submissions
     if (!upstream.ok) throw new Error(`Directus HTTP ${upstream.status}`);
 
     const headers = new Headers();
-    for (const nom of ['content-type', 'content-length', 'content-disposition']) {
+    for (const nom of ['content-type', 'content-length']) {
       const valeur = upstream.headers.get(nom);
       if (valeur) headers.set(nom, valeur);
     }
-    // Directus pose déjà l'en-tête avec `?download`; on garantit le repli.
-    if (!headers.has('content-disposition')) {
-      headers.set('content-disposition', `attachment; filename="${id}"`);
-    }
+
+    // Nom du fichier téléchargé : reconstruit ici à partir de la fiche Directus
+    // plutôt que recopié de l'amont. Un en-tête absent faisait retomber le
+    // téléchargement sur l'identifiant nu — un fichier sans extension, que le
+    // poste destinataire n'ouvre plus.
+    const meta = await fileMetadata(id, options);
+    const nomBrut = meta.filename_download || meta.title || id;
+    const typeFichier = meta.type || upstream.headers.get('content-type') || '';
+    headers.set('content-disposition', dispositionAttachment(withExtension(nomBrut, typeFichier)));
     // Le lien est signé et nominatif : aucun cache partagé ne doit le retenir.
     headers.set('cache-control', 'private, no-store');
     return new Response(await upstream.arrayBuffer(), { status: 200, headers });

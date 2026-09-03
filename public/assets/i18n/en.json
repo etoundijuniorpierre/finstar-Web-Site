@@ -72,6 +72,9 @@
       "NO_DOCUMENT": "No document provided",
       "CONFIDENTIAL": "Confidential document for FINSTAR-CM S.A. internal use only",
       "GENERATED_ON": "Generated on",
+      "PLACE_DATE": "Done at ............................................ , on ......... / ......... / .................",
+      "SIGNATURE_CANDIDATE": "Applicant's signature",
+      "COMPANY_VISA": "For FINSTAR-CM S.A. use only",
       "CONTACT": "CONTACT: +237 6 20 72 47 96 | finstarcm@gmail.com | Registered office: Cameroon - Bayangam"
     },
     "STAGE_FORM_TITLE": "Internship application",
